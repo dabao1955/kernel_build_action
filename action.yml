@@ -124,8 +124,8 @@ runs:
       run: |
         cd ${{ inputs.kernel-dir }}
         mkdir -p -v out
-        make -j$(nproc --all) CROSS_COMPILE=../gcc-64/bin/aarch64-linux-android- CLANG_PATH=../clang-aosp/bin COMPILE_ARM32=../gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
-        make -j$(nproc --all) CROSS_COMPILE=../gcc-64/bin/aarch64-linux-android- CLANG_PATH=../clang-aosp/bin COMPILE_ARM32=../gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
+        make -j$(nproc --all) CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-64/bin/aarch64-linux-android- CLANG_PATH=$GITHUB_WORKSPACE/clang-aosp/bin COMPILE_ARM32=$GITHUB_WORKSPACE/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
+        make -j$(nproc --all) CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-64/bin/aarch64-linux-android- CLANG_PATH=$GITHUB_WORKSPACE/clang-aosp/bin COMPILE_ARM32=$GITHUB_WORKSPACE/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
       shell: bash
 
     - name: build kernel with gcc
@@ -133,8 +133,8 @@ runs:
       run: |
         cd ${{ inputs.kernel-dir }}
         mkdir -p -v out
-        make -j$(nproc --all) CROSS_COMPILE=../gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=../gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
-        make -j$(nproc --all) CROSS_COMPILE=../gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=../gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
+        make -j$(nproc --all) CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$GITHUB_WORKSPACE/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
+        make -j$(nproc --all) CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$GITHUB_WORKSPACE/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
       shell: bash
 
     - name: package with anykernel3
