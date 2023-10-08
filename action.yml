@@ -1,0 +1,153 @@
+name: 'Android Kernel Build Action'
+description: "A action to built android kernel."
+
+inputs:
+  kernel-url:
+    description: 'Kernel Source Url'
+    required: false
+  vendor-url:
+    description: 'Kernel Vendor Source Url'
+    required: false
+  kernel-dir:
+    required: true
+    default: kernel
+  vendor-dir:
+    required: true
+    default: vendor 
+  branch:
+    description: 'Branch name (default: main)'
+    required: false
+    default: main
+  config:
+    description: 'configuration for building android kernel'
+    required: true
+    default: arch/arm64/configs/defconfig
+  arch:
+    required: true
+    default: arm64
+  ksu:
+    description: 'KernelSU function support'
+    required: false
+    default: false
+  ksu-version:
+    description: 'KernelSU default branch'
+    required: false
+    default: "main"
+  aosp-gcc-4.9:
+    description: 'Use gcc from aosp project.'
+    required: true
+    default: true
+  aosp-clang:
+    description: 'Use clang from aosp project.'
+    required: false
+    default: "r383902"
+  python-2.7:
+    description: 'Use python2.7 when build kernel.'
+    required: false
+    default: "false"
+  anykernel3:
+    description: 'Package kernel use anykernel3.'
+    required: false
+    default: false
+  extra-cmd:
+    description: 'Extra options of building kernel.'
+    required: false
+    default: ""
+
+runs:
+  using: 'composite'
+  steps:
+    - id: cleanup
+      uses: rokibhasansagar/slimhub_actions@main
+      
+    - name: install toolchain
+      run: sudo apt-get install binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3
+
+    - name: download-aosp-gcc
+      if: inputs.aosp-gcc-4.9 == 'true'
+      run: |
+        mkdir -p -v gcc-64
+        wget -O gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+        tar -C gcc-64/ -zxvf gcc-aarch64.tar.gz
+        mkdir -p -v gcc-32
+        wget -O gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+        tar -C gcc-32/ -zxvf gcc-arm.tar.gz
+
+     - name: use python 2.7
+       if: inputs.python-2.7 == 'true'
+       run: |
+         sudo apt install -y -q python2.7 python2.7-minimal
+         sudo rm /bin/python
+         sudo ln -s /bin/python2.7 /bin/python
+
+     - name: download aosp clang
+       if: inputs.aosp-clang == 'true'
+       run: |
+         mkdir clang-aosp
+         wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.aosp-clang }}/clang-${{ inputs.aosp-clang }}.tar.gz
+         tar -C clang-aosp/ -zxvf clang-${{ inputs.aosp-clang }}.tar.gz
+
+     - name: pull kernel source
+       if: inputs.kernel-url == 'true'
+       run: |
+         git clone ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=1 ${{ inputs.kernel-dir }}
+
+     - name: pull vendor source
+       if: inputs.vendor-url == 'true'
+       run: |
+         git clone ${{ inputs.vendor-url }} --depth=1 ${{ inputs.vendor-dir }}
+         
+     - name: pull kernelsu
+       if: inputs.ksu == 'true'
+       run: |
+         cd ${{ inputs.kernel-dir }}
+         curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash - ${{ inputs.ksu-version }}
+
+     - name: build kernel with clang
+       if: inputs.aosp-clang == 'true'
+       run: |
+         cd ${{ inputs.kernel-dir }}
+         mkdir -p -v out
+         make -j$(nproc --all) CROSS_COMPILE=gcc-64/bin/aarch64-linux-android- CLANG_PATH=clang-aosp/bin COMPILE_ARM32=gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
+         make -j$(nproc --all) CROSS_COMPILE=gcc-64/bin/aarch64-linux-android- CLANG_PATH=clang-aosp/bin COMPILE_ARM32=gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
+
+    - name: build kernel with gcc
+      if: inputs.aosp-clang == 'false'
+      run: |
+        cd ${{ inputs.kernel-dir }}
+        mkdir -p -v out
+        make -j$(nproc --all) CROSS_COMPILE=gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
+        make -j$(nproc --all) CROSS_COMPILE=gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
+
+    - name: package with anykernel3
+      if: inputs.anykernel3 == 'true'
+      run: | 
+        git clone https://github.com/osm0sis/AnyKernel3
+        sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
+        sed -i 's!block=/dev/block/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
+        sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
+        cp out/arch/${{ inputs.arch }}/boot/Image* AnyKernel3/
+        if [ -f out/arch/${{ inputs.arch }}/boot/dtbo.img ]; then
+            cp out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
+        fi
+        rm -rf AnyKernel3/.git* AnyKernel3/README.md
+
+     - id: uploadi
+       if: inputs.anykernel3 == 'true'
+       uses: actions/upload-artifact@v3
+       with:
+         name: image
+         path: out/arch/${{ inputs.arch }}/boot/*
+
+     - id: uploada
+       if: inputs.anykernel3 == 'false'
+       uses: actions/upload-artifact@v3
+       with:
+         name: Anykernel3-flasher
+         path: Anykernel3/*
+      
+       
+        
+      
+        
+        
