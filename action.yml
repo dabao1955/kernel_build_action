@@ -28,6 +28,10 @@ inputs:
   arch:
     required: true
     default: arm64
+  version:
+    description: 'Android version.'
+    required: true
+    default: android12
   ksu:
     description: 'KernelSU function support'
     required: false
@@ -93,7 +97,7 @@ runs:
       if: inputs.aosp-clang == 'true'
       run: |
         mkdir clang-aosp
-        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.aosp-clang-version }}/clang-${{ inputs.aosp-clang-version }}.tar.gz
+        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
         tar -C clang-aosp/ -zxvf clang-${{ inputs.aosp-clang-version }}.tar.gz
       shell: bash
 
