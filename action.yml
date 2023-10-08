@@ -24,7 +24,7 @@ inputs:
   config:
     description: 'configuration for building android kernel'
     required: true
-    default: arch/arm64/configs/defconfig
+    default: defconfig
   arch:
     required: true
     default: arm64
