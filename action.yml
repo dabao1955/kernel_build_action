@@ -116,7 +116,7 @@ runs:
       if: inputs.ksu == 'true'
       run: |
         cd ${{ inputs.kernel-dir }}
-        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash - ${{ inputs.ksu-version }}
+        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
       shell: bash
 
     - name: build kernel with clang
