@@ -33,7 +33,7 @@ inputs:
     description: 'KernelSU default branch'
     required: false
     default: "main"
-  aosp-gcc-4.9:
+  aosp-gcc:
     description: 'Use gcc from aosp project.'
     required: true
     default: true
@@ -41,7 +41,7 @@ inputs:
     description: 'Use clang from aosp project.'
     required: false
     default: "r383902"
-  python-2.7:
+  python-27:
     description: 'Use python2.7 when build kernel.'
     required: false
     default: "false"
@@ -66,7 +66,7 @@ runs:
 
     - name: download-aosp-gcc
       shell: bash
-      if: inputs.aosp-gcc-4.9 == 'true'
+      if: inputs.aosp-gcc == 'true'
       run: |
         mkdir -p -v gcc-64
         wget -O gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
@@ -76,7 +76,7 @@ runs:
         tar -C gcc-32/ -zxvf gcc-arm.tar.gz
 
     - name: use python 2.7
-      if: inputs.python-2.7 == 'true'
+      if: inputs.python-27 == 'true'
       run: |
         sudo apt install -y -q python2.7 python2.7-minimal
         sudo rm /bin/python
