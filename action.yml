@@ -4,15 +4,18 @@ description: "A action to built android kernel."
 inputs:
   kernel-url:
     description: 'Kernel Source Url'
-    required: false
+    required: true
   vendor-url:
     description: 'Kernel Vendor Source Url'
     required: false
   kernel-dir:
     required: true
     default: kernel
+  vendor:
+    required: false
+    default: false
   vendor-dir:
-    required: true
+    required: false
     default: vendor 
   branch:
     description: 'Branch name (default: main)'
@@ -40,11 +43,14 @@ inputs:
   aosp-clang:
     description: 'Use clang from aosp project.'
     required: false
+    default: false
+  aosp-clang-version:
+    required: false
     default: "r383902"
   python-27:
     description: 'Use python2.7 when build kernel.'
     required: false
-    default: "false"
+    default: false
   anykernel3:
     description: 'Package kernel use anykernel3.'
     required: false
@@ -87,18 +93,17 @@ runs:
       if: inputs.aosp-clang == 'true'
       run: |
         mkdir clang-aosp
-        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.aosp-clang }}/clang-${{ inputs.aosp-clang }}.tar.gz
-        tar -C clang-aosp/ -zxvf clang-${{ inputs.aosp-clang }}.tar.gz
+        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.aosp-clang-version }}/clang-${{ inputs.aosp-clang-version }}.tar.gz
+        tar -C clang-aosp/ -zxvf clang-${{ inputs.aosp-clang-version }}.tar.gz
       shell: bash
 
     - name: pull kernel source
-      if: inputs.kernel-url == 'true'
       run: |
         git clone ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=1 ${{ inputs.kernel-dir }}
       shell: bash
 
     - name: pull vendor source
-      if: inputs.vendor-url == 'true'
+      if: inputs.vendor == 'true'
       run: |
         git clone ${{ inputs.vendor-url }} --depth=1 ${{ inputs.vendor-dir }}
       shell: bash
