@@ -196,7 +196,7 @@ runs:
         sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
         
         cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image* AnyKernel3 -rv
-        test -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img && cp out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
+        test -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img && cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         cd AnyKernel3
         for f in *.gz *.lz4 *-dtb; do 
         if [[ -f ${f%.*} ]]; then 
@@ -216,7 +216,7 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: image
-        path: out/arch/${{ inputs.arch }}/boot/*
+        path: ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/*
 
     - id: uploada
       if: inputs.anykernel3 == 'true'
