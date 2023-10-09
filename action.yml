@@ -200,7 +200,7 @@ runs:
         cd AnyKernel3
         for f in *.gz *.lz4 *-dtb; do 
         if [[ -f ${f%.*} ]]; then 
-           if [[ ${f%.*} == "image" ]]; then 
+           if [[ ${f%.*} == "Image" ]]; then 
               rm ${f%.*} # delete the file
               echo "Deleted ${f%.*}"
            fi
