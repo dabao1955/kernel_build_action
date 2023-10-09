@@ -44,6 +44,18 @@ inputs:
     description: 'KernelSU default branch'
     required: false
     default: "main"
+  overlayfs:
+    description: 'Enable Overlayfs for ksu'
+    required: false
+    default: false
+  disable-lto:
+    description: 'Disable LTO configs for configs.'
+    required: false
+    default: false
+  ccache:
+    description: 'Enable Ccache for compiling kernel'
+    required: false
+    default: false
   aosp-gcc:
     description: 'Use gcc from aosp project.'
     required: true
@@ -116,6 +128,18 @@ runs:
       run: |
         git clone ${{ inputs.vendor-url }} --depth=1 ${{ inputs.vendor-dir }}
       shell: bash
+
+    - name: Setup ccache 
+      if: env.ENABLE_CCACHE == 'true' 
+      uses: hendrikmuhs/ccache-action@v1.2 
+      with: 
+        key: build-kernel-${{ inputs.arch }}${{ inputs.config }} 
+        max-size: 4G
+
+    - name: Set swap space
+      uses: pierotofy/set-swap-space@master 
+      with: 
+        swap-size-gb: 12
    
     - name: pull kernelsu
       if: inputs.ksu == 'true'
@@ -123,6 +147,25 @@ runs:
         cd ${{ inputs.kernel-dir }}
         curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
       shell: bash
+
+    - name: disable lto
+      if: inputs.disable-lto == 'true'
+      shell: bash
+      run: |
+        cd ${{ inputs.kernel-dir }}
+        if grep -q "LTO" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
+        then
+             sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
+             sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
+             sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
+             echo "CONFIG_LTO_NONE=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+        fi
+    - name: enable overlayfs
+      if: inputs.overlayfs == 'true'
+      shell: bash
+      run: |
+        echo "CONFIG_OVERLAY_FS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+      
 
     - name: build kernel with clang
       if: inputs.aosp-clang == 'true'
