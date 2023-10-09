@@ -78,12 +78,12 @@ runs:
       shell: bash
       if: inputs.aosp-gcc == 'true'
       run: |
-        mkdir -p -v gcc-64
+        mkdir -p -v $HOME/gcc-64
         wget -O gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-        tar -C gcc-64/ -zxvf gcc-aarch64.tar.gz
-        mkdir -p -v gcc-32
+        tar -C $HOME/gcc-64 -zxvf gcc-aarch64.tar.gz
+        mkdir -p -v $HOME/gcc-32
         wget -O gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-        tar -C gcc-32/ -zxvf gcc-arm.tar.gz
+        tar -C $HOME/gcc-32 -zxvf gcc-arm.tar.gz
 
     - name: use python 2.7
       if: inputs.python-27 == 'true'
@@ -96,9 +96,9 @@ runs:
     - name: download aosp clang
       if: inputs.aosp-clang == 'true'
       run: |
-        mkdir clang-aosp
+        mkdir $HOME/clang -p -v 
         wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
-        tar -C clang-aosp/ -zxvf clang-${{ inputs.aosp-clang-version }}.tar.gz
+        tar -C $HOME/clang -zxvf clang-${{ inputs.aosp-clang-version }}.tar.gz
       shell: bash
 
     - name: pull kernel source
@@ -124,10 +124,10 @@ runs:
       run: |
         cd ${{ inputs.kernel-dir }}
         mkdir -p -v out
-        export CLANG_PATH=$GITHUB__WORKSPACE/clang-aosp/bin
-        export PATH=$GITHUB__WORKSPACE/clang-aosp/bin:$PATH
-        make -j$(nproc --all) CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$GITHUB_WORKSPACE/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
-        make -j$(nproc --all) CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$GITHUB_WORKSPACE/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
+        export CLANG_PATH=$HOME/clang
+        export PATH=$CLANG_PATH/bin:$PATH
+        make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
+        make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
       shell: bash
 
     - name: build kernel with gcc
@@ -135,8 +135,8 @@ runs:
       run: |
         cd ${{ inputs.kernel-dir }}
         mkdir -p -v out
-        make -j$(nproc --all) CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$GITHUB_WORKSPACE/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
-        make -j$(nproc --all) CROSS_COMPILE=$GITHUB_WORKSPACE/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$GITHUB_WORKSPACE/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
+        make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
+        make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
       shell: bash
 
     - name: package with anykernel3
