@@ -44,7 +44,7 @@ jobs:
 | vendor | false | Enable additional source code for the Android kernel source code. This option may be used for OPLUS source code. |
 | vendor-url | false | |
 | vendor-dir | false | |
-| branch | false | The branch of the source code that needs to be cloned, defaults to the default selected branch of the warehouse | 
+| branch | true | The branch of the source code that needs to be cloned, defaults branch to git clone is main | 
 | config | true | Compile the selected configuration file for the Android kernel |
 | arch | true | The architecture of your mobile phone SOC is arm64 by default |
 | version | true | Android Version |
