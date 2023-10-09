@@ -195,49 +195,18 @@ runs:
         sed -i 's!block=/dev/block/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
         sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
         
-        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image ]; then
-            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image -v AnyKernel3/
-        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.gz ]; then
-            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.gz -v AnyKernel3/
-        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.gz-dtb ]; then
-            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.gz-dtb -v AnyKernel3/
-        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.lz4 ]; then
-            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.lz4 -v AnyKernel3/
-        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.lz4-dtb ]; then
-            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.lz4-dtb -v AnyKernel3/
-        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image-dtb ]; then
-            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image-dtb -v AnyKernel3/
-        fi
-
-        if [ -f AnyKernel3/Image.gz-dtb ]; then
-           if [-f Anykernel3/Image ]; then
-              rm -rf -v AnyKernel3/Image
+        cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image* AnyKernel3 -rv
+        test -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img && cp out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
+        cd AnyKernel3
+        for f in *.gz *.lz4 *-dtb; do 
+        if [[ -f ${f%.*} ]]; then 
+           if [[ ${f%.*} == "image" ]]; then 
+              rm ${f%.*} # delete the file
+              echo "Deleted ${f%.*}"
            fi
         fi
-        if [ -f AnyKernel3/Image-dtb ]; then
-           if [-f Anykernel3/Image ]; then
-              rm -rf -v AnyKernel3/Image
-           fi
-        fi
-        if [ -f AnyKernel3/Image.lz4-dtb ]; then
-           if [-f Anykernel3/Image ]; then
-              rm -rf -v AnyKernel3/Image
-           fi
-        fi
-        if [ -f AnyKernel3/Image.gz ]; then
-           if [-f Anykernel3/Image ]; then
-              rm -rf -v AnyKernel3/Image
-           fi
-        fi
-        if [ -f AnyKernel3/Image.lz4 ]; then
-           if [-f Anykernel3/Image ]; then
-              rm -rf -v AnyKernel3/Image
-           fi
-        fi
-        
-        if [ -f out/arch/${{ inputs.arch }}/boot/dtbo.img ]; then
-            cp out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
-        fi
+        done
+        cd ..
         
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
       shell: bash
