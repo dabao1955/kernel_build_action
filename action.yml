@@ -205,6 +205,10 @@ runs:
            fi
         fi
         done
+        
+        mkdir -p -v tmp
+        find -name "*-dtb " && mv -v "*-dtb" tmp && rm -rf Image* && mv tmp/* ./ -v
+        rm -rf -v tmp
         cd ..
         
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
@@ -214,8 +218,8 @@ runs:
       if: inputs.anykernel3 == 'false'
       uses: actions/upload-artifact@v3
       with:
-        name: image
-        path: ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/*
+        name: bare-compiled-kernel
+        path: ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image*
 
     - id: uploada
       if: inputs.anykernel3 == 'true'
