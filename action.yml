@@ -164,7 +164,8 @@ runs:
       if: inputs.overlayfs == 'true'
       shell: bash
       run: |
-        echo "CONFIG_OVERLAY_FS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+        cd ${{ inputs.kernel-dir }}
+        grep -q "OVERLAYFS" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" || echo "CONFIG_OVERLAY_FS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
       
 
     - name: build kernel with clang
