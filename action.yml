@@ -158,14 +158,14 @@ runs:
       shell: bash
 
     - id: uploadi
-      if: inputs.anykernel3 == 'true'
+      if: inputs.anykernel3 == 'false'
       uses: actions/upload-artifact@v3
       with:
         name: image
         path: out/arch/${{ inputs.arch }}/boot/*
 
     - id: uploada
-      if: inputs.anykernel3 == 'false'
+      if: inputs.anykernel3 == 'true'
       uses: actions/upload-artifact@v3
       with:
         name: Anykernel3-flasher
