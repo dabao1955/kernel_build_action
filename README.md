@@ -54,7 +54,7 @@ jobs:
 | aosp-clang | false | Compile the kernel using aosp-clang |
 | aosp-clang-version | false | |
 | python-27 | false | Use python2.7 instead of python3, this is helpful for some kernel compilations |
-| anykernel3 | false | Package the compiled kernel using anykernel3. If this option is not enabled, only the kernel file will be uploaded by default |
+| anykernel3 | false | Package the compiled kernel using anykernel3. If this option is disabled, only the kernel file will be uploaded by default |
 | extra-cmd | false | Compile the kernel with extra options, such as LD=ld.lld |
 
 ## Todo
