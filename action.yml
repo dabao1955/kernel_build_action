@@ -151,10 +151,51 @@ runs:
         sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
         sed -i 's!block=/dev/block/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
         sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
-        cp out/arch/${{ inputs.arch }}/boot/Image* AnyKernel3/
+        
+        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image ]; then
+            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image -v AnyKernel3/
+        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.gz ]; then
+            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.gz -v AnyKernel3/
+        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.gz-dtb ]; then
+            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.gz-dtb -v AnyKernel3/
+        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.lz4 ]; then
+            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.lz4 -v AnyKernel3/
+        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.lz4-dtb ]; then
+            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.lz4-dtb -v AnyKernel3/
+        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image-dtb ]; then
+            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image-dtb -v AnyKernel3/
+        fi
+
+        if [ -f AnyKernel3/Image.gz-dtb ]; then
+           if [-f Anykernel3/Image ]; then
+              rm -rf -v AnyKernel3/Image
+           fi
+        fi
+        if [ -f AnyKernel3/Image-dtb ]; then
+           if [-f Anykernel3/Image ]; then
+              rm -rf -v AnyKernel3/Image
+           fi
+        fi
+        if [ -f AnyKernel3/Image.lz4-dtb ]; then
+           if [-f Anykernel3/Image ]; then
+              rm -rf -v AnyKernel3/Image
+           fi
+        fi
+        if [ -f AnyKernel3/Image.gz ]; then
+           if [-f Anykernel3/Image ]; then
+              rm -rf -v AnyKernel3/Image
+           fi
+        fi
+        if [ -f AnyKernel3/Image.lz4 ]; then
+           if [-f Anykernel3/Image ]; then
+              rm -rf -v AnyKernel3/Image
+           fi
+        fi
+        
         if [ -f out/arch/${{ inputs.arch }}/boot/dtbo.img ]; then
             cp out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         fi
+        
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
       shell: bash
 
