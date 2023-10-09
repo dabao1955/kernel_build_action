@@ -201,8 +201,7 @@ runs:
         for f in *.gz *.lz4 *-dtb; do 
         if [[ -f ${f%.*} ]]; then 
            if [[ ${f%.*} == "Image" ]]; then 
-              rm ${f%.*} # delete the file
-              echo "Deleted ${f%.*}"
+              rm ${f%.*} -v
            fi
         fi
         done
@@ -222,6 +221,6 @@ runs:
       if: inputs.anykernel3 == 'true'
       uses: actions/upload-artifact@v3
       with:
-        name: Anykernel3-flasher
-        path: Anykernel3/*
+        name: AnyKernel3-flasher
+        path: AnyKernel3/*
       
