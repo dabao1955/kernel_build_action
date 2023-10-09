@@ -9,7 +9,7 @@ inputs:
     description: 'Kernel Vendor Source Url'
     required: false
   kernel-dir:
-    required: true
+    required: false
     default: kernel
   vendor:
     required: false
