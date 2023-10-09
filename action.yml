@@ -197,21 +197,14 @@ runs:
         sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
         
         rm -rf -v ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image
-        cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image* AnyKernel3 -rv
-        test -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img && cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
-        cd AnyKernel3
-        mkdir -p -v tmp
-        for f in Image.*-dtb; do 
-        if [[ -f ${f%.*} ]]; then 
-           if [[ ${f%.*} == "Image.*-dtb" ]]; then 
-              mv ${f%.*} tmp -v
-              rm -rf Image* -v
-              mv tmp/* ./ -v
-           fi
+
+        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
+           cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb AnyKernel3 -rv
+        else
+           cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.* AnyKernel3 -rv
         fi
-        done
-        rm -rf -v tmp
-        cd ..
+
+        test -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img && cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
       shell: bash
