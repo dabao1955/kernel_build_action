@@ -1,6 +1,10 @@
 name: 'Android Kernel Build Action'
 description: "A action to built android kernel."
 
+branding:
+  icon: 'activity'
+  color: 'blue'
+
 inputs:
   kernel-url:
     description: 'Kernel Source Url'
