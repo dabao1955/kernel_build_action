@@ -95,6 +95,7 @@ runs:
         sudo apt install -y -q python2.7 python2.7-minimal
         sudo rm /bin/python
         sudo ln -s /bin/python2.7 /bin/python
+        sudo ln -s /bin/python2.7 /bin/python2
       shell: bash
 
     - name: download aosp clang
