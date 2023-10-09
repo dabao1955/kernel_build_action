@@ -20,9 +20,9 @@ inputs:
     default: false
   vendor-dir:
     required: false
-    default: vendor 
+    default: vendor
   branch:
-    description: 'Branch name (default: main)'
+    description: 'Branch name'
     required: false
     default: main
   config:
@@ -106,9 +106,16 @@ runs:
         tar -C $HOME/clang -zxvf clang-${{ inputs.aosp-clang-version }}.tar.gz
       shell: bash
 
-    - name: pull kernel source
+    - name: pull kernel source from selected branch
+      if: inputs.branch == 'true'
       run: |
         git clone ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=1 ${{ inputs.kernel-dir }}
+      shell: bash
+
+    - name: pull kernel source from default branch
+      if: inputs.branch == 'false'
+      run: |
+        git clone ${{ inputs.kernel-url }} --depth=1 ${{ inputs.kernel-dir }}
       shell: bash
 
     - name: pull vendor source
