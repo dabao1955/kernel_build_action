@@ -50,6 +50,9 @@ jobs:
 | version | true | Android Version |
 | ksu | false | Enable KernelSU |
 | ksu-version | false | KernelSU version |
+| disable-lto | false | |
+| overlayfs | false | Enable OverlayFS to config |
+| ccache | false | Enable ccache |
 | aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) |
 | aosp-clang | false | Compile the kernel using aosp-clang |
 | aosp-clang-version | false | |
