@@ -107,15 +107,8 @@ runs:
       shell: bash
 
     - name: pull kernel source from selected branch
-      if: inputs.branch == 'true'
       run: |
         git clone ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=1 ${{ inputs.kernel-dir }}
-      shell: bash
-
-    - name: pull kernel source from default branch
-      if: inputs.branch == 'false'
-      run: |
-        git clone ${{ inputs.kernel-url }} --depth=1 ${{ inputs.kernel-dir }}
       shell: bash
 
     - name: pull vendor source
