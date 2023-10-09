@@ -201,7 +201,7 @@ runs:
         test -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img && cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         cd AnyKernel3
         mkdir -p -v tmp
-        for f in *.gz *.lz4 *-dtb; do 
+        for f in *-dtb; do 
         if [[ -f ${f%.*} ]]; then 
            if [[ ${f%.*} == "*-dtb" ]]; then 
               mv ${f%.*} tmp -v
