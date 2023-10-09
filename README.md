@@ -64,6 +64,6 @@ jobs:
 - [ ] Modify unreasonable options
 
 ## Credits
-[KernrlSU](https://github.com/tiann/KernelSU)
-[KernelSU_Action](https://github.com/XiaoleGun/KernelSU_Action)
-[slimhub_actions](https://github.com/rokibhasansagar/slimhub_actions)
+- [KernrlSU](https://github.com/tiann/KernelSU)
+- [KernelSU_Action](https://github.com/XiaoleGun/KernelSU_Action)
+- [slimhub_actions](https://github.com/rokibhasansagar/slimhub_actions)
