@@ -62,9 +62,11 @@ jobs:
 
 ## Todo
 
-- [ ] Improve documentation
-- [ ] Add more options
-- [ ] Modify unreasonable options
+- Improve documentation
+
+- Add more options
+
+- Modify unreasonable options
 
 ## Credits
 - [KernrlSU](https://github.com/tiann/KernelSU)
