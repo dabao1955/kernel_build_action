@@ -1,0 +1,58 @@
+name: ci
+on:
+  push:
+    branches: main
+  pull_request:
+  workflow_dispatch:
+  
+jobs:
+  yaml-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+
+    - name: Setup Python3
+      uses: actions/setup-python@v4 
+      with: 
+         python-version: '3.11'
+
+    - name: Imstall yamllint
+      run: sudo apt install yamllint -y
+
+    - name: Check yaml
+      run: yamllint action.yml
+
+  ci-test:
+    needs: yaml-check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+
+    - name: Test CI
+      uses:  ${{ github.event.repository.owner.id }}/kernel_build_action
+      with: 
+          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
+          kernel-dir: msm-4.19
+          branch: taffy
+          config: cas_defconfig
+          arch: arm64
+          aosp-gcc: true
+          aosp-clang: true
+          ksu: true
+          ksu-version: main
+          version: android12
+          aosp-clang-version: r383902
+          anykernel3: true
+          python-27: true
+          ccache: true
+          disable-lto: true
+          overlayfs: true
