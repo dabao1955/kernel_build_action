@@ -24,7 +24,7 @@ jobs:
       run: sudo npm i -g yaml-lint
 
     - name: Check yaml
-      run: yamllint action.yml
+      run: /usr/local/lib/node_modules/yaml-lint/dist/cli.js action.yml
 
   ci-test:
     needs: yaml-check
