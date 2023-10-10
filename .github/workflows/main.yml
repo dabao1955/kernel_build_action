@@ -15,13 +15,13 @@ jobs:
     - name: Checkout Repo
       uses: actions/checkout@v4
 
-    - name: Setup Python3
-      uses: actions/setup-python@v4 
-      with: 
-         python-version: '3.11'
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+       node-version: 20
 
     - name: Imstall yamllint
-      run: sudo apt install yamllint -y
+      run: sudo npm i -g yaml-lint
 
     - name: Check yaml
       run: yamllint action.yml
