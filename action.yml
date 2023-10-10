@@ -52,6 +52,18 @@ inputs:
     description: 'Disable LTO configs for configs.'
     required: false
     default: false
+  lxc:
+    description: 'Enable lxc and docker configs for configs.'
+    required: false
+    default: false
+  lxc-patch:
+    description: 'Apply lxc patch aviod not booting'
+    required: false
+    default: false
+  kvm: 
+    description: 'Enable KVM for configs.'
+    required: false
+    default: false
   ccache:
     description: 'Enable Ccache for compiling kernel'
     required: false
@@ -160,6 +172,7 @@ runs:
              sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
              echo "CONFIG_LTO_NONE=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
         fi
+
     - name: enable overlayfs
       if: inputs.overlayfs == 'true'
       shell: bash
@@ -167,6 +180,27 @@ runs:
         cd ${{ inputs.kernel-dir }}
         grep -q "OVERLAYFS" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" || echo "CONFIG_OVERLAY_FS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
       
+    - name: enable kvm
+      if: inputs.kvm == 'true'
+      run: |
+        cd ${{ inputs.kernel-dir }}
+        echo "CONFIG_VIRTUALIZATION=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+        echo "CONFIG_KVM=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+        echo "CONFIG_KVM_MMIO=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+        echo "CONFIG_KVM_ARM_HOST=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+
+    - name: enable lxc
+      if: inputs.lxc == 'true'
+      run: |
+         cd ${{ inputs.kernel-dir }}
+         wget https://github.com/wu17481748/lxc-docker/raw/main/LXC-DOCKER-OPEN-CONFIG.sh
+         bash LXC-DOCKER-OPEN-CONFIG.sh
+         if [ ${{ inputs.lxc-patch }} = true ]; then
+            wget https://github.com/wu17481748/lxc-docker/raw/main/lxc.patch
+            git apply lxc.patch
+         else
+             rm -rf LXC-DOCKER-OPEN-CONFIG.sh
+         fi
 
     - name: build kernel with clang
       if: inputs.aosp-clang == 'true'
@@ -178,7 +212,6 @@ runs:
         make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
         if [ ${{ inputs.ccache }} = true ]; then
             export USE_CCACHE=1
-            export CCACHE_DIR=./.ccache
             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC="ccache clang" ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
         else
             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
