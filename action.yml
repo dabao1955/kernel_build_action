@@ -182,6 +182,7 @@ runs:
       
     - name: enable kvm
       if: inputs.kvm == 'true'
+      shell: bash
       run: |
         cd ${{ inputs.kernel-dir }}
         echo "CONFIG_VIRTUALIZATION=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
@@ -191,6 +192,7 @@ runs:
 
     - name: enable lxc
       if: inputs.lxc == 'true'
+      shell: bash
       run: |
          cd ${{ inputs.kernel-dir }}
          wget https://github.com/wu17481748/lxc-docker/raw/main/LXC-DOCKER-OPEN-CONFIG.sh
