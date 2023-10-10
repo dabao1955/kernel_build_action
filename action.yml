@@ -106,12 +106,17 @@ runs:
       shell: bash
       if: inputs.aosp-gcc == 'true'
       run: |
-        mkdir -p -v $HOME/gcc-64
-        wget -O gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-        tar -C $HOME/gcc-64 -zxvf gcc-aarch64.tar.gz
-        mkdir -p -v $HOME/gcc-32
-        wget -O gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-        tar -C $HOME/gcc-32 -zxvf gcc-arm.tar.gz
+        if [ ${{ inputs.aosp-clang }} = true ]; then
+            mkdir -p -v $HOME/gcc-64
+            wget -q -O gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+            tar -C $HOME/gcc-64 -zxf gcc-aarch64.tar.gz
+            mkdir -p -v $HOME/gcc-32
+            wget -q -O gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+            tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
+        else
+            git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android-msm-barbet-4.19-android12-qpr3 $HOME/gcc-64
+            git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android-msm-barbet-4.19-android12-qpr3 $HOME/gcc-32
+        fi
 
     - name: use python 2.7
       if: inputs.python-27 == 'true'
