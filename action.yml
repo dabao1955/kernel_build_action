@@ -178,7 +178,8 @@ runs:
         make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
         if [ ${{ inputs.ccache }} = true ]; then
             export USE_CCACHE=1
-            make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=ccache clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
+            export CCACHE_DIR=./.ccache
+            make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC="ccache clang" ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
         else
             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
         fi
