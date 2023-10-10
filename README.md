@@ -52,6 +52,9 @@ jobs:
 | ksu-version | false | KernelSU version |
 | disable-lto | false | |
 | overlayfs | false | Enable OverlayFS to config |
+| lxc | false | Enable LXC and docker to config |
+| lxc-patch | false | Add patch avoid not booting after enable lxc |
+| kvm | false | |
 | ccache | false | Enable ccache(Only valid when compiled with clang) |
 | aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) |
 | aosp-clang | false | Compile the kernel using aosp-clang |
