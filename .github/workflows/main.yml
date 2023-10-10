@@ -38,7 +38,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Test CI
-      uses:  ${{ github.event.repository.owner.id }}/kernel_build_action
+      uses:  ${{ github.event.repository.owner.id }}/kernel_build_action@main
       with: 
           kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
           kernel-dir: msm-4.19
