@@ -131,8 +131,8 @@ runs:
       if: inputs.aosp-clang == 'true'
       run: |
         mkdir $HOME/clang -p -v 
-        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
-        tar -C $HOME/clang -zxvf clang-${{ inputs.aosp-clang-version }}.tar.gz
+        wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
+        tar -C $HOME/clang -zxf clang-${{ inputs.aosp-clang-version }}.tar.gz
       shell: bash
 
     - name: pull kernel source from selected branch
