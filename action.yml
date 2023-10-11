@@ -260,7 +260,7 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: bare-compiled-kernel
-        path: ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image*
+        path: ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*
 
     - id: uploada
       if: inputs.anykernel3 == 'true'
