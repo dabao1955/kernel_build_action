@@ -269,3 +269,5 @@ runs:
         name: AnyKernel3-flasher
         path: AnyKernel3/*
       
+post: 
+  run: cd ${{ inputs.kernel-dir }} && bash $GITHUB_ACTION_PATH/post.sb
