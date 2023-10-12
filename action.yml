@@ -272,4 +272,4 @@ runs:
 post: 
   runs: 
     - name: post
-      run: cd ${{ inputs.kernel-dir }} && bash $GITHUB_ACTION_PATH/post.sb
+      run: cd ${{ inputs.kernel-dir }} && bash $GITHUB_ACTION_PATH/post.sh
