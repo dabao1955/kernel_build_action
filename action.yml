@@ -270,4 +270,6 @@ runs:
         path: AnyKernel3/*
       
 post: 
-  run: cd ${{ inputs.kernel-dir }} && bash $GITHUB_ACTION_PATH/post.sb
+  runs: 
+    - name: post
+      run: cd ${{ inputs.kernel-dir }} && bash $GITHUB_ACTION_PATH/post.sb
