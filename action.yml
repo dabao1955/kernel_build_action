@@ -234,6 +234,19 @@ runs:
         make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
       shell: bash
 
+    - name: copy kernel
+      if: inputs.anykernel3 == 'false'
+      shell: bash
+      run: |
+        mkdir -p -v build
+        if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
+           cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb build -rv
+        elif [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.* ]; then
+           cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.* build -rv
+        else
+           cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image build -rv
+        fi
+
     - name: package with anykernel3
       if: inputs.anykernel3 == 'true'
       run: | 
@@ -242,8 +255,6 @@ runs:
         sed -i 's!block=/dev/block/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
         sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
         
-        rm -rf -v ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image
-
         if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
            cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb AnyKernel3 -rv
         else
@@ -260,7 +271,7 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: bare-compiled-kernel
-        path: ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*
+        path: build/*
 
     - id: uploada
       if: inputs.anykernel3 == 'true'
@@ -269,8 +280,9 @@ runs:
         name: AnyKernel3-flasher
         path: AnyKernel3/*
       
-post: 
-  runs: 
+posts:
+  using: 'composite'
+  steps:
     - name: post
       shell: bash
       run:  bash $GITHUB_ACTION_PATH/post.sh
