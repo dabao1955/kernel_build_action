@@ -59,6 +59,8 @@ jobs:
 | aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) |
 | aosp-clang | false | Compile the kernel using aosp-clang |
 | aosp-clang-version | false | |
+| android-ndk | false | Use Android-NDK to compile kernel . Before enable this option，you should disable aosp-gcc and aosp-clang bacause android-ndk will conflict with them |
+android-ndk-version | false | |
 | python-27 | false | Use python2.7 instead of python3, this is helpful for some kernel compilations |
 | anykernel3 | false | Package the compiled kernel using anykernel3. If this option is disabled, only the kernel file will be uploaded by default |
 | extra-cmd | false | Compile the kernel with extra options, such as LD=ld.lld |
