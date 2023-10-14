@@ -79,6 +79,13 @@ inputs:
   aosp-clang-version:
     required: false
     default: "r383902"
+  android-ndk:
+    description: 'Use Android NDK to build kernrl (Experimental features)'
+    required: false
+    default: false
+  android-ndk-version:
+    required: false
+    default: r21  
   python-27:
     description: 'Use python2.7 when build kernel.'
     required: false
@@ -118,6 +125,18 @@ runs:
             git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android-msm-barbet-4.19-android12-qpr3 $HOME/gcc-32
         fi
 
+    - name: download Android-NDK
+      if: inputs.android-ndk == 'true'
+      shell: bash
+      run: |
+        if [ ${{ inputs.aosp-gcc }} = false ]; then
+            wget -q -O android-ndk.zip https://googledownloads.cn/android/repository/android-ndk-${{ inputs.android.ndk }}-linux.zip
+            unzip -q -d $HOME android-ndk.zip
+        else
+            echo "Please disable aosp-gcc and aosp-clang."
+            exit 127
+        fi
+        
     - name: use python 2.7
       if: inputs.python-27 == 'true'
       run: |
@@ -130,9 +149,14 @@ runs:
     - name: download aosp clang
       if: inputs.aosp-clang == 'true'
       run: |
-        mkdir $HOME/clang -p -v 
-        wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
-        tar -C $HOME/clang -zxf clang-${{ inputs.aosp-clang-version }}.tar.gz
+        if [ ${{ inputs.aosp-gcc }} = true ]; then
+            mkdir $HOME/clang -p -v 
+            wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
+            tar -C $HOME/clang -zxf clang-${{ inputs.aosp-clang-version }}.tar.gz
+        else
+            echo "Please enable aosp-gcc."
+            exit 127
+        fi
       shell: bash
 
     - name: pull kernel source from selected branch
@@ -183,7 +207,7 @@ runs:
       shell: bash
       run: |
         cd ${{ inputs.kernel-dir }}
-        grep -q "OVERLAYFS" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" || echo "CONFIG_OVERLAY_FS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+        grep -q "OVERLAY_FS" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" || echo "CONFIG_OVERLAY_FS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
       
     - name: enable kvm
       if: inputs.kvm == 'true'
@@ -233,6 +257,23 @@ runs:
         make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
         make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
       shell: bash
+
+    - name: build kernel with android-ndk
+      if: inputs.android-ndk == 'true'
+      shell: bash
+      run: |
+        cd ${{ inputs.kernel-dir }}
+        mkdir -p -v out
+        export CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}toolchains/llvm/prebuilt/linux-x86_64
+        export PATH=$CLANG_PATH/bin:$PATH
+        make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
+        if [ ${{ inputs.ccache }} = true ]; then
+            export USE_CCACHE=1
+            make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=llvm- CC="ccache clang" ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
+        else
+            make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=llvm- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
+        fi
+      
 
     - name: copy kernel
       if: inputs.anykernel3 == 'false'
