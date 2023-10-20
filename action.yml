@@ -86,6 +86,9 @@ inputs:
   android-ndk-version:
     required: false
     default: r21  
+  android-ndk-x64:
+    required: false
+    default: true
   python-27:
     description: 'Use python2.7 when build kernel.'
     required: false
