@@ -130,8 +130,15 @@ runs:
       shell: bash
       run: |
         if [ ${{ inputs.aosp-gcc }} = false ]; then
-            wget -q -O android-ndk.zip https://googledownloads.cn/android/repository/android-ndk-${{ inputs.android.ndk }}-linux.zip
-            unzip -q -d $HOME android-ndk.zip
+            echo
+            if [ ${{ inputs.android-ndk-x64 }} = false ]; then
+                wget -q -O android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux.zip
+                unzip -q -d $HOME android-ndk.zip
+            else
+                wget -q -O android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux-x86_64.zip
+                unzip -q -d $HOME android-ndk.zip
+            fi
+            echo
         else
             echo "Please disable aosp-gcc and aosp-clang."
             exit 127
