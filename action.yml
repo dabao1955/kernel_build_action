@@ -236,7 +236,7 @@ runs:
          cd ${{ inputs.kernel-dir }}
          wget https://github.com/dabao1955/android_lxc/raw/main/lxc-setup
          if [ ${{ inputs.lxc-patch }} = true ]; then
-            bash lxc-setup --lxc-patch true
+            bash lxc-setup patch
          else
              bash lxc-setup
          fi
