@@ -124,8 +124,8 @@ runs:
             wget -q -O gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
             tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
         else
-            git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android-msm-barbet-4.19-android12-qpr3 $HOME/gcc-64
-            git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android-msm-barbet-4.19-android12-qpr3 $HOME/gcc-32
+            git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b ${{ inputs.version }} $HOME/gcc-64
+            git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b ${{ inputs.version }} $HOME/gcc-32
         fi
 
     - name: download Android-NDK
