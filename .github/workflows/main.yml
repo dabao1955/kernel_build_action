@@ -54,5 +54,5 @@ jobs:
           python-27: true
           disable-lto: true
           overlayfs: true
-          lxc: true
+          lxc: false
           lxc-patch: false
