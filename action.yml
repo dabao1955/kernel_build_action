@@ -32,10 +32,10 @@ inputs:
   arch:
     required: true
     default: arm64
-  version:
+  android-version:
     description: 'Android version.'
     required: true
-    default: android12
+    default: 12
   ksu:
     description: 'KernelSU function support'
     required: false
@@ -124,8 +124,8 @@ runs:
             wget -q -O gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
             tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
         else
-            git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b ${{ inputs.version }}-release $HOME/gcc-64
-            git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b ${{ inputs.version }}-release $HOME/gcc-32
+            git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
+            git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
         fi
 
     - name: download Android-NDK
@@ -161,7 +161,7 @@ runs:
       run: |
         if [ ${{ inputs.aosp-gcc }} = true ]; then
             mkdir $HOME/clang -p -v 
-            wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/${{ inputs.version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
+            wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${{ inputs.android-version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
             tar -C $HOME/clang -zxf clang-${{ inputs.aosp-clang-version }}.tar.gz
         else
             echo "Please enable aosp-gcc."
@@ -282,9 +282,9 @@ runs:
         make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
         if [ ${{ inputs.ccache }} = true ]; then
             export USE_CCACHE=1
-            make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CC="ccache clang" ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
+            make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC="ccache clang" ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
         else
-            make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
+            make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
         fi
       
 

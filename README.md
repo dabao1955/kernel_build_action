@@ -37,7 +37,7 @@ jobs:
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
-          version: android12
+          android-version: 12
           aosp-clang-version: r383902
 ```
 ## Inputs
@@ -51,7 +51,7 @@ jobs:
 | branch | true | The branch of the source code that needs to be cloned, defaults branch to git clone is main | 
 | config | true | Compile the selected configuration file for the Android kernel |
 | arch | true | The architecture of your mobile phone SOC is arm64 by default |
-| version | true | Android Version |
+| android-version | true | Android Version |
 | ksu | false | Enable KernelSU |
 | ksu-version | false | KernelSU version |
 | disable-lto | false | |
