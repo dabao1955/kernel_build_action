@@ -258,7 +258,7 @@ runs:
       shell: bash
 
     - name: build kernel with gcc
-      if: inputs.aosp-clang == 'false'
+      if: inputs.aosp-gcc == 'true'
       run: |
         cd ${{ inputs.kernel-dir }}
         mkdir -p -v out
