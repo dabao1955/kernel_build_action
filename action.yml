@@ -234,11 +234,13 @@ runs:
       shell: bash
       run: |
          cd ${{ inputs.kernel-dir }}
-         wget https://github.com/dabao1955/android_lxc/raw/main/lxc-setup
+         wget https://github.com/wu17481748/lxc-docker/raw/main/LXC-DOCKER-OPEN-CONFIG.sh
+         bash LXC-DOCKER-OPEN-CONFIG.sh ${{ inputs.config }} -w
          if [ ${{ inputs.lxc-patch }} = true ]; then
-            bash lxc-setup patch
+             wget https://github.com/wu17481748/lxc-docker/raw/main/lxc.patch
+             git apply lxc.patch
          else
-             bash lxc-setup
+             echo skip lxc patch
          fi
 
     - name: build kernel with clang
