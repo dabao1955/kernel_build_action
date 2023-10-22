@@ -5,8 +5,12 @@
 
 A Workflow to build Android Kernel automatically
 
-## ⚠️ Warning
+## ⚠️ Tips
  This workflow is universal. You need to have a certain foundation in writing github workflows and a little knowledge of the Android kernel to use this.
+
+## ⚠️⚠️⚠️Warning
+
+Strongly recommends using the stable version (such as v1.2) instead of the development version (main), which may have some technical problems.
 
 A Simple Usage:
 
