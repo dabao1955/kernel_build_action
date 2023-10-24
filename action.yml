@@ -148,7 +148,7 @@ runs:
         fi
 
         for file in $(ls $HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-*); do
-        ln -s "$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin/$file" "$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))-$file"
+        ln -s "$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin/$file" "$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))-${file#llvm-}""
         done
         
     - name: use python 2.7
