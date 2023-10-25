@@ -27,11 +27,23 @@ jobs:
       run: /usr/local/lib/node_modules/yaml-lint/dist/cli.js action.yml
 
   ci-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: ubuntu-latest
+          extra: ubuntu-latest
+          id: latest
+
+        - os: ubuntu-20.04
+          extra: ubuntu-focal
+          id: focal
+          
     needs: yaml-check
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: write
-      
+
     steps:
 
     - name: Checkout Repo
