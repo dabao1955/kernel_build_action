@@ -32,11 +32,9 @@ jobs:
       matrix:
         include:
         - os: ubuntu-latest
-          extra: ubuntu-latest
           id: latest
 
         - os: ubuntu-20.04
-          extra: ubuntu-focal
           id: focal
           
     needs: yaml-check
