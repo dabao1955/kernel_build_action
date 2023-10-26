@@ -12,7 +12,7 @@ A Workflow to build Android Kernel automatically
 
 Strongly recommends using the stable version (such as v1.2) instead of the development version (main), which may have some technical problems.
 
-A Simple Usage:
+A Simple workflow Usage(not need to fork!):
 
 ```
 name: CI
@@ -78,6 +78,6 @@ android-ndk-version | false | |
 - Modify unreasonable options
 
 ## Credits
-- [KernrlSU](https://github.com/tiann/KernelSU)
+- [KernelSU](https://github.com/tiann/KernelSU)
 - [KernelSU_Action](https://github.com/XiaoleGun/KernelSU_Action)
 - [slimhub_actions](https://github.com/rokibhasansagar/slimhub_actions)
