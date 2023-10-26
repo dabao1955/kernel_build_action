@@ -41,33 +41,33 @@ jobs:
           aosp-clang-version: r383902
 ```
 ## Inputs
-| input               | required | description |
-|---------------------|----------|-------------|
-| kernel-url | true | URL of Android kernel source code for your phone |
-| kernel-dir | false | The directory name of the Android kernel source code. This option may be used for OPLUS Kernel source code.
-| vendor | false | Enable additional source code for the Android kernel source code. This option may be used for OPLUS source code. |
-| vendor-url | false | |
-| vendor-dir | false | |
-| branch | true | The branch of the source code that needs to be cloned, defaults branch to git clone is main | 
-| config | true | Compile the selected configuration file for the Android kernel |
-| arch | true | The architecture of your mobile phone SOC is arm64 by default |
-| android-version | true | Android Version |
-| ksu | false | Enable KernelSU |
-| ksu-version | false | KernelSU version |
-| disable-lto | false | |
-| overlayfs | false | Enable OverlayFS to config |
-| lxc | false | Enable LXC and docker to config |
-| lxc-patch | false | Add patch avoid not booting after enable lxc |
-| kvm | false | |
-| ccache | false | Enable ccache(Only valid when compiled with clang) |
-| aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) |
-| aosp-clang | false | Compile the kernel using aosp-clang |
-| aosp-clang-version | false | |
-| android-ndk | false | Use Android-NDK to compile kernel . Before enable this option，you should disable aosp-gcc and aosp-clang bacause android-ndk will conflict with them |
-android-ndk-version | false | |
-| python-27 | false | Use python2.7 instead of python3, this is helpful for some kernel compilations |
-| anykernel3 | false | Package the compiled kernel using anykernel3. If this option is disabled, only the kernel file will be uploaded by default |
-| extra-cmd | false | Compile the kernel with extra options, such as LD=ld.lld |
+| input               | required | description | Example Value |
+|---------------------|----------|-------------|---------|
+| kernel-url | true | URL of Android kernel source code for your phone | https://github.com/username/project |
+| kernel-dir | false | The directory name of the Android kernel source code. This option may be used for OPLUS Kernel source code. | kernel |
+| vendor | false | Enable additional source code for the Android kernel source code. This option may be used for OPLUS source code. | false |
+| vendor-url | false | | https://github.com/username/project|
+| vendor-dir | false | | vendor |
+| branch | true | The branch of the source code that needs to be cloned, defaults branch to git clone is main | main |
+| config | true | Compile the selected configuration file for the Android kernel | defconfig |
+| arch | true | The architecture of your mobile phone SOC is arm64 by default | arm64 |
+| android-version | true | Android Version | 12 |
+| ksu | false | Enable KernelSU | true |
+| ksu-version | false | KernelSU version | v0.6.6 |
+| disable-lto | false | | false |
+| overlayfs | false | Enable OverlayFS to config | false |
+| lxc | false | Enable LXC and docker to config | false |
+| lxc-patch | false | Add patch avoid not booting after enable lxc | false |
+| kvm | false | | false |
+| ccache | false | Enable ccache(Only valid when compiled with clang) | false |
+| aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
+| aosp-clang | false | Compile the kernel using aosp-clang | false |
+| aosp-clang-version | false | | r383902 |
+| android-ndk | false | Use Android-NDK to compile kernel . Before enable this option，you should disable aosp-gcc and aosp-clang bacause android-ndk will conflict with them | false |
+android-ndk-version | false | | r23b |
+| python-27 | false | Use python2.7 instead of python3, this is helpful for some kernel compilations | false |
+| anykernel3 | false | Package the compiled kernel using anykernel3. If this option is disabled, only the kernel file will be uploaded by default | false |
+| extra-cmd | false | Compile the kernel with extra options, such as LD=ld.lld | LD=ld.lld |
 
 ## Todo
 
