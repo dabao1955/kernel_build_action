@@ -146,11 +146,16 @@ runs:
             echo "Please disable aosp-gcc and aosp-clang."
             exit 127
         fi
-
-        for file in $(ls $HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-*); do
-        ln -s "$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin/$file" "$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))-${file#llvm-}"
-        done
         
+        export HOMES=$(pwd) 
+        export LLVMS=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin
+        cd $LLVMS
+        for file in $(ls llvm-*); do
+        ln -s "$file" "aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))-${file#llvm-}"
+        done
+        cd $HOMES
+
+
     - name: use python 2.7
       if: inputs.python-27 == 'true'
       run: |
