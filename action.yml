@@ -151,7 +151,7 @@ runs:
         export LLVMS=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin
         cd $LLVMS
         for file in $(ls llvm-*); do
-        ln -s "$file" "aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))-${file#llvm-}"
+            ln -s "$file" "aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))-${file#llvm-}"
         done
         cd $HOMES
 
@@ -246,8 +246,10 @@ runs:
          wget https://github.com/wu17481748/lxc-docker/raw/main/LXC-DOCKER-OPEN-CONFIG.sh
          bash LXC-DOCKER-OPEN-CONFIG.sh ${{ inputs.config }} -w
          if [ ${{ inputs.lxc-patch }} = true ]; then
-             wget https://github.com/wu17481748/lxc-docker/raw/main/lxc.patch
-             git apply lxc.patch
+             wget https://github.com/wu17481748/lxc-docker/raw/main/cgroup.patch
+             patch kernel/cgroup/cgroup.c < cgroup.patch
+             wget https://github.com/wu17481748/lxc-docker/raw/main/xt_qtaguid.patch
+             patch net/netfilter/xt_qtaguid.c < xt_qtaguid.patch
          else
              echo skip lxc patch
          fi
