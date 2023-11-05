@@ -12,7 +12,7 @@ A Workflow to build Android Kernel automatically
 
 Strongly recommends using the stable version (such as v1.2) instead of the development version (main), which may have some technical problems.
 
-A Simple workflow Usage(not need to fork!):
+A Simple workflow Usage(not need to fork this repo !):
 
 ```
 name: CI
@@ -21,14 +21,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-linux:
+  build-kernel:
     name: Build Kernel
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Test
+      - name: Build
         uses: dabao1955/kernel_build_action@main
         with:
           kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
@@ -37,6 +37,7 @@ jobs:
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
+          python-2.7-true
           android-version: 12
           aosp-clang-version: r383902
 ```
