@@ -197,7 +197,7 @@ runs:
         echo "::group:: <<<Pulling Kernel Source"
         git clone ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} ${{ inputs.kernel-dir }}
         cd ${{ inputs.kernel-dir }}
-        test -f .gitmodules || git submodules update --init
+        test -f .gitmodules || git submodule update --init
         echo "::endgroup::"
       shell: bash
 
