@@ -9,6 +9,9 @@ inputs:
   kernel-url:
     description: 'Kernel Source Url'
     required: true
+  depth:
+    required: false
+    default: 1
   vendor-url:
     description: 'Kernel Vendor Source Url'
     required: false
@@ -192,7 +195,9 @@ runs:
     - name: pull kernel source from selected branch
       run: |
         echo "::group:: <<<Pulling Kernel Source"
-        git clone ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=1 ${{ inputs.kernel-dir }}
+        git clone ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} ${{ inputs.kernel-dir }}
+        cd ${{ inputs.kernel-dir }}
+        test -f .gitmodules || git submodules update --init
         echo "::endgroup::"
       shell: bash
 
@@ -200,7 +205,7 @@ runs:
       if: inputs.vendor == 'true'
       run: |
         echo "::group:: <<<Pulling Kernel vendor source"
-        git clone ${{ inputs.vendor-url }} --depth=1 ${{ inputs.vendor-dir }}
+        git clone ${{ inputs.vendor-url }} --depth=${{ inputs.depth }} ${{ inputs.vendor-dir }}
         echo "::endgroup::"
       shell: bash
 

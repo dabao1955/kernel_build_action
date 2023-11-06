@@ -37,15 +37,16 @@ jobs:
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
-          python-2.7-true
+          python-2.7: true
           android-version: 12
           aosp-clang-version: r383902
 ```
 ## Inputs
-| input               | required | description | Example Value |
+| input               | required | description | example value |
 |---------------------|----------|-------------|---------|
 | kernel-url | true | URL of Android kernel source code for your phone | https://github.com/username/project |
 | kernel-dir | false | The directory name of the Android kernel source code. This option may be used for OPLUS Kernel source code. | kernel |
+| depth | false | | 1 |
 | vendor | false | Enable additional source code for the Android kernel source code. This option may be used for OPLUS source code. | false |
 | vendor-url | false | | https://github.com/username/project|
 | vendor-dir | false | | vendor |
