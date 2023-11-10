@@ -32,10 +32,10 @@ jobs:
       matrix:
         include:
         - os: ubuntu-latest
-          id: latest
+          id: x64
 
         - os: ubuntu-20.04
-          id: focal
+          id: x64
           
     needs: yaml-check
     runs-on: ${{ matrix.os }}
