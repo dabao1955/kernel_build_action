@@ -181,13 +181,17 @@ runs:
       shell: bash
 
     - name: download aosp clang
-      if: [inputs.aosp-clang == 'true' , inputs.aosp-gcc == 'true']
+      if: inputs.aosp-clang == 'true'
       run: |
         echo "::group:: <<<Downloading AOSP clang"
-        mkdir $HOME/clang -p -v 
-        wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${{ inputs.android-version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
-        tar -C $HOME/clang -zxf clang-${{ inputs.aosp-clang-version }}.tar.gz
-        $HOME/clang/bin/clang --version
+        if [ ${{ inputs.aosp-gcc }} = true ]; then
+            mkdir $HOME/clang -p -v 
+            wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${{ inputs.android-version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
+            tar -C $HOME/clang -zxf clang-${{ inputs.aosp-clang-version }}.tar.gz
+        else
+            echo "Please enable aosp-gcc."
+            exit 127
+        fi
         echo "::endgroup::"
       shell: bash
 
@@ -297,18 +301,22 @@ runs:
       shell: bash
 
     - name: build kernel with gcc
-      if: [inputs.aosp-gcc == 'true' , inputs.aosp-clang == 'false']
+      if: inputs.aosp-gcc == 'true'
       run: |
         echo "::group:: <<<Building Kernel use GCC"
-        cd ${{ inputs.kernel-dir }}
-        mkdir -p -v out
-        make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
-        make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
+        if [ ${{ inputs.aosp-clang }} = false ]; then
+            cd ${{ inputs.kernel-dir }}
+            mkdir -p -v out
+            make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
+            make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
+        else
+            echo 
+        fi
         echo "::endgroup::"
       shell: bash
 
     - name: build kernel with android-ndk
-      if: [inputs.android-ndk == 'true' , inputs.aosp-gcc == 'false']
+      if: inputs.android-ndk == 'true'
       shell: bash
       run: |
         echo "::group:: <<<Building Kernel with Android NDK"
