@@ -147,6 +147,7 @@ runs:
                  git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
                  git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
              fi
+         fi
          echo "::endgroup::"
 
          if [ ${{ inputs.android-ndk }} = true ]; then
