@@ -130,12 +130,12 @@ runs:
       shell: bash
       run: |
          echo
-         echo "::group:: <<<Installing Building Depend Packages"
+         echo "::group:: Installing Building Depend Packages"
          sudo apt-get install -q -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3
          echo "::endgroup::"
 
          if [ ${{ inputs.aosp-gcc }} = true ]; then
-             echo "::group:: <<<Downloading AOSP GCC"
+             echo "::group:: Downloading AOSP GCC"
              if [ ${{ inputs.aosp-clang }} = true ]; then
                  mkdir -p -v $HOME/gcc-64
                  wget -O gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
@@ -151,7 +151,7 @@ runs:
          echo "::endgroup::"
 
          if [ ${{ inputs.android-ndk }} = true ]; then
-             echo "::group:: <<<Downloading Android NDK"
+             echo "::group:: Downloading Android NDK"
              if [ ${{ inputs.aosp-gcc }} = false ]; then
                  echo
                  if [ ${{ inputs.android-ndk-x64 }} = false ]; then
@@ -180,7 +180,7 @@ runs:
          fi
 
          if [ ${{ inputs.python-27 }} = true ]; then
-             echo "::group:: <<<Installing Python2.7 instead Python3"
+             echo "::group:: Installing Python2.7 instead Python3"
              sudo apt-get install -y -q python2.7 python2.7-minimal
              sudo rm -v /bin/python
              sudo ln -s /bin/python2.7 /bin/python
@@ -189,7 +189,7 @@ runs:
          fi
 
          if [ ${{ inputs.aosp-clang }} = true ]; then
-             echo "::group:: <<<Downloading AOSP clang"
+             echo "::group:: Downloading AOSP clang"
              if [ ${{ inputs.aosp-gcc }} = true ]; then
                  mkdir $HOME/clang -p -v 
                  wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${{ inputs.android-version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
@@ -201,7 +201,7 @@ runs:
              echo "::endgroup::"
          fi
          
-         echo "::group:: <<<Pulling Kernel Source"
+         echo "::group:: Pulling Kernel Source"
          git clone ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} ${{ inputs.kernel-dir }}
          cd ${{ inputs.kernel-dir }}
          test -f .gitmodules && git submodule update --init
@@ -214,7 +214,7 @@ runs:
          fi
          
          if [ ${{ inputs.ksu }} = true ]; then
-            echo "::group:: <<<Installing KernelSU"
+            echo "::group:: Installing KernelSU"
             cd ${{ inputs.kernel-dir }}
             curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
             echo "::endgroup::"
@@ -245,7 +245,7 @@ runs:
          fi
 
          if [ ${{ inputs.lxc }} = true ]; then
-             echo "::group:: <<<Enabling LXC"
+             echo "::group:: Enabling LXC"
              cd ${{ inputs.kernel-dir }}
              wget https://github.com/wu17481748/lxc-docker/raw/main/LXC-DOCKER-OPEN-CONFIG.sh
              bash LXC-DOCKER-OPEN-CONFIG.sh ${{ inputs.config }} -w
@@ -262,7 +262,7 @@ runs:
          fi
 
          if [ ${{ inputs.aosp-clang }} = true ]; then
-             echo "::group:: <<<Building Kernel"
+             echo "::group:: Building Kernel"
              cd ${{ inputs.kernel-dir }}
              mkdir -p -v out
              export CLANG_PATH=$HOME/clang
@@ -276,14 +276,14 @@ runs:
              fi
              echo "::endgroup::"
          elif [ ${{ inputs.aosp-gcc }} = true ]; then
-             echo "::group:: <<<Building Kernel use GCC"
+             echo "::group:: Building Kernel use GCC"
              cd ${{ inputs.kernel-dir }}
              mkdir -p -v out
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
              echo "::endgroup::"
          elif [ ${{ inputs.android-ndk }} = true ]; then
-             echo "::group:: <<<Building Kernel with Android NDK"
+             echo "::group:: Building Kernel with Android NDK"
              cd ${{ inputs.kernel-dir }}
              mkdir -p -v out
              export CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64
@@ -299,7 +299,7 @@ runs:
          fi
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
-            echo "::group:: <<<Preparing to Upload bare-compiled-kernel"
+            echo "::group:: Preparing to Upload bare-compiled-kernel"
             mkdir -p -v build
             if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
                cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb build -rv
@@ -310,7 +310,7 @@ runs:
             fi
             echo "::endgroup::"
             else
-                echo "::group:: <<<Packaging Anykernel3 flasher"
+                echo "::group:: Packaging Anykernel3 flasher"
                 git clone https://github.com/osm0sis/AnyKernel3
                 sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
                 sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
