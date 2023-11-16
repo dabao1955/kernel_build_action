@@ -295,9 +295,9 @@ runs:
                  make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
              fi
              echo "::endgroup::"
-        fi
+         fi
 
-        if [ ${{ inputs.anykernel3 }} = false ]; then
+         if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: <<<Preparing to Upload bare-compiled-kernel"
             mkdir -p -v build
             if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
@@ -325,7 +325,7 @@ runs:
         
             rm -rf AnyKernel3/.git* AnyKernel3/README.md
             echo "::endgroup::"
-        fi
+         fi
 
     - id: uploadi
       if: inputs.anykernel3 == 'false'
