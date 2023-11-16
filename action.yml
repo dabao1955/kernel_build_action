@@ -294,13 +294,13 @@ runs:
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload bare-compiled-kernel"
-            mkdir -p -v build
+            mkdir -p -v ../build
             if [ -f out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
-               cp out/arch/${{ inputs.arch }}/boot/Image.*-dtb build -rv
+               cp out/arch/${{ inputs.arch }}/boot/Image.*-dtb ../build -rv
             elif [ -f out/arch/${{ inputs.arch }}/boot/Image.* ]; then
-               cp out/arch/${{ inputs.arch }}/boot/Image.* build -rv
+               cp out/arch/${{ inputs.arch }}/boot/Image.* ../build -rv
             else
-               cp out/arch/${{ inputs.arch }}/boot/Image build -rv
+               cp out/arch/${{ inputs.arch }}/boot/Image ../build -rv
             fi
             echo "::endgroup::"
             else
@@ -319,6 +319,7 @@ runs:
             test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         
             rm -rf AnyKernel3/.git* AnyKernel3/README.md
+            cp AnyKernel3 ../ -r -v
             echo "::endgroup::"
          fi
 
