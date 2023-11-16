@@ -205,6 +205,7 @@ runs:
          git clone ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} ${{ inputs.kernel-dir }}
          cd ${{ inputs.kernel-dir }}
          test -f .gitmodules && git submodule update --init
+         cd ..
          echo "::endgroup::"
 
          if [ ${{ inputs.vendor }} = true ]; then
@@ -221,8 +222,7 @@ runs:
          fi
 
          if [ ${{ inputs.disable-lto }} = true ]; then
-         cd ${{ inputs.kernel-dir }}
-         if grep -q "LTO" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
+             if grep -q "LTO" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
              then
                   sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
                   sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
@@ -232,12 +232,10 @@ runs:
          fi
 
          if [ ${{ inputs.overlayfs }} = true ]; then
-             cd ${{ inputs.kernel-dir }}
              grep -q "OVERLAY_FS" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" || echo "CONFIG_OVERLAY_FS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
          fi
 
          if [ ${{ inputs.kvm }} = true ]; then
-            cd ${{ inputs.kernel-dir }}
             echo "CONFIG_VIRTUALIZATION=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
             echo "CONFIG_KVM=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
             echo "CONFIG_KVM_MMIO=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
@@ -246,7 +244,6 @@ runs:
 
          if [ ${{ inputs.lxc }} = true ]; then
              echo "::group:: Enabling LXC"
-             cd ${{ inputs.kernel-dir }}
              wget https://github.com/wu17481748/lxc-docker/raw/main/LXC-DOCKER-OPEN-CONFIG.sh
              bash LXC-DOCKER-OPEN-CONFIG.sh ${{ inputs.config }} -w
              grep -q "CONFIG_ANDROID_PARANOID_NETWORK" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" && sed -i 's/CONFIG_ANDROID_PARANOID_NETWORK=y/#CONFIG_ANDROID_PARANOID_NETWORK=y/' arch/${{ inputs.arch }}/configs/${{ inputs.config }}
@@ -263,7 +260,6 @@ runs:
 
          if [ ${{ inputs.aosp-clang }} = true ]; then
              echo "::group:: Building Kernel"
-             cd ${{ inputs.kernel-dir }}
              mkdir -p -v out
              export CLANG_PATH=$HOME/clang
              export PATH=$CLANG_PATH/bin:$PATH
@@ -277,14 +273,12 @@ runs:
              echo "::endgroup::"
          elif [ ${{ inputs.aosp-gcc }} = true ]; then
              echo "::group:: Building Kernel use GCC"
-             cd ${{ inputs.kernel-dir }}
              mkdir -p -v out
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
              echo "::endgroup::"
          elif [ ${{ inputs.android-ndk }} = true ]; then
              echo "::group:: Building Kernel with Android NDK"
-             cd ${{ inputs.kernel-dir }}
              mkdir -p -v out
              export CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64
              export PATH=$CLANG_PATH/bin:$PATH
@@ -301,12 +295,12 @@ runs:
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload bare-compiled-kernel"
             mkdir -p -v build
-            if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
-               cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb build -rv
-            elif [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.* ]; then
-               cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.* build -rv
+            if [ -f out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
+               cp out/arch/${{ inputs.arch }}/boot/Image.*-dtb build -rv
+            elif [ -f out/arch/${{ inputs.arch }}/boot/Image.* ]; then
+               cp out/arch/${{ inputs.arch }}/boot/Image.* build -rv
             else
-               cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image build -rv
+               cp out/arch/${{ inputs.arch }}/boot/Image build -rv
             fi
             echo "::endgroup::"
             else
@@ -316,13 +310,13 @@ runs:
                 sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
                 sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
         
-            if [ -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
-               cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.*-dtb AnyKernel3 -rv
+            if [ -f out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
+               cp out/arch/${{ inputs.arch }}/boot/Image.*-dtb AnyKernel3 -rv
             else
-               cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/Image.* AnyKernel3 -rv
+               cp out/arch/${{ inputs.arch }}/boot/Image.* AnyKernel3 -rv
             fi
 
-            test -f ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img && cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
+            test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         
             rm -rf AnyKernel3/.git* AnyKernel3/README.md
             echo "::endgroup::"
