@@ -109,11 +109,6 @@ runs:
   using: 'composite'
   steps:
 
-    - name: clean up
-      shell: bash
-      run: |
-         curl -SsL https://github.com/rokibhasansagar/slimhub_actions/raw/main/cleanup.sh | bash
-
     - name: Setup ccache 
       if: inputs.ccache == 'true' 
       uses: hendrikmuhs/ccache-action@v1.2 
@@ -121,16 +116,26 @@ runs:
         key: build-kernel-${{ inputs.arch }}${{ inputs.config }} 
         max-size: 4G
 
-    - name: Set swap space
-      uses: pierotofy/set-swap-space@master 
-      with: 
-        swap-size-gb: 16
-
     - name: Build Kernel
       shell: bash
       run: |
+         curl -SsL https://github.com/rokibhasansagar/slimhub_actions/raw/main/cleanup.sh | bash
          echo "::group:: Installing Building Depend Packages"
          sudo apt-get install -q -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3
+         echo "::endgroup::"
+
+         echo "::group:: Setting Up Swap"
+         export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
+         sudo swapoff $SWAP_FILE
+         sudo rm $SWAP_FILE
+         sudo fallocate -l 16G $SWAP_FILE
+         sudo chmod 600 $SWAP_FILE
+         sudo mkswap $SWAP_FILE
+         sudo swapon $SWAP_FILE
+         echo Memory Status
+         free -h
+         echo Swap Status
+         swapon --show
          echo "::endgroup::"
 
          if [ ${{ inputs.aosp-gcc }} = true ]; then
