@@ -80,9 +80,6 @@ android-ndk-x64 | false | If use the ndk version <r23,please enable it. | false 
 
 - Modify unreasonable options
 
-- Fix typo (Important)
-
-
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
 - [KernelSU_Action](https://github.com/XiaoleGun/KernelSU_Action)
