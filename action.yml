@@ -257,6 +257,7 @@ runs:
              echo "::endgroup::"
          fi
 
+         export A=$(date +%s)
          if [ ${{ inputs.aosp-clang }} = true ]; then
              echo "::group:: Building Kernel"
              mkdir -p -v out
