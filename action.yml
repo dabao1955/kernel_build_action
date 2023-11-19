@@ -82,6 +82,13 @@ inputs:
   aosp-clang-version:
     required: false
     default: "r383902"
+  3rd-clang-url:
+    required: false
+    default: ''
+  3rd-clang:
+    description: 'Use clang from 3rd party.'
+    required: false
+    default: false
   android-ndk:
     description: 'Use Android NDK to build kernrl (Experimental features)'
     required: false
@@ -154,6 +161,29 @@ runs:
          fi
          echo "::endgroup::"
 
+         echo "::group:: Downloading 3rd clang"
+         if [ ${{ inputs.3rd-clang }} = true ]; then
+             if [ ${{ inputs.aosp-clang }} = true ]; then
+                 echo "please disable aosp-clang to use 3rd clang."
+                 exit 1
+             else
+                 if [[ ${{ inputs.3rd-clang-url }} =~ git ]]; then 
+                     if [[ ${{ inputs.3rd-clang-url }} == *'.tar.gz' ]]; then
+                         wget -O clang.tar.gz ${{ inputs.3rd-clang-url }}
+                         mkdir $HOME/aosp-clang -p -v
+                         tar -C $HOME/aosp-clang -zxvf clang.tar.gz
+                     else
+                         git clone ${{ inputs.3rd-clang-url }} -b ${{ inputs.3rd-clang-branch }} $HOME/aosp-clang --depth=${{ inputs.depth }}
+                     fi        
+                 else
+                     wget -O clang.zip ${{ inputs.3rd-clang-url }}
+                     mkdir $HOME/aosp-clang
+                     unzip clang.zip -d $HOME/aosp-clang
+                 fi
+             fi
+         fi
+         echo "::endgroup::"
+         
          if [ ${{ inputs.android-ndk }} = true ]; then
              echo "::group:: Downloading Android NDK"
              if [ ${{ inputs.aosp-gcc }} = false ]; then
@@ -178,8 +208,6 @@ runs:
                  ln -s "$file" "aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))-${file#llvm-}"
              done
              cd $HOMES
-         else
-             echo 
          fi
 
          if [ ${{ inputs.python-27 }} = true ]; then
