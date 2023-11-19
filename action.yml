@@ -170,19 +170,7 @@ runs:
                  echo "please disable aosp-clang to use 3rd clang."
                  exit 1
              else
-                 if [[ ${{ inputs.other-clang-url }} = *'.git' ]]; then 
-                     if [[ ${{ inputs.other-clang-url }} == *'.tar.gz' ]]; then
-                         wget -O clang.tar.gz ${{ inputs.other-clang-url }}
-                         mkdir $HOME/aosp-clang -p -v
-                         tar -C $HOME/aosp-clang -zxvf clang.tar.gz
-                     else
-                         wget -O clang.zip ${{ inputs.other-clang-url }}
-                         mkdir $HOME/aosp-clang
-                         unzip clang.zip -d $HOME/aosp-clang    
-                     fi        
-                 else
-                     git clone ${{ inputs.other-clang-url }} -b ${{ inputs.other-clang-branch }} $HOME/aosp-clang --depth=${{ inputs.depth }}
-                 fi
+                 git clone ${{ inputs.other-clang-url }} -b ${{ inputs.other-clang-branch }} $HOME/aosp-clang --depth=${{ inputs.depth }}
              fi
          fi
          echo "::endgroup::"
