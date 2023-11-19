@@ -65,6 +65,9 @@ jobs:
 | aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
 | aosp-clang | false | Compile the kernel using aosp-clang | false |
 | aosp-clang-version | false | please search for them according to your own needs at [official website](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86) and choose the appropriate clang according to the Android system version instead of blindly choosing `r383902` | r383902 |
+| other-clang | false | use 3rd party clang to compile kernel | true |
+| other-clang-url | false | N:only support git url | https://github.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-6364210 |
+| other-clang-branch | false | | 10.0|
 | android-ndk | false | Use Android-NDK to compile kernel . Before enable this option，you should disable aosp-gcc and aosp-clang bacause android-ndk will conflict with them | false |
 android-ndk-version | false | | r23b |
 android-ndk-x64 | false | If use the ndk version <r23,please enable it. | false | 
