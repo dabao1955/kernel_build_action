@@ -170,7 +170,7 @@ runs:
                  echo "please disable aosp-clang to use 3rd clang."
                  exit 1
              else
-                 git clone ${{ inputs.other-clang-url }} -b ${{ inputs.other-clang-branch }} $HOME/aosp-clang --depth=${{ inputs.depth }}
+                 git clone ${{ inputs.other-clang-url }} -b ${{ inputs.other-clang-branch }} $HOME/clang --depth=${{ inputs.depth }}
              fi
          fi
          echo "::endgroup::"
