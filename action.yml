@@ -356,7 +356,7 @@ runs:
                cp out/arch/${{ inputs.arch }}/boot/Image.* AnyKernel3 -rv
             fi
 
-            test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp ${{ inputs.kernel-dir }}/out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
+            test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         
             rm -rf AnyKernel3/.git* AnyKernel3/README.md
             cp AnyKernel3 ../ -r -v
