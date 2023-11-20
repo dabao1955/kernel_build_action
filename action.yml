@@ -294,12 +294,6 @@ runs:
                  make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
              fi
              echo "::endgroup::"
-         elif [ ${{ inputs.aosp-gcc }} = true ]; then
-             echo "::group:: Building Kernel use GCC"
-             mkdir -p -v out
-             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
-             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
-             echo "::endgroup::"
          elif [ ${{ inputs.android-ndk }} = true ]; then
              echo "::group:: Building Kernel with Android NDK"
              mkdir -p -v out
@@ -325,6 +319,12 @@ runs:
              else
                  make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
              fi
+         elif [ ${{ inputs.aosp-gcc }} = true ]; then
+             echo "::group:: Building Kernel use GCC"
+             mkdir -p -v out
+             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
+             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
+             echo "::endgroup::"
              echo "::endgroup::"
          fi
 
