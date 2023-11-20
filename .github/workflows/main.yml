@@ -66,3 +66,4 @@ jobs:
           overlayfs: true
           lxc: false
           lxc-patch: false
+          anykernel3: true
