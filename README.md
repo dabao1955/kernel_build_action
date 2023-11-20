@@ -5,10 +5,11 @@
 
 A Workflow to build Android Kernel automatically
 
-![](https://img.shields.io/github/actions/workflow/status/dabao1955/kernel_build_action/main.yml?style=for-the-badge&color=fee4d0&logo=codeigniter&logo)
-![](https://img.shields.io/github/issues/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=codeigniter&logo)
-![](https://img.shields.io/github/stars/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=codeigniter&logo)
-![](https://img.shields.io/github/license/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=apache&logoColor=fee4d0)
+[![](https://img.shields.io/github/actions/workflow/status/dabao1955/kernel_build_action/main.yml?style=for-the-badge&color=fee4d0&logo=codeigniter&logo)](https://github.com/dabao1955/kernel_build_action/actions/workflows/main.yml)
+[![](https://img.shields.io/github/issues/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=codeigniter&logo)](https://github.com/dabao1955/kernel_build_action/issues)
+[![](https://img.shields.io/github/stars/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=starship&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/stargazers)
+[![](https://img.shields.io/github/forks/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=git&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/forks)
+[![](https://img.shields.io/github/license/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=apache&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/blob/main/LICENSE)
 
 ## ⚠️ Tips
  This workflow is universal. You need to have a certain foundation in writing github workflows and a little knowledge of the Android kernel to use this.
