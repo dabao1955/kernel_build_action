@@ -237,9 +237,13 @@ runs:
          fi
          
          if [ ${{ inputs.ksu }} = true ]; then
-            echo "::group:: Installing KernelSU"
+            echo "::group:: Initializing KernelSU"
             cd ${{ inputs.kernel-dir }}
-            curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
+            if [ -f KernelSU/kernel/Kconfig ]; then
+                echo "KernelSU has been initialized,skipped."
+            else
+                curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
+            fi
             echo "::endgroup::"
          fi
 
