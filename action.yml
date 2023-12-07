@@ -224,21 +224,21 @@ runs:
          fi
          
          echo "::group:: Pulling Kernel Source"
-         git clone ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} ${{ inputs.kernel-dir }}
-         cd ${{ inputs.kernel-dir }}
-         test -f .gitmodules && git submodule update --init
-         cd ..
+         mkdir -p -v kernel
+         git clone --recursive ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} kernel/${{ inputs.kernel-dir }}
          echo "::endgroup::"
 
          if [ ${{ inputs.vendor }} = true ]; then
              echo "::group:: <<<Pulling Kernel vendor source"
-             git clone ${{ inputs.vendor-url }} --depth=${{ inputs.depth }} ${{ inputs.vendor-dir }}
+             git clone ${{ inputs.vendor-url }} --depth=${{ inputs.depth }} kernel/${{ inputs.vendor-dir }}
+             test -d kernel/${{ inputs.vendor-dir }}/vendor && cp -rv kernel/${{ inputs.vendor-dir }}/vendor kernel
+             test -d kernel/${{ inputs.vendor-dir }}/vendor && cp -rv kernel/${{ inputs.vendor-dir }}/vendor ./
              echo "::endgroup::"
          fi
          
          if [ ${{ inputs.ksu }} = true ]; then
             echo "::group:: Initializing KernelSU"
-            cd ${{ inputs.kernel-dir }}
+            cd kernel/${{ inputs.kernel-dir }}
             if [ -f KernelSU/kernel/Kconfig ]; then
                 echo "KernelSU has been initialized,skipped."
             else
