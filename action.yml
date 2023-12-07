@@ -363,7 +363,7 @@ runs:
             test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         
             rm -rf AnyKernel3/.git* AnyKernel3/README.md
-            cp AnyKernel3 ../ -r -v
+            cp AnyKernel3 ../../ -r -v
             echo "::endgroup::"
          fi
 
