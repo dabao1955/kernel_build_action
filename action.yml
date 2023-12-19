@@ -63,6 +63,14 @@ inputs:
     description: 'Apply lxc patch aviod not booting'
     required: false
     default: false
+  nethunter:
+    description: 'Enable Kali nethunter'
+    required: false
+    default: false
+  nethunter-patch:
+    description: 'patch config'
+    required: false
+    default: false
   kvm: 
     description: 'Enable KVM for configs.'
     required: false
@@ -246,6 +254,22 @@ runs:
             fi
             echo "::endgroup::"
          fi
+
+         if [ ${{ inputs.nethunter }} = true ]; then
+             echo "::group:: Initializing Kali nethunter"
+             wget https://github.com/Biohazardousrom/Kali-defconfig-checker/raw/master/check-kernel-config
+             bash check-kernel-config ${{ inputs.config }} -w
+             if [ ${{ inputs.nethuner-patch }} = true ]; then
+                 wget https://github.com/tomxi1997/kali-nethunter_patches/raw/main/add-wifi-injection.patch
+                 git apply add-wifi-injection.patch
+                 wget https://github.com/tomxi1997/kali-nethunter_patches/raw/main/fix-ath9k-naming-conflict.patch
+                 git apply fix-ath9k-naming-conflict.patch
+             else
+                  echo "skip patch"
+             fi
+             echo "::endgroup::"
+         fi
+         
 
          if [ ${{ inputs.disable-lto }} = true ]; then
              if grep -q "LTO" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
