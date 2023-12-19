@@ -259,7 +259,7 @@ runs:
              echo "::group:: Initializing Kali nethunter"
              wget https://github.com/Biohazardousrom/Kali-defconfig-checker/raw/master/check-kernel-config
              bash check-kernel-config ${{ inputs.config }} -w
-             if [ ${{ inputs.nethuner-patch }} = true ]; then
+             if [ ${{ inputs.nethunter-patch }} = true ]; then
                  wget https://github.com/tomxi1997/kali-nethunter_patches/raw/main/add-wifi-injection.patch
                  git apply add-wifi-injection.patch
                  wget https://github.com/tomxi1997/kali-nethunter_patches/raw/main/fix-ath9k-naming-conflict.patch
