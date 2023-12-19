@@ -20,7 +20,9 @@ A Workflow to build Android Kernel automatically
 
 Strongly recommends using the stable version (such as v1.2) instead of the development version (main), which may have some technical problems.
 
-A Simple workflow Usage(not need to fork this repo !):
+## How to use?
+- First, you need to determine the kernel source code and configuration files.
+- Find your kernel source repository and configure the workflow file according to the following example and README.md:
 
 ```
 name: CI
@@ -33,9 +35,6 @@ jobs:
     name: Build Kernel
     runs-on: ubuntu-20.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Build
         uses: dabao1955/kernel_build_action@main
         with:
@@ -49,6 +48,9 @@ jobs:
           android-version: 12
           aosp-clang-version: r383902
 ```
+Note: You do not need to fork this repository.
+
+- Finally, run the workflow you just wrote.
 ## Inputs
 | input               | required | description | example value |
 |---------------------|----------|-------------|---------|
@@ -68,6 +70,8 @@ jobs:
 | overlayfs | false | Enable OverlayFS to config | false |
 | lxc | false | Enable LXC and docker to config | false |
 | lxc-patch | false | Add patch avoid not booting after enable lxc | false |
+| nethunter | false | Enable Kali nethunter | false |
+| nethunter-patch | false | | false |
 | kvm | false | | false |
 | ccache | false | Enable ccache(Only valid when compiled with clang) | false |
 | aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
