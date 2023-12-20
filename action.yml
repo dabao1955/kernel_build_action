@@ -140,6 +140,7 @@ runs:
          echo "::group:: Cleaning up"
          docker rmi -f $(docker images -q)
          wget -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
+         sudo df -h
          echo "::endgroup::"
 
          echo "::group:: Installing Building Depend Packages"
@@ -209,7 +210,7 @@ runs:
              export LLVMS=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin
              cd $LLVMS
              for file in $(ls llvm-*); do
-                 ln -s "$file" "aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))-${file#llvm-}"
+                 ln -s -v "$file" "aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))-${file#llvm-}"
              done
              cd $HOMES
          fi
@@ -218,8 +219,8 @@ runs:
              echo "::group:: Installing Python2.7 instead Python3"
              sudo apt-get install -y -q python2.7 python2.7-minimal
              test -f /bin/python && sudo rm -v /bin/python
-             test -f /bin/python || sudo ln -s /bin/python2.7 /bin/python
-             test -f /bin/python2 || sudo ln -s /bin/python2.7 /bin/python2
+             test -f /bin/python || sudo ln -v -s /bin/python2.7 /bin/python
+             test -f /bin/python2 || sudo ln -v -s /bin/python2.7 /bin/python2
              echo "::endgroup::"
          fi
 
@@ -389,9 +390,9 @@ runs:
                cp out/arch/${{ inputs.arch }}/boot/Image.* AnyKernel3 -rv
             fi
 
-            test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
+            test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp -v out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         
-            rm -rf AnyKernel3/.git* AnyKernel3/README.md
+            rm -rf -v AnyKernel3/.git* AnyKernel3/README.md
             cp AnyKernel3 ../../ -r -v
             echo "::endgroup::"
          fi
