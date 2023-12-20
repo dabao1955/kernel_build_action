@@ -137,8 +137,13 @@ runs:
     - name: Build Kernel
       shell: bash
       run: |
-         curl -SsL https://github.com/rokibhasansagar/slimhub_actions/raw/main/cleanup.sh | bash
+         echo "::group:: Cleaning up"
+         docker rmi -f $(docker images -q)
+         wget -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
+         echo "::endgroup::"
+
          echo "::group:: Installing Building Depend Packages"
+         sudo apt-get update
          sudo apt-get install -q -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3
          echo "::endgroup::"
 
@@ -212,9 +217,9 @@ runs:
          if [ ${{ inputs.python-27 }} = true ]; then
              echo "::group:: Installing Python2.7 instead Python3"
              sudo apt-get install -y -q python2.7 python2.7-minimal
-             sudo rm -v /bin/python
-             sudo ln -s /bin/python2.7 /bin/python
-             sudo ln -s /bin/python2.7 /bin/python2
+             test -f /bin/python && sudo rm -v /bin/python
+             test -f /bin/python || sudo ln -s /bin/python2.7 /bin/python
+             test -f /bin/python2 || sudo ln -s /bin/python2.7 /bin/python2
              echo "::endgroup::"
          fi
 
