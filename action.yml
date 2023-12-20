@@ -398,14 +398,14 @@ runs:
 
     - id: uploadi
       if: inputs.anykernel3 == 'false'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: bare-compiled-kernel
         path: build/*
 
     - id: uploada
       if: inputs.anykernel3 == 'true'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: AnyKernel3-flasher
         path: AnyKernel3/*
