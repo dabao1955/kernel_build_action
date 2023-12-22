@@ -13,10 +13,10 @@ A Workflow to build Android Kernel automatically
 [![](https://img.shields.io/github/v/release/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=github&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/releases/latest)
 
 
-## ⚠️ Tips
+## Note
  This workflow is universal. You need to have a certain foundation in writing github workflows and a little knowledge of the Android kernel to use this.
 
-## ⚠️⚠️⚠️Warning
+## Warning
 
 Strongly recommends using the stable version (such as v1.2) instead of the development version (main), which may have some technical problems.
 
