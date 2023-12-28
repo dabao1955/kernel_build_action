@@ -385,7 +385,7 @@ runs:
             mkdir -p -v ../build
             mv boot-new.img ../build/boot.img -v
             echo "::endgroup::"
-        else
+         else
             echo "::group:: Packaging Anykernel3 flasher"
             git clone https://github.com/osm0sis/AnyKernel3
             sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
