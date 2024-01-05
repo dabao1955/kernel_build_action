@@ -93,7 +93,9 @@ android-ndk-x64 | false | If use the ndk version <r23,please enable it. | false 
 
 - Improve documentation
 
-- Add more options
+- Improve testing process
+
+- Automatic detection of kernel compression format
 
 - Modify unreasonable options
 

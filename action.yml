@@ -409,7 +409,7 @@ runs:
       if: inputs.anykernel3 == 'false'
       uses: actions/upload-artifact@v3
       with:
-        name: bare-compiled-kernel
+        name: boot-image
         path: build/*
 
     - id: uploada
