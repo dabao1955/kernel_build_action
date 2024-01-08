@@ -94,6 +94,8 @@ android-ndk-x64 | false | If use the ndk version <r23,please enable it. | false 
 
 - Improve testing process
 
+- Provide patching function for kernel version less than or equal to 4.14 without any ksu hook modification
+
 - Modify unreasonable options
 
 ## Credits
