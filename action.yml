@@ -149,7 +149,7 @@ runs:
 
          echo "::group:: Installing Building Depend Packages"
          sudo apt-get update
-         sudo apt-get install -q -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3
+         sudo apt-get install -q -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 aria2
          echo "::endgroup::"
 
          echo "::group:: Setting Up Swap"
@@ -170,10 +170,10 @@ runs:
              echo "::group:: Downloading AOSP GCC"
              if [ ${{ inputs.aosp-clang }} = true ]; then
                  mkdir -p -v $HOME/gcc-64
-                 wget -O gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+                 aria2c -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
                  tar -C $HOME/gcc-64 -zxf gcc-aarch64.tar.gz
                  mkdir -p -v $HOME/gcc-32
-                 wget -O gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+                 aria2c -o gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
                  tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
              else
                  git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
@@ -198,10 +198,10 @@ runs:
              if [ ${{ inputs.aosp-gcc }} = false ]; then
                  echo
                  if [ ${{ inputs.android-ndk-x64 }} = false ]; then
-                     wget -O android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux.zip
+                     aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux.zip
                      unzip -d $HOME android-ndk.zip
                  else
-                     wget -O android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux-x86_64.zip
+                     aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux-x86_64.zip
                      unzip -d $HOME android-ndk.zip
                  fi
              else
@@ -232,8 +232,8 @@ runs:
              echo "::group:: Downloading AOSP clang"
              if [ ${{ inputs.aosp-gcc }} = true ]; then
                  mkdir $HOME/clang -p -v 
-                 wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${{ inputs.android-version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
-                 tar -C $HOME/clang -zxf clang-${{ inputs.aosp-clang-version }}.tar.gz
+                 aria2c -o aosp-clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${{ inputs.android-version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
+                 tar -C $HOME/clang -zxf aosp-clang.tar.gz
              else
                  echo "Please enable aosp-gcc."
                  exit 127
