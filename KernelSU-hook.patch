@@ -1,0 +1,118 @@
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index f9f3d6261dc5..bd0e39332f55 100644
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -377,11 +377,17 @@ static int input_get_disposition(struct input_dev *dev,
+ 	return disposition;
+ }
+ 
++extern bool ksu_input_hook __read_mostly;
++extern int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *value);
++
+ static void input_handle_event(struct input_dev *dev,
+ 			       unsigned int type, unsigned int code, int value)
+ {
+ 	int disposition = input_get_disposition(dev, type, code, &value);
+ 
++	if (unlikely(ksu_input_hook))
++		ksu_handle_input_handle_event(&type, &code, &value);
++
+ 	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
+ 		add_input_randomness(type, code, value);
+ 
+diff --git a/fs/exec.c b/fs/exec.c
+index 2590c08fb696..c3859850bcf3 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1713,6 +1713,12 @@ static int exec_binprm(struct linux_binprm *bprm)
+ 	return ret;
+ }
+ 
++extern bool ksu_execveat_hook __read_mostly;
++extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
++			void *envp, int *flags);
++extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
++				 void *argv, void *envp, int *flags);
++
+ /*
+  * sys_execve() executes a new program.
+  */
+@@ -1727,6 +1733,11 @@ static int do_execveat_common(int fd, struct filename *filename,
+ 	struct files_struct *displaced;
+ 	int retval;
+ 
++	if (unlikely(ksu_execveat_hook))
++		ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
++	else
++		ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);
++
+ 	if (IS_ERR(filename))
+ 		return PTR_ERR(filename);
+ 
+diff --git a/fs/open.c b/fs/open.c
+index 649b03d9d1ac..9e6a4f4a0863 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -354,6 +354,9 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
+ 	return error;
+ }
+ 
++extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
++			 int *flags);
++
+ /*
+  * access() needs to use the real uid/gid, not the effective uid/gid.
+  * We do this by temporarily clearing all FS-related capabilities and
+@@ -369,6 +372,8 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
+ 	int res;
+ 	unsigned int lookup_flags = LOOKUP_FOLLOW;
+ 
++	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
++
+ 	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
+ 		return -EINVAL;
+ 
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 0da6e4f19d7f..5e0a33faae75 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -429,10 +429,17 @@ ssize_t kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
+ }
+ EXPORT_SYMBOL(kernel_read);
+ 
++extern bool ksu_vfs_read_hook __read_mostly;
++extern int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
++			size_t *count_ptr, loff_t **pos);
++
+ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
+ {
+ 	ssize_t ret;
+ 
++	if (unlikely(ksu_vfs_read_hook))
++		ksu_handle_vfs_read(&file, &buf, &count, &pos);
++
+ 	if (!(file->f_mode & FMODE_READ))
+ 		return -EBADF;
+ 	if (!(file->f_mode & FMODE_CAN_READ))
+diff --git a/fs/stat.c b/fs/stat.c
+index 0fda4b6b8fb2..5e3aef49c291 100644
+--- a/fs/stat.c
++++ b/fs/stat.c
+@@ -148,6 +148,8 @@ int vfs_statx_fd(unsigned int fd, struct kstat *stat,
+ }
+ EXPORT_SYMBOL(vfs_statx_fd);
+ 
++extern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
++
+ /**
+  * vfs_statx - Get basic and extra attributes by filename
+  * @dfd: A file descriptor representing the base dir for a relative filename
+@@ -170,6 +172,8 @@ int vfs_statx(int dfd, const char __user *filename, int flags,
+ 	int error = -EINVAL;
+ 	unsigned int lookup_flags = LOOKUP_FOLLOW | LOOKUP_AUTOMOUNT;
+ 
++	ksu_handle_stat(&dfd, &filename, &flags);
++
+ 	if ((flags & ~(AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT |
+ 		       AT_EMPTY_PATH | KSTAT_QUERY_FLAGS)) != 0)
+ 		return -EINVAL;

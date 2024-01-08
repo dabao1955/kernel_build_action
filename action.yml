@@ -262,6 +262,16 @@ runs:
             else
                 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
             fi
+            if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; thwn
+                echo "KPROBES enabled,skip patch."
+            else
+                if grep -q "CONFIG_OPLUS_KERNEL_SECURE_GUARD" fs/exec.c ; then
+                    wget https://github.com/dabao1955/kernel_build_action/raw/main/KernelSU-hook-OPLUS.patch
+                    git apply KernelSU-hook-OPLUS.patch
+                else
+                    wget https://github.com/dabao1955/kernel_build_action/raw/main/KernelSU-hook.patch
+                    git apply KernelSU-hook.patch
+                fi
             echo "::endgroup::"
          fi
 
