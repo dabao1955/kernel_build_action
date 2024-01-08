@@ -118,10 +118,6 @@ inputs:
     description: 'Package kernel use anykernel3.'
     required: false
     default: false
-  fmt:
-    description: "Kernel fmt"
-    required: false
-    default: Image
   bootimg-url:
     description: "boot.img path"
     required: false
@@ -379,8 +375,23 @@ runs:
             git clone https://github.com/Shubhamvis98/AIK
             wget ${{ inputs.bootimg-url }} -O boot.img
             cd AIK
-            bash unpackimg ../boot.img
-            cp ../out/arch/${{ inputs.arch }}/boot/${{ inputs.fmt }} split/kernel -v
+            nohup bash unpackimg ../boot.img
+            cat nohup.out | grep "KERNEL_FMT" | awk '{if ($2 == "[gzip]") {gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}}' >>fmt.txt
+            export FMT=$(cat fmt.txt)
+            if [ "$FMT" = "gzip" ] ;then
+                if find -name "*dtb" ; then
+                    if ls cp ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb ; then
+                        cp ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb split/kernel -v 
+                    else
+                        echo "No dtb file found !"
+                        exit 1
+                    fi
+                else
+                    cp ../out/arch/${{ inputs.arch }}/boot/Image.gz split/kernel -v
+                fi
+            elif [ "$FMT" = "raw" ] ; then
+                cp ../out/arch/${{ inputs.arch }}/boot/Image split/kernel -v
+            fi
             bash repackimg
             mkdir -p -v ../build
             mv boot-new.img ../build/boot.img -v
