@@ -272,6 +272,7 @@ runs:
                     wget https://github.com/dabao1955/kernel_build_action/raw/main/KernelSU-hook.patch
                     git apply KernelSU-hook.patch
                 fi
+            fi
             echo "::endgroup::"
          fi
 
