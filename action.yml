@@ -266,10 +266,10 @@ runs:
                 echo "KPROBES enabled,skip patch."
             else
                 if grep -q "CONFIG_OPLUS_KERNEL_SECURE_GUARD" fs/exec.c ; then
-                    wget https://github.com/dabao1955/kernel_build_action/raw/main/KernelSU-hook-OPLUS.patch
+                    wget https://github.com/dabao1955/kernel_build_action/raw/main/patchs/KernelSU-hook-OPLUS.patch
                     git apply KernelSU-hook-OPLUS.patch
                 else
-                    wget https://github.com/dabao1955/kernel_build_action/raw/main/KernelSU-hook.patch
+                    wget https://github.com/dabao1955/kernel_build_action/raw/main/patchs/KernelSU-hook.patch
                     git apply KernelSU-hook.patch
                 fi
             fi
