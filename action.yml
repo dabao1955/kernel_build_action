@@ -126,6 +126,9 @@ inputs:
     description: "After the kernel compilation is completed, it will be automatically published to the releases page"
     required: false
     default: false
+  access-token:
+    description: 'PAT with repository scope (https://github.com/settings/tokens)'
+    required: false
   extra-cmd:
     description: 'Extra options of building kernel.'
     required: false
@@ -447,7 +450,7 @@ runs:
       if: inputs.release == 'true'
       uses: softprops/action-gh-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.access-token }}
       with:
         name: auto-build_${{ env.buildtime }}_${{ env.dconfig }}
         tag: ${{ env.buildtime }}_${{ env.dconfig }}
