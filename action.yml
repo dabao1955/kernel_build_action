@@ -122,6 +122,10 @@ inputs:
     description: "boot.img path"
     required: false
     default: ""
+  release:
+    description: "After the kernel compilation is completed, it will be automatically published to the releases page"
+    required: false
+    default: false
   extra-cmd:
     description: 'Extra options of building kernel.'
     required: false
@@ -379,6 +383,8 @@ runs:
 
          export B=$(date +%s)
          export C=$(expr $B - $A)
+         export buildtime=$(date) >>$GITHUB_ENV
+         exoort dconfig=${{ inputs.config }} >>$GITHUB_ENV
          echo "kernel build finish,takes" $(expr $C / 60)"min"$(expr $C % 60)"s"
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
@@ -415,32 +421,38 @@ runs:
             sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
         
             if [ -f out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
-               cp out/arch/${{ inputs.arch }}/boot/Image.*-dtb AnyKernel3 -rv
+                cp out/arch/${{ inputs.arch }}/boot/Image.*-dtb build/ -rv
+            elif [ -f out/arch/${{ inputs.arch }}/boot/Image.* ]; then
+                cp out/arch/${{ inputs.arch }}/boot/Image.* build/ -rv
             else
-               cp out/arch/${{ inputs.arch }}/boot/Image.* AnyKernel3 -rv
+                cp out/arch/${{ inputs.arch }}/boot/Image build/ -rv
             fi
 
             test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp -v out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         
             rm -rf -v AnyKernel3/.git* AnyKernel3/README.md
-            cp AnyKernel3 ../../ -r -v
+            cp AnyKernel3 ../../build -r -v
             echo "::endgroup::"
          fi
 
     - id: uploadi
-      if: inputs.anykernel3 == 'false'
+      if: inputs.release == 'false'
       uses: actions/upload-artifact@v3
       with:
-        name: boot-image
+        name: kernel-built_${{ env.buildtime }}_${{ env.dconfig }}
         path: build/*
+    
 
-    - id: uploada
-      if: inputs.anykernel3 == 'true'
-      uses: actions/upload-artifact@v3
+    - id: release
+      if: inputs.release == 'true'
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: AnyKernel3-flasher
-        path: AnyKernel3/*
-      
+        name: auto-build_${{ env.buildtime }}_${{ env.dconfig }}
+        tag: ${{ env.buildtime }}_${{ env.dconfig }}
+
+
 posts:
   using: 'composite'
   steps:
