@@ -439,6 +439,7 @@ runs:
             else
                 zip Anykernel3-flasher.zip Anykernel3/*
                 mv Anykernel3-flasher.zip ../../build -rv
+            fi
             echo "::endgroup::"
          fi
 
