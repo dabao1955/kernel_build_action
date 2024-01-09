@@ -387,7 +387,7 @@ runs:
          export B=$(date +%s)
          export C=$(expr $B - $A)
          export buildtime=$(date) >>$GITHUB_ENV
-         exoort dconfig=${{ inputs.config }} >>$GITHUB_ENV
+         export dconfig=${{ inputs.config }} >>$GITHUB_ENV
          echo "kernel build finish,takes" $(expr $C / 60)"min"$(expr $C % 60)"s"
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
