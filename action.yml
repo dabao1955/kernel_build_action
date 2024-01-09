@@ -434,7 +434,11 @@ runs:
             test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp -v out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
         
             rm -rf -v AnyKernel3/.git* AnyKernel3/README.md
-            cp AnyKernel3 ../../build -r -v
+            if [ ${{ inputs.release }} = false ]; then
+                cp AnyKernel3 ../../build -r -v
+            else
+                zip Anykernel3-flasher.zip Anykernel3/*
+                mv Anykernel3-flasher.zip ../../build -rv
             echo "::endgroup::"
          fi
 
@@ -454,7 +458,7 @@ runs:
       with:
         name: auto-build_${{ env.buildtime }}_${{ env.dconfig }}
         tag: ${{ env.buildtime }}_${{ env.dconfig }}
-
+        files: build/*
 
 posts:
   using: 'composite'
