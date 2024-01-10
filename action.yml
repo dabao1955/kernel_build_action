@@ -448,6 +448,7 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: kernel-built
+        path: build/*
     
 
     - id: release
