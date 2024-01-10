@@ -447,8 +447,7 @@ runs:
       if: inputs.release == 'false'
       uses: actions/upload-artifact@v3
       with:
-        name: kernel-built_${{ env.buildtime }}_${{ env.dconfig }}
-        path: build/*
+        name: kernel-built
     
 
     - id: release
@@ -457,8 +456,8 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.access-token }}
       with:
-        name: auto-build_${{ env.buildtime }}_${{ env.dconfig }}
-        tag: ${{ env.buildtime }}_${{ env.dconfig }}
+        name: Last CI build kernel
+        tag: last-ci
         files: build/*
 
 posts:
