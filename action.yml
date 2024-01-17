@@ -151,12 +151,11 @@ runs:
          echo "::group:: Cleaning up"
          docker rmi -f $(docker images -q)
          wget -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
-         sudo df -h
          echo "::endgroup::"
 
          echo "::group:: Installing Building Depend Packages"
          sudo apt-get update
-         sudo apt-get install -q -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 aria2
+         sudo apt-get install --no-install-recommends -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 aria2
          echo "::endgroup::"
 
          echo "::group:: Setting Up Swap"
@@ -167,10 +166,6 @@ runs:
          sudo chmod 600 $SWAP_FILE
          sudo mkswap $SWAP_FILE
          sudo swapon $SWAP_FILE
-         echo Memory Status
-         free -h
-         echo Swap Status
-         swapon --show
          echo "::endgroup::"
 
          if [ ${{ inputs.aosp-gcc }} = true ]; then
@@ -203,7 +198,6 @@ runs:
          if [ ${{ inputs.android-ndk }} = true ]; then
              echo "::group:: Downloading Android NDK"
              if [ ${{ inputs.aosp-gcc }} = false ]; then
-                 echo
                  if [ ${{ inputs.android-ndk-x64 }} = false ]; then
                      aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux.zip
                      unzip -d $HOME android-ndk.zip
