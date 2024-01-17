@@ -71,7 +71,7 @@ inputs:
     description: 'patch config'
     required: false
     default: false
-  kvm: 
+  kvm:
     description: 'Enable KVM for configs.'
     required: false
     default: false
@@ -106,7 +106,7 @@ inputs:
     default: false
   android-ndk-version:
     required: false
-    default: r21  
+    default: r21
   android-ndk-x64:
     required: false
     default: true
@@ -138,11 +138,11 @@ runs:
   using: 'composite'
   steps:
 
-    - name: Setup ccache 
-      if: inputs.ccache == 'true' 
+    - name: Setup ccache
+      if: inputs.ccache == 'true'
       uses: hendrikmuhs/ccache-action@v1.2 
-      with: 
-        key: build-kernel-${{ inputs.arch }}${{ inputs.config }} 
+      with:
+        key: build-kernel-${{ inputs.arch }}${{ inputs.config }}
         max-size: 4G
 
     - name: Build Kernel
@@ -199,7 +199,7 @@ runs:
              fi
          fi
          echo "::endgroup::"
-         
+
          if [ ${{ inputs.android-ndk }} = true ]; then
              echo "::group:: Downloading Android NDK"
              if [ ${{ inputs.aosp-gcc }} = false ]; then
@@ -217,7 +217,7 @@ runs:
              fi
              echo "::endgroup::"
 
-             export HOMES=$(pwd) 
+             export HOMES=$(pwd)
              export LLVMS=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin
              cd $LLVMS
              for file in $(ls llvm-*); do
@@ -238,7 +238,7 @@ runs:
          if [ ${{ inputs.aosp-clang }} = true ]; then
              echo "::group:: Downloading AOSP clang"
              if [ ${{ inputs.aosp-gcc }} = true ]; then
-                 mkdir $HOME/clang -p -v 
+                 mkdir $HOME/clang -p -v
                  aria2c -o aosp-clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${{ inputs.android-version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
                  tar -C $HOME/clang -zxf aosp-clang.tar.gz
              else
@@ -247,7 +247,7 @@ runs:
              fi
              echo "::endgroup::"
          fi
-         
+
          echo "::group:: Pulling Kernel Source"
          mkdir -p -v kernel
          git clone --recursive ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} kernel/${{ inputs.kernel-dir }}
@@ -260,7 +260,7 @@ runs:
              test -d kernel/${{ inputs.vendor-dir }}/vendor && cp -rv kernel/${{ inputs.vendor-dir }}/vendor ./
              echo "::endgroup::"
          fi
-         
+
          if [ ${{ inputs.ksu }} = true ]; then
             echo "::group:: Initializing KernelSU"
             cd kernel/${{ inputs.kernel-dir }}
@@ -297,7 +297,7 @@ runs:
              fi
              echo "::endgroup::"
          fi
-         
+
 
          if [ ${{ inputs.disable-lto }} = true ]; then
              if grep -q "LTO" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
@@ -396,15 +396,14 @@ runs:
             wget ${{ inputs.bootimg-url }} -O boot.img
             cd AIK
             nohup bash unpackimg ../boot.img
-            cat nohup.out | grep "KERNEL_FMT" | awk '{if ($2 == "[gzip]") {gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}}' >>fmt.txt
+            cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}' >>fmt.txt
             export FMT=$(cat fmt.txt)
             if [ "$FMT" = "gzip" ] ;then
                 if find -name "*dtb" ; then
                     if ls cp ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb ; then
-                        cp ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb split/kernel -v 
+                        cp ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb split/kernel -v
                     else
-                        echo "No dtb file found !"
-                        exit 1
+                        cp ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb split/kernel -v
                     fi
                 else
                     cp ../out/arch/${{ inputs.arch }}/boot/Image.gz split/kernel -v
@@ -422,7 +421,7 @@ runs:
             sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
             sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
             sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
-        
+
             if [ -f out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
                 cp out/arch/${{ inputs.arch }}/boot/Image.*-dtb AnyKernel3/ -rv
             elif [ -f out/arch/${{ inputs.arch }}/boot/Image.* ]; then
@@ -432,7 +431,7 @@ runs:
             fi
 
             test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp -v out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
-        
+
             rm -rf -v AnyKernel3/.git* AnyKernel3/README.md
             if [ ${{ inputs.release }} = false ]; then
                 cp AnyKernel3 ../../build -r -v
@@ -449,7 +448,7 @@ runs:
       with:
         name: kernel-built
         path: build/*
-    
+
 
     - id: release
       if: inputs.release == 'true'
