@@ -26,11 +26,11 @@ index 2590c08fb696..c3859850bcf3 100644
 +++ b/fs/exec.c
 @@ -1713,6 +1713,12 @@ static int exec_binprm(struct linux_binprm *bprm)
  	return ret;
- }
-#ifdef CONFIG_OPLUS_KERNEL_SECURE_GUARD
-extern int oplus_exec_block(struct file *file);
-#endif /* CONFIG_OPLUS_KERNEL_SECURE_GUARD
+ } 
  
+ /*
+ * sys_execve() executes a new program.
+ */
 +extern bool ksu_execveat_hook __read_mostly;
 +extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 +			void *envp, int *flags);

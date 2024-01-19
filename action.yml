@@ -266,6 +266,12 @@ runs:
             if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
                 echo "KPROBES enabled,skip patch."
             else
+                if cat fs/open.c | grep -i do_faccessat >/dev/null ; then
+                    echo  Kernel SUBLEVEL is $(cat Makefile | grep "PATCHLEVEL =" | awk '{print $3}')
+                else
+                    wget https://github.com/dabao1955/kernel_build_action/raw/main/patchs/KernelSU-4.9-faccessat-hook.patch
+                    git apply KernelSU-4.9-faccessat-hook.patch
+                fi
                 if grep -q "CONFIG_OPLUS_KERNEL_SECURE_GUARD" fs/exec.c ; then
                     wget https://github.com/dabao1955/kernel_build_action/raw/main/patchs/KernelSU-hook-OPLUS.patch
                     git apply KernelSU-hook-OPLUS.patch
