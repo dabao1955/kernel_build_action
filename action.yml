@@ -181,8 +181,8 @@ runs:
                  git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
                  git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
              fi
-         fi
          echo "::endgroup::"
+         fi
 
          if [ ${{ inputs.other-clang }} = true ]; then
              if [ ${{ inputs.aosp-clang }} = true ]; then
@@ -388,7 +388,7 @@ runs:
          export C=$(expr $B - $A)
          export buildtime=$(date) >>$GITHUB_ENV
          export dconfig=${{ inputs.config }} >>$GITHUB_ENV
-         echo "kernel build finish,takes" $(expr $C / 60)"min"$(expr $C % 60)"s"
+         export USETIME=$(expr $C / 60)min$(expr $C % 60)s
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
