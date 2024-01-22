@@ -11,6 +11,8 @@ A Workflow to build Android Kernel automatically
 [![](https://img.shields.io/github/forks/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=git&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/forks)
 [![](https://img.shields.io/github/license/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=apache&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/blob/main/LICENSE)
 [![](https://img.shields.io/github/v/release/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=github&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/releases/latest)
+[![](https://img.shields.io/github/last-commit/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=codeigniter&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/commits/main/)
+
 
 
 ## Note
