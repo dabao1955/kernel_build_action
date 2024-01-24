@@ -222,7 +222,7 @@ runs:
 
          if [ ${{ inputs.python-27 }} = true ]; then
              echo "::group:: Installing Python2.7 instead Python3"
-             sudo apt-get install -y -q python2.7 python2.7-minimal
+             sudo apt-get install -y python2.7 python2.7-minimal
              test -f /bin/python && sudo rm -v /bin/python
              test -f /bin/python || sudo ln -v -s /bin/python2.7 /bin/python
              test -f /bin/python2 || sudo ln -v -s /bin/python2.7 /bin/python2
@@ -337,9 +337,9 @@ runs:
          fi
 
          export A=$(date +%s)
+         mkdir out -p -v
          if [ ${{ inputs.aosp-clang }} = true ]; then
              echo "::group:: Building Kernel"
-             mkdir -p -v out
              export CLANG_PATH=$HOME/clang
              export PATH=$CLANG_PATH/bin:$PATH
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
@@ -352,7 +352,6 @@ runs:
              echo "::endgroup::"
          elif [ ${{ inputs.android-ndk }} = true ]; then
              echo "::group:: Building Kernel with Android NDK"
-             mkdir -p -v out
              export CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64
              export PATH=$CLANG_PATH/bin:$PATH
              make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
@@ -365,7 +364,6 @@ runs:
              echo "::endgroup::"
          elif [ ${{ inputs.other-clang }} = true ]; then
              echo "::group:: Building Kernel"
-             mkdir -p -v out
              export CLANG_PATH=$HOME/clang
              export PATH=$CLANG_PATH/bin:$PATH
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
@@ -377,7 +375,6 @@ runs:
              fi
          elif [ ${{ inputs.aosp-gcc }} = true ]; then
              echo "::group:: Building Kernel use GCC"
-             mkdir -p -v out
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
              echo "::endgroup::"
@@ -400,16 +397,16 @@ runs:
             export FMT=$(cat fmt.txt)
             if [ "$FMT" = "gzip" ] ;then
                 if find -name "*dtb" ; then
-                    if ls cp ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb ; then
-                        cp ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb split/kernel -v
+                    if ls ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb ; then
+                        cp -v ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb split/kernel -v
                     else
-                        cp ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb split/kernel -v
+                        cp -v ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb split/kernel -v
                     fi
                 else
-                    cp ../out/arch/${{ inputs.arch }}/boot/Image.gz split/kernel -v
+                    cp -v ../out/arch/${{ inputs.arch }}/boot/Image.gz split/kernel -v
                 fi
             elif [ "$FMT" = "raw" ] ; then
-                cp ../out/arch/${{ inputs.arch }}/boot/Image split/kernel -v
+                cp -v ../out/arch/${{ inputs.arch }}/boot/Image split/kernel -v
             fi
             bash repackimg
             mkdir -p -v ../build
