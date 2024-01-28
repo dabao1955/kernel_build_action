@@ -445,7 +445,7 @@ runs:
 
     - id: uploadi
       if: inputs.release == 'false'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v3.1.3
       with:
         name: kernel-built
         path: build/*
