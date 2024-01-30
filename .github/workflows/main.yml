@@ -28,25 +28,13 @@ jobs:
 
   ci-test:
     strategy:
-      fail-fast: false
-      matrix:
-        include:
-        - os: ubuntu-latest
-          id: x64
-
-        - os: ubuntu-20.04
-          id: x64
-          
+      fail-fast: false          
     needs: yaml-check
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-
-    - name: Checkout Repo
-      uses: actions/checkout@v4
-
     - name: Test CI
       uses: dabao1955/kernel_build_action@main
       with: 
