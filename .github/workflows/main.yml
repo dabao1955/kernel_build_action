@@ -61,11 +61,11 @@ jobs:
   ci-test:
     strategy:
       fail-fast: false
-    needs: yaml-check
-    runs-on: ubuntu-latest
+    needs:
       - yaml-check
       - shellcheck
       - shfmt
+    runs-on: ubuntu-latest
     permissions:
       contents: write
 
