@@ -91,7 +91,7 @@ if [ "$ANDROID_NDK" = true ]; then
   export LLVMS="$HOME"/android-ndk-"$ANDROID_NDK_VERSION"/toolchains/llvm/prebuilt/linux-x86_64/bin
   cd $LLVMS
   for file in $(ls llvm-*); do
-    ln -s -v "$file" "aarch64-linux-android$(("$ANDROID_VERSION" + 19))-${file#llvm-}"
+    ln -s -v "$file" "aarch64-linux-android$(($ANDROID_VERSION + 19))-${file#llvm-}"
   done
   cd "$HOMES"
 fi
@@ -223,7 +223,11 @@ if [ "$AOSP_CLANG" = true ]; then
   make -j$(nproc --all) CROSS_COMPILE="$HOME"/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32="$HOME"/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH="$ARCH" O=out "$CONFIG"
   if [ "$CCACHE" = true ]; then
     export USE_CCACHE=1
-    make -j$(nproc --all) CROSS_COMPILE="$HOME"/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32="$HOME"/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC="ccache clang" ARCH="$ARCH" O=out "$EXTRA_CMD"
+    if [ -z "$EXTRA_CMD" ]; then
+      make -j$(nproc --all) CROSS_COMPILE="$HOME"/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32="$HOME"/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC="ccache clang" ARCH="$ARCH" O=out
+    else
+      make -j$(nproc --all) CROSS_COMPILE="$HOME"/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32="$HOME"/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC="ccache clang" ARCH="$ARCH" O=out "$EXTRA_CMD"
+    fi
   else
     make -j$(nproc --all) CROSS_COMPILE="$HOME"/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32="$HOME"/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH="$ARCH" O=out "$EXTRA_CMD"
   fi
