@@ -62,7 +62,7 @@ jobs:
     strategy:
       fail-fast: false
     needs: yaml-check
-    runs-on: 
+    runs-on: ubuntu-latest
       - yaml-check
       - shellcheck
       - shfmt
