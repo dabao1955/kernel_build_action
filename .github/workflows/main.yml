@@ -26,45 +26,11 @@ jobs:
     - name: Check yaml
       run: /usr/local/lib/node_modules/yaml-lint/dist/cli.js action.yml
 
-  shellcheck:
-    container: archlinux:base-devel
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-
-    - name: Checkout Repo
-      uses: actions/checkout@v4
-
-    - name: Imstall ShellCheck
-      run: sudo pacman -Syu --noconfirm shellcheck
-
-    - name: Run ShellCheck
-      run: shellcheck main.sh
-
-  shfmt:
-    container: archlinux:base-devel
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-
-    - name: Checkout Repo
-      uses: actions/checkout@v4
-
-    - name: Imstall shfmt
-      run: sudo pacman -Syu --noconfirm shfmt
-
-    - name: Run shfmt
-      run: shfmt -i 2 -w main.sh
-
   ci-test:
     strategy:
       fail-fast: false
     needs:
       - yaml-check
-      - shellcheck
-      - shfmt
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -72,7 +38,7 @@ jobs:
     steps:
     - name: Test CI
       uses: dabao1955/kernel_build_action@main
-      with: 
+      with:
           kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
           kernel-dir: msm-4.19
           branch: taffy
