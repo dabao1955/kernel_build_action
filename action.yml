@@ -167,7 +167,7 @@ runs:
        LXC: ${{ inputs.lxc }}
        LXC_PATCH: ${{ inputs.lxc-patch }}
        NETHUNTER: ${{ inputs.nethunter }}
-       NETHUNTER_PATCH: ${{ nethunter-patch }}
+       NETHUNTER_PATCH: ${{ inputs.nethunter-patch }}
        KVM: ${{ inputs.kvm }}
        CCACHE: ${{ inputs.ccache }}
        AOSP_CLANG: ${{ inputs.aosp-clang }}
