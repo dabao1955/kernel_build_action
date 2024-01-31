@@ -151,6 +151,39 @@ runs:
         curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/main.sh | bash
       env:
        KERNEL_URL: ${{ inputs.kernel-url }}
+       KERNEL_DIR: ${{ inputs.kernel-dir }}
+       DEPTH: ${{ inputs.depth }}
+       VENDOR: ${{ inputs.vendor }}
+       VENDOR_URL: ${{ inputs.vendor-url }}
+       VENDOR_DIR: ${{ inputs.vendor-dir }}
+       BRANCH: ${{ inputs.barnch }}
+       CONFIG: ${{ inputs.config }}
+       ARCH: ${{ inputs.arch }}
+       ANDROID_VERSION: ${{ inputs.android-version }}
+       KSU: ${{ inputs.ksu }}
+       KSU_VERSION: ${{ inputs.ksu-version }}
+       DISABLE_LTO: ${{ inputs.disable-lto }}
+       OVERLAYFS: ${{ inputs.overlayfs }}
+       LXC: ${{ inputs.lxc }}
+       LXC_PATCH: ${{ inputs.lxc-patch }}
+       NETHUNTER: ${{ inputs.nethunter }}
+       NETHUNTER_PATCH: ${{ nethunter-patch }}
+       KVM: ${{ inputs.kvm }}
+       CCACHE: ${{ inputs.ccache }}
+       AOSP_CLANG: ${{ inputs.aosp-clang }}
+       AOSP_GCC: ${{ inputs.aosp-gcc }}
+       AOSP_CLANG_VERSION: ${{ inputs.aosp-clang-version }}
+       OTHER_CLANG: ${{ inputs.other-clang }}
+       OTHER_CLANG_URL: ${{ inputs.other-clang-url }}
+       OTHER_CLANG_BRANCH: ${{ inputs.other-clang-branch }}
+       ANDROID_NDK: ${{ inputs.android-ndk }}
+       ANDROID_NDK_VERSION: ${{ inputs.android-ndk-version }}
+       ANDROID_NDK_X64: ${{ inputs.android-ndk-x64 }}
+       PYTHON27: ${{ inputs.python-27 }}
+       ANYKERNEL3: ${{ inputs.anykernel3 }}
+       RELEASE: ${{ inputs.release }}
+       BOOTIMG_URL: ${{ inputs.bootimg-url }}
+       EXTRA_CMD: ${{ inputs.extra-cmd }}
 
     - id: uploadi
       if: inputs.release == 'false'
