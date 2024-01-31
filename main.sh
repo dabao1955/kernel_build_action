@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 #
-# shellcheck disable=SC2086,SC2001,SC2002,SC2003,SC2185,SC2144,SC2155,SC2046,SC2129,SC2045,SC2004
+# shellcheck disable=SC2086,SC2001,SC2002,SC2003,SC2185,SC2144,SC2155,SC2046,SC2129,SC2045
 
 set -e
 
@@ -91,7 +91,7 @@ if [ "$ANDROID_NDK" = true ]; then
   export LLVMS="$HOME"/android-ndk-"$ANDROID_NDK_VERSION"/toolchains/llvm/prebuilt/linux-x86_64/bin
   cd $LLVMS
   for file in $(ls llvm-*); do
-    ln -s -v "$file" "aarch64-linux-android$(($ANDROID_VERSION + 19))-${file#llvm-}"
+    ln -s -v "$file" "aarch64-linux-android$(("$ANDROID_VERSION" + 19))-${file#llvm-}"
   done
   cd "$HOMES"
 fi
@@ -119,6 +119,7 @@ if [ "$AOSP_CLANG" = true ]; then
 fi
 
 echo "::group:: Pulling Kernel Source"
+mkdir -p -v kernel
 git clone --recursive "$KERNEL_URL" -b "$BRANCH" --depth="$DEPTH" kernel/"$KERNEL_DIR"
 echo "::endgroup::"
 
@@ -213,7 +214,6 @@ if [ "$LXC" = true ]; then
   echo "::endgroup::"
 fi
 
-export A=$(date +%s)
 mkdir out -p -v
 if [ "$AOSP_CLANG" = true ]; then
   echo "::group:: Building Kernel"
@@ -222,11 +222,7 @@ if [ "$AOSP_CLANG" = true ]; then
   make -j$(nproc --all) CROSS_COMPILE="$HOME"/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32="$HOME"/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH="$ARCH" O=out "$CONFIG"
   if [ "$CCACHE" = true ]; then
     export USE_CCACHE=1
-    if [ -z "$EXTRA_CMD" ]; then
-      make -j$(nproc --all) CROSS_COMPILE="$HOME"/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32="$HOME"/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC="ccache clang" ARCH="$ARCH" O=out
-    else
-      make -j$(nproc --all) CROSS_COMPILE="$HOME"/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32="$HOME"/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC="ccache clang" ARCH="$ARCH" O=out "$EXTRA_CMD"
-    fi
+    make -j$(nproc --all) CROSS_COMPILE="$HOME"/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32="$HOME"/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC="ccache clang" ARCH="$ARCH" O=out "$EXTRA_CMD"
   else
     make -j$(nproc --all) CROSS_COMPILE="$HOME"/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32="$HOME"/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH="$ARCH" O=out "$EXTRA_CMD"
   fi
@@ -262,11 +258,8 @@ elif [ "$AOSP_GCC" = true ]; then
   echo "::endgroup::"
 fi
 
-export B=$(date +%s)
-export C=$(expr $B - $A)
 export buildtime=$(date) >>$GITHUB_ENV
 export dconfig="$CONFIG" >>$GITHUB_ENV
-export USETIME=$(expr $C / 60)min$(expr $C % 60)s
 
 if [ "$ANYKERNEL3" = false ]; then
   echo "::group:: Preparing to Upload boot.img"

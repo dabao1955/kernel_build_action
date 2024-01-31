@@ -132,7 +132,7 @@ inputs:
   extra-cmd:
     description: 'Extra options of building kernel.'
     required: false
-    default: ""
+    default: "all"
 
 runs:
   using: 'composite'
