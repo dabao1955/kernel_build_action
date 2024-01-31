@@ -4,7 +4,7 @@ on:
     branches: main
   pull_request:
   workflow_dispatch:
-  
+
 jobs:
   yaml-check:
     runs-on: ubuntu-latest
@@ -26,11 +26,46 @@ jobs:
     - name: Check yaml
       run: /usr/local/lib/node_modules/yaml-lint/dist/cli.js action.yml
 
+  shellcheck:
+    container: archlinux:base-devel
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+
+    - name: Imstall ShellCheck
+      run: sudo pacman -Syu --noconfirm shellcheck
+
+    - name: Run ShellCheck
+      run: shellcheck main.sh
+
+  shfmt:
+    container: archlinux:base-devel
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+
+    - name: Imstall shfmt
+      run: sudo pacman -Syu --noconfirm shfmt
+
+    - name: Run shfmt
+      run: shfmt -i 2 -w main.sh
+
   ci-test:
     strategy:
-      fail-fast: false          
+      fail-fast: false
     needs: yaml-check
-    runs-on: ubuntu-latest
+    runs-on: 
+      - yaml-check
+      - shellcheck
+      - shfmt
     permissions:
       contents: write
 
