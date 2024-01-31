@@ -93,8 +93,7 @@ android-ndk-x64 | false | If use the ndk version <r23,please enable it. | false 
 | extra-cmd | false | Compile the kernel with extra options, such as LD=ld.lld | AS=llvm-as |
 
 ## Todo
-
-- Improve documentation
+- add more checks for downloading toolchain if run main.sh on self-machine
 
 - Improve testing process
 

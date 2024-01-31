@@ -1,4 +1,23 @@
 #!/bin/bash
+#
+# SPDX-License-Identifier: Apache-2.0
+# This file is part of main.sh.
+#
+# Copyright (c) 2024 dabao1955
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
 # shellcheck disable=SC2086,SC2001,SC2002,SC2003,SC2185,SC2144,SC2155,SC2046,SC2129,SC2045
 
 set -e
@@ -101,7 +120,7 @@ fi
 
 echo "::group:: Pulling Kernel Source"
 mkdir -p -v kernel
-git clone --recursive "$KERNEL_URL" -b "$BRANCH" --depth=$DEPTH kernel/"$KERNEL_DIR"
+git clone --recursive "$KERNEL_URL" -b "$BRANCH" --depth="$DEPTH" kernel/"$KERNEL_DIR"
 echo "::endgroup::"
 
 if [ "$VENDOR" = true ]; then

@@ -156,7 +156,7 @@ runs:
        VENDOR: ${{ inputs.vendor }}
        VENDOR_URL: ${{ inputs.vendor-url }}
        VENDOR_DIR: ${{ inputs.vendor-dir }}
-       BRANCH: ${{ inputs.barnch }}
+       BRANCH: ${{ inputs.branch }}
        CONFIG: ${{ inputs.config }}
        ARCH: ${{ inputs.arch }}
        ANDROID_VERSION: ${{ inputs.android-version }}
