@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 #
-# shellcheck disable=SC2086,SC2001,SC2002,SC2003,SC2185,SC2144,SC2155,SC2046,SC2129,SC2045
+# shellcheck disable=SC2086,SC2001,SC2002,SC2003,SC2185,SC2144,SC2155,SC2046,SC2129,SC2045,SC2004
 
 set -e
 
@@ -119,7 +119,6 @@ if [ "$AOSP_CLANG" = true ]; then
 fi
 
 echo "::group:: Pulling Kernel Source"
-mkdir -p -v kernel
 git clone --recursive "$KERNEL_URL" -b "$BRANCH" --depth="$DEPTH" kernel/"$KERNEL_DIR"
 echo "::endgroup::"
 
