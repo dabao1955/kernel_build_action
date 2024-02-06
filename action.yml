@@ -39,6 +39,10 @@ inputs:
     description: 'Android version.'
     required: true
     default: 12
+  apatch:
+    description: 'APatch function support'
+    required: false
+    default: false
   ksu:
     description: 'KernelSU function support'
     required: false
@@ -302,6 +306,18 @@ runs:
              echo "::endgroup::"
          fi
 
+         if [ ${{ inputs.apatch }} = true ]; then
+             echo "::group:: Initializing Apatch"
+             mkdir drivers/apatch
+             wget https://github.com/dabao1955/kernel_build_action/raw/main/apatch/Kconfig
+             grep -q "apatch" || sed -i "/endmenu/i\\source \"drivers/apatch/Kconfig\"" drivers/Kconfig
+             wget https://github.com/dabao1955/kernel_build_action/raw/main/apatch/fix_module.patch
+             git apply fix_module.patch
+             echo "CONFIG_APATCH_SUPPORT=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+             echo "CONFIG_APATCH_FIX_MODULES=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+             echo "CONFIG_APATCH_CUSTOMS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+             grep -q "CONFIG_LOCALVERSION_AUTO=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" || sed -i 's/CONFIG_LOCALVERSION_AUTO=y/CONFIG_LOCALVERSION_AUTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+         fi
 
          if [ ${{ inputs.disable-lto }} = true ]; then
              if grep -q "LTO" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"

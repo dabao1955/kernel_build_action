@@ -66,6 +66,7 @@ Note: You do not need to fork this repository.
 | config | true | Compile the selected configuration file for the Android kernel | defconfig |
 | arch | true | The architecture of your mobile phone SOC is arm64 by default | arm64 |
 | android-version | true | Android Version | 12 |
+| apatch | false | Enable APatch | true |
 | ksu | false | Enable KernelSU | true |
 | ksu-version | false | KernelSU version | v0.6.6 |
 | disable-lto | false | | false |
