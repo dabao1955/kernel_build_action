@@ -194,16 +194,17 @@ runs:
                  exit 1
              else
                  echo "::group:: Downloading 3rd clang"
-                 if [[ ${{ inputs.other-clang-url }} == *'.tar.gz' ]]; then
-                     wget -O clang.tar.gz ${{ inputs.other-clang-url }}
+                 export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
+                 if [[ "$OTHER_CLANG_URL" == *'.tar.gz' ]]; then
+                     wget -O clang.tar.gz "$OTHER_CLANG_URL"
                      mkdir clang
                      tar -C clang/ -zxvf clang.tar.gz
-                 elif [[ ${{ inputs.other-clang-url }} == *'.zip' ]]; then
-                     wget -O clang.zip ${{ inputs.other-clang-url }}
+                 elif [[ "$OTHER_CLANG_URL" == *'.zip' ]]; then
+                     wget -O clang.zip "$OTHER_CLANG_URL"
                      mkdir clang
                      unzip clang.zip -d clang/
                  else
-                     git clone ${{ inputs.other-clang-url }} clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
+                     git clone "$OTHER_CLANG_URL" clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
                  fi
              fi
          fi
