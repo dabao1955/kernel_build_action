@@ -258,7 +258,6 @@ runs:
          fi
 
          echo "::group:: Pulling Kernel Source"
-         mkdir -p -v kernel
          git clone --recursive ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} kernel/${{ inputs.kernel-dir }}
          echo "::endgroup::"
 
