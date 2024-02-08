@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Have questions about kernel compilation?
+    url: https://github.com/dabao1955/KernelSU_General_porting_guide    
+    about: "(o゜▽゜)o☆ You can read it on the github wiki or read the doc. It would be even better if you could give the repository a star!
