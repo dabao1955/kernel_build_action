@@ -5,16 +5,16 @@ labels: ["bug"]
 assignees: ["dabao1955"]
 
 body:
-- type: checkboxes
-  id: check-answer
-  attributes:
-    label: CheckBos
-    description: Please make sure
-    options:
-      - label: I have searched the issue list and found no similar issues.
-        required: true
-      - label: I use the official action instead of someone else's
-        required: true
+  - type: dropdown
+    id: check-answer
+    attributes:
+      label: CheckBos
+      description: Please make sure
+      options:
+        - label: I have searched the issue list and found no similar issues.
+          required: true
+        - label: I use the official action instead of someone else's
+          required: true
         
   - type: textarea
     id: config
