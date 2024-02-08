@@ -1,4 +1,4 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
   - name: Have questions about kernel compilation?
     url: https://github.com/dabao1955/KernelSU_General_porting_guide    
