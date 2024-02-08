@@ -5,10 +5,10 @@ labels: ["bug"]
 assignees: ["dabao1955"]
 
 body:
-  - type: dropdown
+  - type: checkboxes
     id: check-answer
     attributes:
-      label: CheckBos
+      label: CheckBox
       description: Please make sure
       options:
         - label: I have searched the issue list and found no similar issues.
