@@ -198,11 +198,11 @@ runs:
                  if [[ "$OTHER_CLANG_URL" == *'.tar.gz' ]]; then
                      wget -O clang.tar.gz "$OTHER_CLANG_URL"
                      mkdir clang
-                     tar -C clang/ -zxvf clang.tar.gz
+                     tar -C $HOME/clang/ -zxvf clang.tar.gz
                  elif [[ "$OTHER_CLANG_URL" == *'.zip' ]]; then
                      wget -O clang.zip "$OTHER_CLANG_URL"
                      mkdir clang
-                     unzip clang.zip -d clang/
+                     unzip clang.zip -d $HOME/clang/
                  else
                      git clone "$OTHER_CLANG_URL" clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
                  fi
