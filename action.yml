@@ -204,7 +204,7 @@ runs:
                      mkdir clang
                      unzip clang.zip -d $HOME/clang/
                  else
-                     git clone "$OTHER_CLANG_URL" clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
+                     git clone "$OTHER_CLANG_URL" $HOME/clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
                  fi
              fi
          fi
