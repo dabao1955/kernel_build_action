@@ -269,9 +269,11 @@ runs:
              echo "::endgroup::"
          fi
 
+         cd kernel/${{ inputs.kernel-dir }}
+         export SUBLEVEL=$(cat Makefile | grep "PATCHLEVEL =" | awk '{print $3}')
+
          if [ ${{ inputs.ksu }} = true ]; then
             echo "::group:: Initializing KernelSU"
-            cd kernel/${{ inputs.kernel-dir }}
             if [ -f KernelSU/kernel/Kconfig ]; then
                 echo "KernelSU has been initialized,skipped."
             else
@@ -284,7 +286,7 @@ runs:
                     echo "patched,skip patch"
                 else
                     if cat fs/open.c | grep -i do_faccessat >/dev/null ; then
-                        echo  Kernel SUBLEVEL is $(cat Makefile | grep "PATCHLEVEL =" | awk '{print $3}')
+                        echo  Kernel SUBLEVEL is "$SUBLEVEL"
                     else
                         wget https://github.com/dabao1955/kernel_build_action/raw/main/ksupatchs/KernelSU-4.9-faccessat-hook.patch
                         git apply KernelSU-4.9-faccessat-hook.patch
@@ -310,6 +312,10 @@ runs:
                  git apply add-wifi-injection.patch
                  wget https://github.com/tomxi1997/kali-nethunter_patches/raw/main/fix-ath9k-naming-conflict.patch
                  git apply fix-ath9k-naming-conflict.patch
+                 if [ "$SUBLEVEL" ＜ 19 ]; then
+                     wget https://github.com/tomxi1997/kali-nethunter_patches/raw/main/add-wifi-injection-4.14.patch
+                     git apply add-wifi-injection-4.14.patch
+                 fi
              else
                   echo "skip patch"
              fi
