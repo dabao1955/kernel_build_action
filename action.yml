@@ -280,13 +280,13 @@ runs:
                 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
             fi
             if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
-                echo "KPROBES enabled,skip patch."
+                echo "CONFIG_KPROBES is enabled, skip patch."
             else
                 if cat fs/open.c | grep -i ksu >/dev/null ; then
                     echo "patched,skip patch"
                 else
                     if cat fs/open.c | grep -i do_faccessat >/dev/null ; then
-                        echo  Kernel SUBLEVEL is "$SUBLEVEL"
+                        echo  Kernel SUBLEVEL is "$SUBLEVEL" >/dev/null
                     else
                         wget https://github.com/dabao1955/kernel_build_action/raw/main/ksupatchs/KernelSU-4.9-faccessat-hook.patch
                         git apply KernelSU-4.9-faccessat-hook.patch
@@ -373,7 +373,7 @@ runs:
          fi
 
          export A=$(date +%s)
-         mkdir out -p -v
+         mkdir out -p
          if [ ${{ inputs.aosp-clang }} = true ]; then
              echo "::group:: Building Kernel"
              export CLANG_PATH=$HOME/clang
