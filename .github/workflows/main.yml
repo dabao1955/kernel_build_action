@@ -21,7 +21,7 @@ jobs:
        node-version: 20
 
     - name: Imstall yamllint
-      run: sudo yarn global add yaml-lint
+      run: pnpm setup && pnpm i -g yaml-lint
 
     - name: Check yaml
       run: yamllint action.yml
