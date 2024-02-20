@@ -19,12 +19,13 @@ jobs:
       uses: actions/setup-node@v4
       with:
        node-version: 20
+       cache: 'yarn'
 
     - name: Imstall yamllint
-      run: sudo npm i -g yaml-lint
+      run: sudo yarn global add yaml-lint
 
     - name: Check yaml
-      run: /usr/local/lib/node_modules/yaml-lint/dist/cli.js action.yml
+      run: yaml-lint action.yml
 
   ci-test:
     strategy:
