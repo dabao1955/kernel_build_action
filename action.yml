@@ -477,6 +477,8 @@ runs:
       with:
         name: kernel-built-bootimg
         path: build/*
+        if-no-files-found: error
+        overwrite: true
 
     - id: uploada
       if: ${{ inputs.release == 'false' && inputs.anykernel3 == 'true' }}
@@ -484,6 +486,8 @@ runs:
       with:
         name: Anykernel3-flasher
         path: build/*
+        if-no-files-found: error
+        overwrite: true
 
     - id: release
       if: inputs.release == 'true'
