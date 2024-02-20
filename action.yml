@@ -480,7 +480,7 @@ runs:
         name: kernel-built-bootimg
         path: build/*
 
-    - id: uploadi
+    - id: uploada
       if: 
        - inputs.release == 'false'
        - inputs.anykernel3 == 'true'
@@ -491,7 +491,7 @@ runs:
 
     - id: release
       if: inputs.release == 'true'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v0.1.15
       env:
         GITHUB_TOKEN: ${{ inputs.access-token }}
       with:
