@@ -373,9 +373,9 @@ runs:
          fi
 
          export A=$(date +%s)
-         mkdir out -p
+         echo "::group:: Building Kernel with selected cross compiler"
+         mkdir out -p -v
          if [ ${{ inputs.aosp-clang }} = true ]; then
-             echo "::group:: Building Kernel"
              export CLANG_PATH=$HOME/clang
              export PATH=$CLANG_PATH/bin:$PATH
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
@@ -387,7 +387,6 @@ runs:
              fi
              echo "::endgroup::"
          elif [ ${{ inputs.android-ndk }} = true ]; then
-             echo "::group:: Building Kernel with Android NDK"
              export CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64
              export PATH=$CLANG_PATH/bin:$PATH
              make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
@@ -399,7 +398,6 @@ runs:
              fi
              echo "::endgroup::"
          elif [ ${{ inputs.other-clang }} = true ]; then
-             echo "::group:: Building Kernel"
              export CLANG_PATH=$HOME/clang
              export PATH=$CLANG_PATH/bin:$PATH
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
@@ -410,12 +408,10 @@ runs:
                  make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
              fi
          elif [ ${{ inputs.aosp-gcc }} = true ]; then
-             echo "::group:: Building Kernel use GCC"
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
-             echo "::endgroup::"
-             echo "::endgroup::"
          fi
+         echo "::endgroup::"
 
          export B=$(date +%s)
          export C=$(expr $B - $A)
@@ -476,12 +472,22 @@ runs:
          fi
 
     - id: uploadi
-      if: inputs.release == 'false'
+      if: 
+       - inputs.release == 'false'
+       - inputs.anykernel3 == 'false'
       uses: actions/upload-artifact@v4
       with:
-        name: kernel-built
+        name: kernel-built-bootimg
         path: build/*
 
+    - id: uploadi
+      if: 
+       - inputs.release == 'false'
+       - inputs.anykernel3 == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: Anykernel3-flasher
+        path: build/*
 
     - id: release
       if: inputs.release == 'true'
