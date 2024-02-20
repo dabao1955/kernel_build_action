@@ -472,14 +472,14 @@ runs:
          fi
 
     - id: uploadi
-      if: [ inputs.release == 'false' , inputs.anykernel3 == 'false' ]
+      if: ${{ inputs.release == 'false' && inputs.anykernel3 == 'false' }}
       uses: actions/upload-artifact@v4
       with:
         name: kernel-built-bootimg
         path: build/*
 
     - id: uploada
-      if: [ inputs.release == 'false' , inputs.anykernel3 == 'true' ]
+      if: ${{ inputs.release == 'false' && inputs.anykernel3 == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: Anykernel3-flasher
