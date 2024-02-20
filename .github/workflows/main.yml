@@ -25,7 +25,7 @@ jobs:
       run: sudo yarn global add yaml-lint
 
     - name: Check yaml
-      run: yaml-lint action.yml
+      run: yamllint action.yml
 
   ci-test:
     strategy:
