@@ -109,11 +109,9 @@ inputs:
     required: false
     default: false
   android-ndk-version:
+    description: 'Please press nember instead of r(e.g. : 26).'
     required: false
-    default: r21
-  android-ndk-x64:
-    required: false
-    default: true
+    default: r21b
   python-27:
     description: 'Use python2.7 when build kernel.'
     required: false
@@ -213,7 +211,8 @@ runs:
          if [ ${{ inputs.android-ndk }} = true ]; then
              echo "::group:: Downloading Android NDK"
              if [ ${{ inputs.aosp-gcc }} = false ]; then
-                 if [ ${{ inputs.android-ndk-x64 }} = false ]; then
+                 export NDKVER=$(echo "${{ inputs.android-ndk-version }}" | sed 's/r\([0-9]\+\)[a-zA-Z]\?/\1/g')
+                 if [ "$NDKVER" < 23 ]; then
                      aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux.zip
                      unzip -d $HOME android-ndk.zip
                  else
@@ -443,6 +442,7 @@ runs:
             bash repackimg
             mkdir -p -v ../build
             mv boot-new.img ../build/boot.img -v
+            rm -rf nohup.out
             echo "::endgroup::"
          else
             echo "::group:: Packaging Anykernel3 flasher"

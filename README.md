@@ -84,8 +84,7 @@ Note: You do not need to fork this repository.
 | other-clang-url | false | Please fill in the download link of other clang in this option. Supports .zip, .tar and .git formats | https://github.com/kdrag0n/proton-clang |
 | other-clang-branch | false | | 10.0|
 | android-ndk | false | Use Android-NDK to compile kernel . Before enable this option，you should disable aosp-gcc and aosp-clang bacause android-ndk will conflict with them | false |
-android-ndk-version | false | | r23b |
-android-ndk-x64 | false | If use the ndk version <r23,please enable it. | false | 
+| android-ndk-version | false | | r23b |
 | python-27 | false | Use python2.7 instead of python3, this is helpful for some kernel compilations | false |
 | anykernel3 | false | Package the compiled kernel using anykernel3. If this option is disabled, You need to fill `bootimg-url`. | false |
 | release | flase | After the kernel compilation is completed, it will be automatically published to the releases page | true |
