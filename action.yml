@@ -182,7 +182,7 @@ runs:
          echo "::endgroup::"
          fi
 
-         if [ ${{ inputs.aosp-clang }} = false && ${{ inputs.android-ndk }} = false ]; then
+         if [ ${{ inputs.aosp-clang }} = false ] && [ ${{ inputs.android-ndk }} = false ]; then
              echo "::group:: Downloading 3rd clang"
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
              if [[ "$OTHER_CLANG_URL" == *'.tar.gz' ]]; then
