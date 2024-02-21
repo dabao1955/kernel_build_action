@@ -97,10 +97,6 @@ inputs:
   other-clang-url:
     required: false
     default: ''
-  other-clang:
-    description: 'Use clang from 3rd party.'
-    required: false
-    default: false
   other-clang-branch:
     required: false
     default: main
@@ -186,24 +182,19 @@ runs:
          echo "::endgroup::"
          fi
 
-         if [ ${{ inputs.other-clang }} = true ]; then
-             if [ ${{ inputs.aosp-clang }} = true ]; then
-                 echo "please disable aosp-clang to use 3rd clang."
-                 exit 1
+         if [ ${{ inputs.aosp-clang }} = false && ${{ inputs.android-ndk }} = false ]; then
+             echo "::group:: Downloading 3rd clang"
+             export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
+             if [[ "$OTHER_CLANG_URL" == *'.tar.gz' ]]; then
+                 wget -O clang.tar.gz "$OTHER_CLANG_URL"
+                 mkdir clang
+                 tar -C $HOME/clang/ -zxvf clang.tar.gz
+             elif [[ "$OTHER_CLANG_URL" == *'.zip' ]]; then
+                 wget -O clang.zip "$OTHER_CLANG_URL"
+                 mkdir clang
+                 unzip clang.zip -d $HOME/clang/
              else
-                 echo "::group:: Downloading 3rd clang"
-                 export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
-                 if [[ "$OTHER_CLANG_URL" == *'.tar.gz' ]]; then
-                     wget -O clang.tar.gz "$OTHER_CLANG_URL"
-                     mkdir clang
-                     tar -C $HOME/clang/ -zxvf clang.tar.gz
-                 elif [[ "$OTHER_CLANG_URL" == *'.zip' ]]; then
-                     wget -O clang.zip "$OTHER_CLANG_URL"
-                     mkdir clang
-                     unzip clang.zip -d $HOME/clang/
-                 else
-                     git clone "$OTHER_CLANG_URL" $HOME/clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
-                 fi
+                 git clone "$OTHER_CLANG_URL" $HOME/clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
              fi
          fi
          echo "::endgroup::"

@@ -80,7 +80,6 @@ Note: You do not need to fork this repository.
 | aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
 | aosp-clang | false | Compile the kernel using aosp-clang | false |
 | aosp-clang-version | false | please search for them according to your own needs at [official website](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86) and choose the appropriate clang according to the Android system version instead of blindly choosing `r383902` | r383902 |
-| other-clang | false | use 3rd party clang to compile kernel | true |
 | other-clang-url | false | Please fill in the download link of other clang in this option. Supports .zip, .tar and .git formats | https://github.com/kdrag0n/proton-clang |
 | other-clang-branch | false | | 10.0|
 | android-ndk | false | Use Android-NDK to compile kernel . Before enable this option，you should disable aosp-gcc and aosp-clang bacause android-ndk will conflict with them | false |
@@ -96,6 +95,13 @@ Note: You do not need to fork this repository.
 - Improve testing process
 
 - Modify unreasonable options
+
+- Support use 3rd party gcc to compile
+
+## FAQ
+
+### How to use 3rd clang？
+You should disable aosp-clang and android-ndk options to use it.
 
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
