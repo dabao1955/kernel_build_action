@@ -65,7 +65,7 @@ Note: You do not need to fork this repository.
 | branch | true | The branch of the source code that needs to be cloned, defaults branch to git clone is main | main |
 | config | true | Compile the selected configuration file for the Android kernel | defconfig |
 | arch | true | The architecture of your mobile phone SOC is arm64 by default | arm64 |
-| android-version | true | Android Version | 12 |
+| android-version | true | The Android version required when downloading aosp-clang. If you want to use the latest aosp-clang or you do not use aosp-clang to compile the kernel, please ignore this option | 12 |
 | apatch | false | Enable APatch | true |
 | ksu | false | Enable KernelSU | true |
 | ksu-version | false | KernelSU version | v0.6.6 |
