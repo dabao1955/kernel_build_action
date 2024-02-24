@@ -21,7 +21,7 @@ jobs:
        node-version: 20
 
     - name: Imstall yamllint
-      run: cd tests && yarn install --frozon-lockfile
+      run: cd tests && yarn install
 
     - name: Check yaml
       run: cd tests && node index.js
