@@ -18,7 +18,7 @@ function lintYAMLFile(filePath) {
           })
           .catch(error => {
             process.stdout.write(`\r${pendingMessage.replace('[pending]', '[ERROR]'.padEnd('[pending]'.length))}\n`);
-            reject(new Error(`Checking YAML file ${filePath} Unsuccessful, Error: ${error}`));
+            reject(new Error(`Checking YAML file ${filePath} Unsuccessful.\nError: ${error}`));
           });
       }
     });
