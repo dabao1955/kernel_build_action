@@ -18,7 +18,7 @@ function lintYAMLFile(filePath) {
           })
           .catch(error => {
             process.stdout.write(`\r${pendingMessage.replace('[pending]', '[ERROR]'.padEnd('[pending]'.length))}\n`);
-            reject(new Error(`Checking YAML file ${filePath} Unsuccessful.\nError: ${error}`));
+            reject(new Error(`Checking YAML file ${filePath} Unsuccessful.\nError: ${error}\n\nYAML file check failed. Exiting ...`));
           });
       }
     });
@@ -42,7 +42,7 @@ async function checkYAMLFilesSequentially() {
     }
   }
 
-  console.log('All YAML files checked successful.');
+  console.log('\nAll YAML files checked successful.');
 }
 
 checkYAMLFilesSequentially();
