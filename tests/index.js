@@ -2,33 +2,47 @@ const fs = require('fs');
 const yamlLint = require('yaml-lint');
 
 function lintYAMLFile(filePath) {
-  return new Promise((resolve, reject) => {
-    console.log(`Checking YAML file ${filePath} ...`);
+  const pendingMessage = `Checking ${filePath} ... [pending]`;
+  process.stdout.write(pendingMessage);
 
+  return new Promise((resolve, reject) => {
     fs.readFile(filePath, 'utf8', (err, data) => {
       if (err) {
-        reject(`Error reading YAML file: ${filePath}`);
-        process.exit(127);
+        process.stdout.write(`\r${pendingMessage.replace('[pending]', '[ERROR]'.padEnd('[pending]'.length))}\n`);
+        reject(new Error(`Error reading YAML file: ${filePath}`));
       } else {
         yamlLint.lint(data)
           .then(() => {
-            console.log(`Checking YAML file ${filePath} successful.`);
+            process.stdout.write(`\r${pendingMessage.replace('[pending]', '[OK]'.padEnd('[pending]'.length))}\n`);
             resolve();
           })
           .catch(error => {
-            reject(`Checking YAML file ${filePath} Unsuccessful, Error: ${error}`);
-            process.exit(255);
+            process.stdout.write(`\r${pendingMessage.replace('[pending]', '[ERROR]'.padEnd('[pending]'.length))}\n`);
+            reject(new Error(`Checking YAML file ${filePath} Unsuccessful, Error: ${error}`));
           });
       }
     });
   });
 }
 
-Promise.all([
-  lintYAMLFile('../action.yml'),
-  lintYAMLFile('../.github/workflows/main.yml')
-]).then(() => {
-  console.log('Both YAML files are valid.');
-}).catch((error) => {
-  console.error(error);
-});
+async function checkYAMLFilesSequentially() {
+  const files = [
+    '../action.yml',
+    '../.github/ISSUE_TEMPLATE/feature_request.yml',
+    '../.github/workflows/main.yml',
+    '../.github/ISSUE_TEMPLATE/bug-report.yml'
+  ];
+
+  for (const file of files) {
+    try {
+      await lintYAMLFile(file);
+    } catch (error) {
+      console.error(error.message);
+      process.exit(255);
+    }
+  }
+
+  console.log('All YAML files checked successful.');
+}
+
+checkYAMLFilesSequentially();
