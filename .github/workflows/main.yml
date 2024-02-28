@@ -20,7 +20,7 @@ jobs:
       with:
        node-version: 20
 
-    - name: Imstall yamllint
+    - name: Imstall dependence
       run: cd tests && yarn install
 
     - name: Check yaml

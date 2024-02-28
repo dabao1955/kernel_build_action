@@ -30,9 +30,12 @@ async function checkYAMLFilesSequentially() {
     '../action.yml',
     '../.github/ISSUE_TEMPLATE/feature_request.yml',
     '../.github/workflows/main.yml',
-    '../.github/ISSUE_TEMPLATE/bug-report.yml'
+    '../.github/ISSUE_TEMPLATE/bug-report.yml',
   ];
 
+  const checkStart = Date.now();
+  console.log('Starting check...');
+  console.log('Android Kernel Build Action YAML Checker v0.0.2\n');
   for (const file of files) {
     try {
       await lintYAMLFile(file);
@@ -42,7 +45,8 @@ async function checkYAMLFilesSequentially() {
     }
   }
 
-  console.log('\nAll YAML files checked successful.');
+  const totalDuration = Date.now() - checkStart;
+  console.log(`\nAll YAML files checked successful,Total duration: ${totalDuration}ms`);
 }
 
 checkYAMLFilesSequentially();

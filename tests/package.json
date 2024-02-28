@@ -1,7 +1,7 @@
 {
   "name": "kernel_build_action_yaml_eheck",
   "description": "A test to check actions.yaml",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "dabao1955",
   "license": "Apache-2.0",
   "dependencies": {
