@@ -31,6 +31,7 @@ async function checkYAMLFilesSequentially() {
     '../.github/ISSUE_TEMPLATE/feature_request.yml',
     '../.github/workflows/main.yml',
     '../.github/ISSUE_TEMPLATE/bug-report.yml',
+    '../.github/ISSUE_TEMPLATE/config.yml',
   ];
 
   const checkStart = Date.now();
