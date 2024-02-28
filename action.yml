@@ -146,6 +146,11 @@ runs:
     - name: Build Kernel
       shell: bash
       run: |
+         if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" ]]; then
+             printf "This Action Is Intended For Ubuntu Runner.\n"
+             exit 1
+         fi
+
          echo "::group:: Cleaning up"
          docker rmi -f $(docker images -q)
          wget -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
