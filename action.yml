@@ -257,7 +257,7 @@ runs:
          fi
 
          echo "::group:: Pulling Kernel Source"
-         git clone --recursive ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} kernel/${{ inputs.kernel-dir }}
+         git clone --recursive https://github.com/${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} kernel/${{ inputs.kernel-dir }}
          echo "::endgroup::"
 
          if [ ${{ inputs.vendor }} = true ]; then
