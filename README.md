@@ -40,7 +40,7 @@ jobs:
       - name: Build
         uses: dabao1955/kernel_build_action@main
         with:
-          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
+          kernel-url: AcmeUI-Devices/android_kernel_xiaomi_cas
           branch: taffy
           config: cas_defconfig
           arch: arm64
@@ -56,7 +56,7 @@ Note: You do not need to fork this repository.
 ## Inputs
 | input               | required | description | example value |
 |---------------------|----------|-------------|---------|
-| kernel-url | true | URL of Android kernel source code for your phone | https://github.com/username/project |
+| kernel-url | true | URL or username/repo (GitHub) of Android kernel source code for your phone | username/project |
 | kernel-dir | false | The directory name of the Android kernel source code. This option may be used for OPLUS Kernel source code. | kernel |
 | depth | false | | 1 |
 | vendor | false | Enable additional source code for the Android kernel source code. This option may be used for OPLUS source code. | false |
