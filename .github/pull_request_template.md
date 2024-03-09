@@ -3,18 +3,18 @@
 ## Description
 
 ## Type
-[ ] bug fix 
+- [ ] bug fix 
 
-[ ] feature add 
+- [ ] feature add 
 
-[ ] i18n 
+- [ ] i18n 
 
-[ ] other 
+- [ ] other 
 
 ## Checkbox
-[ ] do not have break changes 
+- [ ] do not have break changes 
 
-[ ] normal operation will not be affected after modification 
+- [ ] normal operation will not be affected after modification 
 
 ## Linked issues
-<!-- if want to fix it, try fixes: #13>
+<!-- if want to fix it, try "fixes: #13">
