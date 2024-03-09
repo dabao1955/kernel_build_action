@@ -38,7 +38,8 @@ jobs:
 
     steps:
     - name: Test CI
-      uses: dabao1955/kernel_build_action@main
+      uses: whyakari/kernel_build_action@v3
+            
       with:
           kernel-url: AcmeUI-Devices/android_kernel_xiaomi_cas
           git-provider: github
