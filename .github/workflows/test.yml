@@ -1,0 +1,60 @@
+name: ci [test]
+
+on:
+  push:
+    branches: main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  yaml-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+       node-version: 20
+
+    - name: Imstall dependence
+      run: cd tests && yarn install
+
+    - name: Check yaml
+      run: cd tests && node index.js
+
+  ci-test:
+    strategy:
+      fail-fast: false
+    needs:
+      - yaml-check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Test CI
+      uses: dabao1955/kernel_build_action@main
+      with:
+          kernel-url: AcmeUI-Devices/android_kernel_xiaomi_cas
+          git-provider: github
+          kernel-dir: msm-4.19
+          branch: taffy
+          config: cas_defconfig
+          arch: arm64
+          aosp-gcc: true
+          aosp-clang: true
+          ksu: true
+          ksu-version: main
+          android-version: 12
+          aosp-clang-version: r383902
+          python-27: true
+          disable-lto: true
+          overlayfs: true
+          lxc: false
+          lxc-patch: false
+          anykernel3: true
