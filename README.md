@@ -41,6 +41,7 @@ jobs:
         uses: dabao1955/kernel_build_action@main
         with:
           kernel-url: AcmeUI-Devices/android_kernel_xiaomi_cas
+          git-provider: github
           branch: taffy
           config: cas_defconfig
           arch: arm64
