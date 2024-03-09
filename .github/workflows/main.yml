@@ -37,7 +37,7 @@ jobs:
 
     steps:
     - name: Test CI
-      uses: dabao1955/kernel_build_action@main
+      uses: ${{ github.actor }}/tests@${{ github.sha }}
       with:
           kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
           kernel-dir: msm-4.19
