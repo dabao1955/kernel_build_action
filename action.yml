@@ -412,20 +412,15 @@ runs:
          fi
          echo "::endgroup::"
 
-         export B=$(date +%s)
-         export C=$(expr $B - $A)
-         export buildtime=$(date) >>$GITHUB_ENV
-         export dconfig=${{ inputs.config }} >>$GITHUB_ENV
-         export USETIME=$(expr $C / 60)min$(expr $C % 60)s
-
+         unset USE_CCACHE CLANG_TRIPLE COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES SUBLEVEL
+         
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
             git clone https://github.com/Shubhamvis98/AIK
             wget ${{ inputs.bootimg-url }} -O boot.img
             cd AIK
             nohup bash unpackimg ../boot.img
-            cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}' >>fmt.txt
-            export FMT=$(cat fmt.txt)
+            export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
             if [ "$FMT" = "gzip" ] ;then
                 if find -name "*dtb" ; then
                     if ls ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb ; then
@@ -442,7 +437,6 @@ runs:
             bash repackimg
             mkdir -p -v ../build
             mv boot-new.img ../build/boot.img -v
-            rm -rf nohup.out
             echo "::endgroup::"
          else
             echo "::group:: Packaging Anykernel3 flasher"
