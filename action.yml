@@ -9,6 +9,9 @@ inputs:
   kernel-url:
     description: 'Kernel Source Url'
     required: true
+  git-provider:
+    description: 'Provider Host'
+    required: true
   depth:
     required: false
     default: 1
@@ -256,8 +259,20 @@ runs:
              echo "::endgroup::"
          fi
 
+         echo "::group:: Provider Host"
+         git_provider="${{ inputs.git-provider }}"
+         if [[ $git_provider == "github" ]]; then
+            git_host="github.com"
+         elif [[ $git_provider == "gitlab" ]]; then
+            git_host="gitlab.com"
+         else
+            # Default to GitHub if no provider specified
+            git_host="github.com"
+         fi
+         "::endgroup::"
+
          echo "::group:: Pulling Kernel Source"
-         git clone --recursive https://github.com/${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} kernel/${{ inputs.kernel-dir }}
+         git clone --recursive https://$git_host/${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} kernel/${{ inputs.kernel-dir }}
          echo "::endgroup::"
 
          if [ ${{ inputs.vendor }} = true ]; then

@@ -57,6 +57,7 @@ Note: You do not need to fork this repository.
 | input               | required | description | example value |
 |---------------------|----------|-------------|---------|
 | kernel-url | true | URL or username/repo (GitHub) of Android kernel source code for your phone | username/project |
+| git-provider | true | specify the provider, type: github or gitlab |
 | kernel-dir | false | The directory name of the Android kernel source code. This option may be used for OPLUS Kernel source code. | kernel |
 | depth | false | | 1 |
 | vendor | false | Enable additional source code for the Android kernel source code. This option may be used for OPLUS source code. | false |
