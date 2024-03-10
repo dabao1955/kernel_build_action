@@ -236,8 +236,8 @@ runs:
 
          if [ ${{ inputs.python-27 }} = true ]; then
              echo "::group:: Installing Python2.7 instead Python3"
-             if sudo apt-cache search python2.7 | grep -i python2.7 >>/dev/null; then
-                 sudo echo "deb https://deb.debian.org/debian/ bullseye main contrib non-free" >>/etc/apt/sources.list
+             if ! sudo apt-cache search python2.7 | grep -i python2.7 >>/dev/null; then
+                 echo "deb https://deb.debian.org/debian/ bullseye main contrib non-free" | sudo tee -a /etc/apt/sources.list >/dev/null
                  sudo apt-get update
              fi
              sudo apt-get install -y python2.7 python2.7-minimal
