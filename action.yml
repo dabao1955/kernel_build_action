@@ -146,15 +146,19 @@ runs:
     - name: Build Kernel
       shell: bash
       run: |
-         if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" ]]; then
+         if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" || ! -f /bin/apt ]]; then
              printf "This Action Is Intended For Ubuntu Runner.\n"
-             exit 1
+             exit 127
          fi
 
-         echo "::group:: Cleaning up"
-         docker rmi -f $(docker images -q)
-         wget -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
-         echo "::endgroup::"
+          "$(id -u)" -eq 0 ] && echo "Do not be run as root" && exit 128
+
+         if [ ${GITHUB_ACTIONS} = "true" ]; then
+             echo "::group:: Cleaning up"
+             test -f /bin/docker && docker rmi -f $(docker images -q)
+             wget -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
+             echo "::endgroup::"
+         fi
 
          echo "::group:: Installing Building Depend Packages"
          sudo apt-get update
@@ -232,11 +236,16 @@ runs:
 
          if [ ${{ inputs.python-27 }} = true ]; then
              echo "::group:: Installing Python2.7 instead Python3"
+             if sudo apt-cache search python2.7 | grep -i python2.7 >>/dev/null; then
+                 sudo echo "deb https://deb.debian.org/debian/ bullseye main contrib non-free" >>/etc/apt/sources.list
+                 sudo apt-get update
+             fi
              sudo apt-get install -y python2.7 python2.7-minimal
              test -f /bin/python && sudo rm -v /bin/python
              test -f /bin/python || sudo ln -v -s /bin/python2.7 /bin/python
              test -f /bin/python2 || sudo ln -v -s /bin/python2.7 /bin/python2
              echo "::endgroup::"
+             grep -i "bullseye" /etc/apt/sources.list && sudo sed '$d' /etc/apt/sources.list >>/dev/null
          fi
 
          if [ ${{ inputs.aosp-clang }} = true ]; then
