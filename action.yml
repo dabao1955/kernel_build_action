@@ -51,6 +51,10 @@ inputs:
     description: 'KernelSU default branch'
     required: false
     default: "main"
+  ksu-lkm:
+    description: "Build KernelSU as a linux kernel module"
+    required: false
+    default: false
   overlayfs:
     description: 'Enable Overlayfs for ksu'
     required: false
@@ -195,11 +199,11 @@ runs:
              echo "::group:: Downloading 3rd clang"
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
              if [[ "$OTHER_CLANG_URL" == *'.tar.gz' ]]; then
-                 wget -O clang.tar.gz "$OTHER_CLANG_URL"
+                 aria2c -o clang.tar.gz "$OTHER_CLANG_URL"
                  mkdir clang
                  tar -C $HOME/clang/ -zxvf clang.tar.gz
              elif [[ "$OTHER_CLANG_URL" == *'.zip' ]]; then
-                 wget -O clang.zip "$OTHER_CLANG_URL"
+                 aria2c -o clang.zip "$OTHER_CLANG_URL"
                  mkdir clang
                  unzip clang.zip -d $HOME/clang/
              else
@@ -287,25 +291,13 @@ runs:
             else
                 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
             fi
-            if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
-                echo "CONFIG_KPROBES is enabled, skip patch."
+            if [ ${{ inputs.ksu-lkm }} = true ]; then
+                echo "CONFIG_KSU_MODULE=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
             else
-                if cat fs/open.c | grep -i ksu >/dev/null ; then
-                    echo "patched,skip patch"
+                if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
+                    echo "CONFIG_KPROBES is enabled, skip patch."
                 else
-                    if cat fs/open.c | grep -i do_faccessat >/dev/null ; then
-                        echo  Kernel SUBLEVEL is "$SUBLEVEL" >/dev/null
-                    else
-                        wget https://github.com/dabao1955/kernel_build_action/raw/main/ksupatchs/KernelSU-4.9-faccessat-hook.patch
-                        git apply KernelSU-4.9-faccessat-hook.patch
-                    fi
-                    if grep -q "CONFIG_OPLUS_KERNEL_SECURE_GUARD" fs/exec.c ; then
-                        wget https://github.com/dabao1955/kernel_build_action/raw/main/ksupatchs/KernelSU-hook-OPLUS.patch
-                        git apply KernelSU-hook-OPLUS.patch
-                    else
-                        wget https://github.com/dabao1955/kernel_build_action/raw/main/ksupatchs/KernelSU-hook.patch
-                        git apply KernelSU-hook.patch
-                    fi
+                    curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/ksupatchs.sh | bash
                 fi
             fi
             echo "::endgroup::"
@@ -405,7 +397,10 @@ runs:
                  make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
              fi
              echo "::endgroup::"
-         elif [ ${{ inputs.other-clang }} = true ]; then
+         elif [ ${{ inputs.aosp-gcc }} = true ]; then
+             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
+             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
+         else
              export CLANG_PATH=$HOME/clang
              export PATH=$CLANG_PATH/bin:$PATH
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
@@ -415,37 +410,41 @@ runs:
              else
                  make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
              fi
-         elif [ ${{ inputs.aosp-gcc }} = true ]; then
-             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
-             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
          fi
          echo "::endgroup::"
 
          unset USE_CCACHE CLANG_TRIPLE COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES SUBLEVEL
-         
+
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
-            git clone https://github.com/Shubhamvis98/AIK
-            wget ${{ inputs.bootimg-url }} -O boot.img
-            cd AIK
-            nohup bash unpackimg ../boot.img
+            mkdir split
+            export HOST_ARCH=$(dpkg --print-architecture)
+            case ${HOST_ARCH} in
+                armv7* | armv8l | arm64 | armhf | arm) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_arm -o magiskboot && chmod 755 magiskboot ;;
+                i*86 | x86 | amd64 | x86_64) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_x86 -o magiskboot && chmod 755 magiskboot  ;;
+                *) echo "Unknow cpu architecture for this device !" && exit 1 ;;
+            esac
+            aria2c ${{ inputs.bootimg-url }} -o split/boot.img
+            cd split
+            nohup ./magiskboot unpack boot.img
             export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
             if [ "$FMT" = "gzip" ] ;then
                 if find -name "*dtb" ; then
-                    if ls ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb ; then
-                        cp -v ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb split/kernel -v
+                    if ls ../out/arch/${{ inputs.arch }}/boot/Image.*-dtb ; then
+                        cp -v ../out/arch/${{ inputs.arch }}/boot/Image.*-dtb kernel -v
                     else
-                        cp -v ../out/arch/${{ inputs.arch }}/boot/Image.gz-dtb split/kernel -v
+                        cp -v ../out/arch/${{ inputs.arch }}/boot/Image.*-dtb kernel -v
                     fi
                 else
-                    cp -v ../out/arch/${{ inputs.arch }}/boot/Image.gz split/kernel -v
+                    cp -v ../out/arch/${{ inputs.arch }}/boot/Image.* kernel -v
                 fi
             elif [ "$FMT" = "raw" ] ; then
-                cp -v ../out/arch/${{ inputs.arch }}/boot/Image split/kernel -v
+                cp -v ../out/arch/${{ inputs.arch }}/boot/Image kernel -v
             fi
-            bash repackimg
+            ./magiskboot repack boot.img
+            rm -rf boot.img
             mkdir -p -v ../build
-            mv boot-new.img ../build/boot.img -v
+            mv *.img ../build/boot.img -v
             echo "::endgroup::"
          else
             echo "::group:: Packaging Anykernel3 flasher"
@@ -472,6 +471,10 @@ runs:
                 mv Anykernel3-flasher.zip ../../build -rv
             fi
             echo "::endgroup::"
+         fi
+
+         if [ ${{ inputs.ksu-lkm }} = true ]; then
+             mv out/drivers/kernelsu/kernelsu.ko ../build
          fi
 
     - id: uploadi

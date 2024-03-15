@@ -69,6 +69,7 @@ Note: You do not need to fork this repository.
 | apatch | false | Enable APatch | true |
 | ksu | false | Enable KernelSU | true |
 | ksu-version | false | KernelSU version | v0.6.6 |
+| ksu-lkm(GKI ONLY) | false | Build KernelSU as a linux kernel module | true |
 | disable-lto | false | | false |
 | overlayfs | false | Enable OverlayFS to config | false |
 | lxc | false | Enable LXC and docker to config | false |

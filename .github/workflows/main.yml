@@ -26,11 +26,31 @@ jobs:
     - name: Check yaml
       run: cd tests && node index.js
 
+  sh-check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lint: [shellcheck, shfmt]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Packages
+        run: sudo apt update && sudo apt install -y ${{ matrix.lint }}
+      - name: lint
+        run: |
+          if [ ${{ matrix.lint }} = "shfmt" ]; then
+              shfmt -w -i 2 ksupatch.sh
+          else
+              ${{ matrix.lint }} ksupatch.sh
+          fi
+
   ci-test:
     strategy:
       fail-fast: false
     needs:
       - yaml-check
+      - sh-check
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -53,6 +73,4 @@ jobs:
           python-27: true
           disable-lto: true
           overlayfs: true
-          lxc: false
-          lxc-patch: false
           anykernel3: true
