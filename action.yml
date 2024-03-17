@@ -445,6 +445,7 @@ runs:
             rm -rf boot.img
             mkdir -p -v ../../../build
             mv *.img ../../../build/boot.img -v
+            cd ..
             echo "::endgroup::"
          else
             echo "::group:: Packaging Anykernel3 flasher"
