@@ -418,6 +418,7 @@ runs:
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
             mkdir split
+            cd split
             export HOST_ARCH=$(dpkg --print-architecture)
             case ${HOST_ARCH} in
                 armv7* | armv8l | arm64 | armhf | arm) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_arm -o magiskboot && chmod 755 magiskboot ;;
@@ -425,7 +426,6 @@ runs:
                 *) echo "Unknow cpu architecture for this device !" && exit 1 ;;
             esac
             aria2c ${{ inputs.bootimg-url }} -o split/boot.img
-            cd split
             nohup ./magiskboot unpack boot.img
             export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
             if [ "$FMT" = "gzip" ] ;then
@@ -443,8 +443,8 @@ runs:
             fi
             ./magiskboot repack boot.img
             rm -rf boot.img
-            mkdir -p -v ../build
-            mv *.img ../build/boot.img -v
+            mkdir -p -v ../../../build
+            mv *.img ../../../build/boot.img -v
             echo "::endgroup::"
          else
             echo "::group:: Packaging Anykernel3 flasher"
