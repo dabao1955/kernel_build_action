@@ -294,7 +294,11 @@ runs:
                 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
             fi
             if [ ${{ inputs.ksu-lkm }} = true ]; then
-                echo "CONFIG_KSU_MODULE=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+                if grep -q CONFIG_KSU=y "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
+                    sed -i 's/CONFIG_KSU=y/CONFIG_KSU=m/g' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
+                else
+                    echo "CONFIG_KSU_MODULE=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+                fi
             else
                 if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
                     echo "CONFIG_KPROBES is enabled, skip patch."
