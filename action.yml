@@ -181,13 +181,15 @@ runs:
 
          if [ ${{ inputs.aosp-gcc }} = true ]; then
              echo "::group:: Downloading AOSP GCC"
-             if [ ${{ inputs.aosp-clang }} = true ]; then
+             if [ ${{ inputs.aosp-clang }} = true ] || [ ${{ inputs.android.ndk }} = true ]; then
                  mkdir -p -v $HOME/gcc-64
                  aria2c -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
                  tar -C $HOME/gcc-64 -zxf gcc-aarch64.tar.gz
                  mkdir -p -v $HOME/gcc-32
                  aria2c -o gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
                  tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
+             elif [ ${{ inputs.aosp-clang }} = true ] || [ ${{ inputs.android-ndk }} = true ]; then
+                 echo "Error: The two options aosp-clang and android-ndk will conflict with each other, please turn off one." && exit 15
              else
                  git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
                  git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
