@@ -35,15 +35,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Install Packages
-        run: sudo apt update && sudo apt install -y ${{ matrix.lint }}
-      - name: lint
+      - name: ShellCheck lint
+        if: ${{ matrix.lint }} == 'shellcheck'
+        uses: ludeeus/action-shellcheck@2.0.0
+      - name: shfmt lint
+        if: ${{ matrix.lint }} == 'shfmt'
         run: |
-          if [ ${{ matrix.lint }} = "shfmt" ]; then
-              shfmt -w -i 2 ksupatch.sh
-          else
-              ${{ matrix.lint }} ksupatch.sh
-          fi
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends shfmt
+          shfmt -i -w 2 ksupatch.sh
+            
+
 
   ci-test:
     strategy:
