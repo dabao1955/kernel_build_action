@@ -36,14 +36,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: ShellCheck lint
-        if: ${{ matrix.lint }} == 'shellcheck'
+        if: matrix.lint == 'shellcheck'
         uses: ludeeus/action-shellcheck@2.0.0
       - name: shfmt lint
-        if: ${{ matrix.lint }} == 'shfmt'
+        if: matrix.lint == 'shfmt'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends shfmt
-          shfmt -i -w 2 ksupatch.sh
+          shfmt -w -i 2 ksupatch.sh
             
 
 
