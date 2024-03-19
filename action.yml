@@ -155,7 +155,7 @@ runs:
              exit 127
          fi
 
-          "$(id -u)" -eq 0 ] && echo "Do not be run as root" && exit 128
+         [ "$(id -u)" -eq 0 ] && echo "Do not be run as root" && exit 128
 
          if [ ${GITHUB_ACTIONS} = "true" ]; then
              echo "::group:: Cleaning up"
