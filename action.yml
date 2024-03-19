@@ -297,7 +297,7 @@ runs:
                 if grep -q CONFIG_KSU=y "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
                     sed -i 's/CONFIG_KSU=y/CONFIG_KSU=m/g' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
                 else
-                    echo "CONFIG_KSU" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+                    echo "CONFIG_KSU=m" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
                 fi
             else
                 if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
