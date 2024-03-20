@@ -55,8 +55,8 @@ inputs:
     description: "Build KernelSU as a linux kernel module"
     required: false
     default: false
-  overlayfs:
-    description: 'Enable Overlayfs for ksu'
+  ksu-patch:
+    description: 'patch path_umount for fs/namespace.c on ksu'
     required: false
     default: false
   disable-lto:
@@ -160,7 +160,7 @@ runs:
          if [ ${GITHUB_ACTIONS} = "true" ]; then
              echo "::group:: Cleaning up"
              test -f /bin/docker && docker rmi -f $(docker images -q)
-             wget -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
+             aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
              echo "::endgroup::"
          fi
 
@@ -303,7 +303,13 @@ runs:
                 if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
                     echo "CONFIG_KPROBES is enabled, skip patch."
                 else
-                    curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/ksupatchs.sh | bash
+                    curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatchs.sh | bash
+                fi
+                if grep -q "int path_umount" fs/namespace.c; then
+                    echo "path_umount is vaild,skip patch."
+                elif [ ${{ inputs.ksu-patch }} = true ]; then
+                    aria2c https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/0001-fs-backport-path_umount-from-linux-5.9.patch -o test.patch
+                    git apply test.patch
                 fi
             fi
             echo "::endgroup::"
@@ -311,15 +317,15 @@ runs:
 
          if [ ${{ inputs.nethunter }} = true ]; then
              echo "::group:: Initializing Kali nethunter"
-             wget https://github.com/Biohazardousrom/Kali-defconfig-checker/raw/master/check-kernel-config
+             aria2c https://github.com/Biohazardousrom/Kali-defconfig-checker/raw/master/check-kernel-config
              bash check-kernel-config ${{ inputs.config }} -w
              if [ ${{ inputs.nethunter-patch }} = true ]; then
-                 wget https://github.com/tomxi1997/kali-nethunter_patches/raw/main/add-wifi-injection.patch
+                 aria2c https://github.com/tomxi1997/kali-nethunter_patches/raw/main/add-wifi-injection.patch
                  git apply add-wifi-injection.patch
-                 wget https://github.com/tomxi1997/kali-nethunter_patches/raw/main/fix-ath9k-naming-conflict.patch
+                 aria2c https://github.com/tomxi1997/kali-nethunter_patches/raw/main/fix-ath9k-naming-conflict.patch
                  git apply fix-ath9k-naming-conflict.patch
                  if [ "$SUBLEVEL" ＜ 19 ]; then
-                     wget https://github.com/tomxi1997/kali-nethunter_patches/raw/main/add-wifi-injection-4.14.patch
+                     aria2c https://github.com/tomxi1997/kali-nethunter_patches/raw/main/add-wifi-injection-4.14.patch
                      git apply add-wifi-injection-4.14.patch
                  fi
              else
@@ -331,9 +337,9 @@ runs:
          if [ ${{ inputs.apatch }} = true ]; then
              echo "::group:: Initializing Apatch"
              mkdir drivers/apatch
-             wget https://github.com/dabao1955/kernel_build_action/raw/main/apatch/Kconfig
+             aria2c https://github.com/dabao1955/kernel_build_action/raw/main/apatch/Kconfig
              grep -q "apatch" || sed -i "/endmenu/i\\source \"drivers/apatch/Kconfig\"" drivers/Kconfig
-             wget https://github.com/dabao1955/kernel_build_action/raw/main/apatch/fix_module.patch
+             aria2c https://github.com/dabao1955/kernel_build_action/raw/main/apatch/fix_module.patch
              git apply fix_module.patch
              echo "CONFIG_APATCH_SUPPORT=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
              echo "CONFIG_APATCH_FIX_MODULES=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
@@ -351,10 +357,6 @@ runs:
              fi
          fi
 
-         if [ ${{ inputs.overlayfs }} = true ]; then
-             grep -q "OVERLAY_FS" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" || echo "CONFIG_OVERLAY_FS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
-         fi
-
          if [ ${{ inputs.kvm }} = true ]; then
             echo "CONFIG_VIRTUALIZATION=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
             echo "CONFIG_KVM=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
@@ -364,13 +366,13 @@ runs:
 
          if [ ${{ inputs.lxc }} = true ]; then
              echo "::group:: Enabling LXC"
-             wget https://github.com/wu17481748/lxc-docker/raw/main/LXC-DOCKER-OPEN-CONFIG.sh
+             aria2c https://github.com/wu17481748/lxc-docker/raw/main/LXC-DOCKER-OPEN-CONFIG.sh
              bash LXC-DOCKER-OPEN-CONFIG.sh ${{ inputs.config }} -w
              grep -q "CONFIG_ANDROID_PARANOID_NETWORK" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" && sed -i 's/CONFIG_ANDROID_PARANOID_NETWORK=y/#CONFIG_ANDROID_PARANOID_NETWORK=y/' arch/${{ inputs.arch }}/configs/${{ inputs.config }}
              if [ ${{ inputs.lxc-patch }} = true ]; then
-                 wget https://github.com/wu17481748/lxc-docker/raw/main/cgroup.patch
+                 aria2c https://github.com/wu17481748/lxc-docker/raw/main/cgroup.patch
                  patch kernel/cgroup/cgroup.c < cgroup.patch
-                 wget https://github.com/wu17481748/lxc-docker/raw/main/xt_qtaguid.patch
+                 aria2c https://github.com/wu17481748/lxc-docker/raw/main/xt_qtaguid.patch
                  patch net/netfilter/xt_qtaguid.c < xt_qtaguid.patch
              else
                  echo skip lxc patch

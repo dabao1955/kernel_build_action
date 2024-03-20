@@ -38,13 +38,21 @@ jobs:
       - name: ShellCheck lint
         if: matrix.lint == 'shellcheck'
         uses: ludeeus/action-shellcheck@2.0.0
+
       - name: shfmt lint
         if: matrix.lint == 'shfmt'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends shfmt
-          shfmt -w -i 2 ksupatch.sh
-            
+            export HOST_ARCH=$(dpkg --print-architecture)
+            case ${HOST_ARCH} in
+                armv7* | armv8l | armhf | arm) aria2c https://github.com/mvdan/sh/releases/download/v3.8.0/shfmt_v3.8.0_linux_arm -o shfmt ;;
+                i*86 | x86) aria2c https://github.com/mvdan/sh/releases/download/v3.8.0/shfmt_v3.8.0_linux_x86 -o shfmt ;;
+                amd64 | x86_64) aria2c https://github.com/mvdan/sh/releases/download/v3.8.0/shfmt_v3.8.0_linux_amd64 -o shfmt ;;
+                aarch64 | arm64) aria2c https://github.com/mvdan/sh/releases/download/v3.8.0/shfmt_v3.8.0_linux_arm64 -o shfmt ;;
+
+                *) echo "Unknow cpu architecture for this device !" && exit 1 ;;
+            esac
+            chmod 755 -R ./shfmt
+            ./shfmt -w -i 2 kernelsu/ksupatch.sh
 
 
   ci-test:
