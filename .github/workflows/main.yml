@@ -82,5 +82,4 @@ jobs:
           aosp-clang-version: r383902
           python-27: true
           disable-lto: true
-          overlayfs: true
           anykernel3: true
