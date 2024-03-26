@@ -60,13 +60,5 @@ config APATCH_CUSTOMS
     help
             Add APatch to your kernel.
         
-    config LOCALVERSION
-    
-        depends on APATCH_CUSTOMS
-        
-        string
-        
-        default "-APatch"
-
 endmenu
 

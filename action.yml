@@ -344,7 +344,6 @@ runs:
              echo "CONFIG_APATCH_SUPPORT=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
              echo "CONFIG_APATCH_FIX_MODULES=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
              echo "CONFIG_APATCH_CUSTOMS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
-             grep -q "CONFIG_LOCALVERSION_AUTO=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" || sed -i 's/CONFIG_LOCALVERSION_AUTO=y/CONFIG_LOCALVERSION_AUTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }}
          fi
 
          if [ ${{ inputs.disable-lto }} = true ]; then
