@@ -425,7 +425,7 @@ runs:
             aria2c ${{ inputs.bootimg-url }} -o boot.img
             nohup ./magiskboot unpack boot.img
             export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
-            elif [ "$FMT" = "raw" ] ; then
+            if [ "$FMT" = "raw" ] ; then
                 cp -v ../out/arch/${{ inputs.arch }}/boot/Image kernel
             else
                 if find -name "*dtb" ; then
