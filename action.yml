@@ -427,7 +427,7 @@ runs:
             if [ "$FMT" = "raw" ] ; then
                 cp -v ../out/arch/${{ inputs.arch }}/boot/Image kernel
             else
-                if find -name "*dtb" ; then
+                if ls dtb >/dev/null ; then
                     cp -v ../out/arch/${{ inputs.arch }}/boot/Image.*-dtb kernel
                 else
                     cp -v ../out/arch/${{ inputs.arch }}/boot/Image.* kernel
