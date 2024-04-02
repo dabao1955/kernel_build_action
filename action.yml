@@ -448,10 +448,6 @@ runs:
             echo "::endgroup::"
          fi
 
-         if [ ${{ inputs.ksu-lkm }} = true ]; then
-             mv out/drivers/kernelsu/kernelsu.ko ../build
-         fi
-
     - id: uploadi
       if: ${{ inputs.release == 'false' && inputs.anykernel3 == 'false' }}
       uses: actions/upload-artifact@v4
