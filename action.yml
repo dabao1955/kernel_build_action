@@ -55,10 +55,6 @@ inputs:
     description: "Build KernelSU as a linux kernel module"
     required: false
     default: false
-  ksu-patch:
-    description: 'patch path_umount for fs/namespace.c on ksu'
-    required: false
-    default: false
   disable-lto:
     description: 'Disable LTO configs for configs.'
     required: false
@@ -293,24 +289,10 @@ runs:
             else
                 curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
             fi
-            if [ ${{ inputs.ksu-lkm }} = true ]; then
-                if grep -q CONFIG_KSU=y "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
-                    sed -i 's/CONFIG_KSU=y/CONFIG_KSU=m/g' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
-                else
-                    echo "CONFIG_KSU=m" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
-                fi
+            if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
+                echo "CONFIG_KPROBES is enabled, skip patch."
             else
-                if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
-                    echo "CONFIG_KPROBES is enabled, skip patch."
-                else
-                    curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatchs.sh | bash
-                fi
-                if grep -q "int path_umount" fs/namespace.c; then
-                    echo "path_umount is vaild,skip patch."
-                elif [ ${{ inputs.ksu-patch }} = true ]; then
-                    aria2c https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/0001-fs-backport-path_umount-from-linux-5.9.patch -o test.patch
-                    git apply test.patch
-                fi
+                curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatchs.sh | bash
             fi
             echo "::endgroup::"
          fi

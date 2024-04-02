@@ -69,9 +69,7 @@ Note: You do not need to fork this repository.
 | apatch | false | Enable APatch | true |
 | ksu | false | Enable KernelSU | true |
 | ksu-version | false | KernelSU version | v0.6.6 |
-| ksu-lkm(GKI ONLY) | false | Build KernelSU as a linux kernel module | true |
 | disable-lto | false | | false |
-| ksu-patch | false | patch path_umount for fs/namespace.c | false |
 | lxc | false | Enable LXC and docker to config | false |
 | lxc-patch | false | Add patch avoid not booting after enable lxc | false |
 | nethunter | false | Enable Kali nethunter | false |
