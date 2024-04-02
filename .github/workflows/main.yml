@@ -12,19 +12,22 @@ jobs:
       contents: write
     steps:
 
-    - name: Checkout Repo
-      uses: actions/checkout@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
-    - name: Install Node.js
-      uses: actions/setup-node@v4
-      with:
-       node-version: 20
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+         node-version: 20
 
-    - name: Imstall dependence
-      run: cd tests && yarn install
+      - name: Install dependence
+        run: cd tests && yarn install
 
-    - name: Check yaml
-      run: cd tests && node index.js
+      - name: Check yaml
+        run: cd tests && node index.js
+
+      - name: Clean Workspace
+        run: git clean -dxf
 
   sh-check:
     runs-on: ubuntu-latest
@@ -53,6 +56,9 @@ jobs:
             esac
             chmod 755 -R ./shfmt
             ./shfmt -w -i 2 kernelsu/ksupatch.sh
+
+      - name: Clean Workspace
+        run: git clean -dxf
 
 
   ci-test:
