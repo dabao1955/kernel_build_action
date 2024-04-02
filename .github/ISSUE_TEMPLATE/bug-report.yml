@@ -2,7 +2,6 @@ name: Bug Report
 description: "(⋟﹏⋞) I have encountered some problems"
 title: "[Bug]: "
 labels: ["bug"]
-assignees: ["dabao1955"]
 
 body:
   - type: checkboxes
