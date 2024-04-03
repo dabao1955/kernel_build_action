@@ -29,7 +29,8 @@ async function checkYAMLFilesSequentially() {
   const files = [
     '../action.yml',
     '../.github/ISSUE_TEMPLATE/feature_request.yml',
-    '../.github/workflows/main.yml',
+    '../.github/workflows/check.yml',
+    '../.github/workflows/build.yml',
     '../.github/ISSUE_TEMPLATE/bug-report.yml',
     '../.github/ISSUE_TEMPLATE/config.yml',
   ];
