@@ -16,16 +16,14 @@ jobs:
       uses: dabao1955/kernel_build_action@main
       with:
           kernel-url: https://github.com/mello-kernel/kernel_realme_sm7125
-          kernel-dir: msm-4.14
+          kernel-dir: roms
           branch: roms
           config: atoll_defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
-          apatch: true
-          apatch-version: main
-          ksu: false
-          ksu-version: "main"
+          ksu: true
+          ksu-version: main
           android-version: 14
           aosp-clang-version: r510928
           python-27: true
