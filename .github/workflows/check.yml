@@ -1,4 +1,4 @@
-name: ci
+name: Lint Check
 on:
   push:
     branches: main
@@ -62,30 +62,7 @@ jobs:
 
 
   ci-test:
-    strategy:
-      fail-fast: false
     needs:
       - yaml-check
       - sh-check
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-    - name: Test CI
-      uses: dabao1955/kernel_build_action@main
-      with:
-          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
-          kernel-dir: msm-4.19
-          branch: taffy
-          config: cas_defconfig
-          arch: arm64
-          aosp-gcc: true
-          aosp-clang: true
-          ksu: true
-          ksu-version: main
-          android-version: 12
-          aosp-clang-version: r383902
-          python-27: true
-          disable-lto: true
-          anykernel3: true
+    uses: ./.github/workflows/build.yml

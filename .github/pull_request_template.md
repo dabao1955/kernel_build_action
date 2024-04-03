@@ -7,8 +7,6 @@
 
 - [ ] feature add 
 
-- [ ] i18n 
-
 - [ ] other 
 
 ## Checkbox
