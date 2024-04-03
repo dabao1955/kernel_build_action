@@ -6,13 +6,13 @@ branding:
   color: 'blue'
 
 inputs:
-  kernel-url: https://github.com/mello-kernel/kernel_realme_sm7125
+  kernel-url:
     description: 'Kernel Source Url'
     required: true
   depth:
     required: false
     default: 1
-  vendor-url: https://github.com/realme-sm7125/platform_device_realme_sm7125-common
+  vendor-url:
     description: 'Kernel Vendor Source Url'
     required: false
   kernel-dir:
@@ -42,7 +42,7 @@ inputs:
   apatch:
     description: 'APatch function support'
     required: true
-    default: "main"
+    default: main
   ksu:
     description: 'KernelSU function support'
     required: false
