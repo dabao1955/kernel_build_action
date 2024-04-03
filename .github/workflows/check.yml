@@ -1,15 +1,12 @@
 name: Lint Check
 on:
-  push:
-    branches: main
-  pull_request:
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
   yaml-check:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
 
       - name: Checkout Repo
@@ -60,9 +57,3 @@ jobs:
       - name: Clean Workspace
         run: git clean -dxf
 
-
-  ci-test:
-    needs:
-      - yaml-check
-      - sh-check
-    uses: ./.github/workflows/build.yml

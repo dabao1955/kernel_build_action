@@ -367,14 +367,11 @@ runs:
          if [ ${{ inputs.android-ndk }} = true ]; then
              export CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64
              export PATH=$CLANG_PATH/bin:$PATH
-             make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
              if [ ${{ inputs.ccache }} = true ]; then
                  export USE_CCACHE=1
-                 make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC="ccache clang" ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
-             else
-                 make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
              fi
-             echo "::endgroup::"
+             cd ..
+             cd ${{ inputs.kernel-dir }} && $HOME/android-ndk-${{ inputs.android-ndk-version }}/ndk-build
          elif [ ${{ inputs.android-ndk }} = false ] && [ ${{ inputs.aosp-gcc }} = true ]; then
              export CLANG_PATH=$HOME/clang
              export PATH=$CLANG_PATH/bin:$PATH
