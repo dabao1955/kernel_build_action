@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
 
     steps:
     - name: Test CI
