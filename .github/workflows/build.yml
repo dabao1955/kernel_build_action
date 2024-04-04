@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      secrets: read
 
     steps:
     - name: Test CI
