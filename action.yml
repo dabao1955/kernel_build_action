@@ -124,6 +124,9 @@ inputs:
     description: "After the kernel compilation is completed, it will be automatically published to the releases page"
     required: false
     default: false
+  access-token:
+    description: 'PAT with repository scope (https://github.com/settings/tokens)'
+    required: false
   extra-cmd:
     description: 'Extra options of building kernel.'
     required: false
@@ -364,13 +367,11 @@ runs:
          if [ ${{ inputs.android-ndk }} = true ]; then
              export CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64
              export PATH=$CLANG_PATH/bin:$PATH
-             cd ..
-             if [ -f AndroidKernel.mk ]; then
-                 export MK=Android.mk
-             else
-                 export MK=AndroidKernel.mk
+             if [ ${{ inputs.ccache }} = true ]; then
+                 export USE_CCACHE=1
              fi
-             cd ${{ inputs.kernel-dir }} && $HOME/android-ndk-${{ inputs.android-ndk-version }}/ndk-build APP_BUILD_SCRIPT=$MK
+             cd ..
+             cd ${{ inputs.kernel-dir }} && $HOME/android-ndk-${{ inputs.android-ndk-version }}/ndk-build
          elif [ ${{ inputs.android-ndk }} = false ] && [ ${{ inputs.aosp-gcc }} = true ]; then
              export CLANG_PATH=$HOME/clang
              export PATH=$CLANG_PATH/bin:$PATH
@@ -466,7 +467,7 @@ runs:
       if: inputs.release == 'true'
       uses: softprops/action-gh-release@v0.1.15
       env:
-        GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.access-token }}
       with:
         name: Last CI build kernel
         tag: last-ci
