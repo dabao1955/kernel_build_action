@@ -1,4 +1,4 @@
-name: Build Kernel
+name: Build Kernel(4.19)
 on:
   workflow_dispatch:
   workflow_call:
@@ -12,7 +12,7 @@ jobs:
       contents: read
 
     steps:
-    - name: Test CI
+    - name: Build Kernel With Testing Action
       uses: dabao1955/kernel_build_action@main
       with:
           kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas

@@ -323,9 +323,9 @@ runs:
              grep -q "apatch" || sed -i "/endmenu/i\\source \"drivers/apatch/Kconfig\"" drivers/Kconfig
              aria2c https://github.com/dabao1955/kernel_build_action/raw/main/apatch/fix_module.patch
              git apply fix_module.patch
-             echo "CONFIG_APATCH_SUPPORT=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
-             echo "CONFIG_APATCH_FIX_MODULES=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
-             echo "CONFIG_APATCH_CUSTOMS=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+             echo "CONFIG_APATCH_SUPPORT=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
+             echo "CONFIG_APATCH_FIX_MODULES=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
+             echo "CONFIG_APATCH_CUSTOMS=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
          fi
 
          if [ ${{ inputs.disable-lto }} = true ]; then
@@ -334,15 +334,15 @@ runs:
                   sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
                   sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
                   sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
-                  echo "CONFIG_LTO_NONE=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+                  echo "CONFIG_LTO_NONE=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
              fi
          fi
 
          if [ ${{ inputs.kvm }} = true ]; then
-            echo "CONFIG_VIRTUALIZATION=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
-            echo "CONFIG_KVM=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
-            echo "CONFIG_KVM_MMIO=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
-            echo "CONFIG_KVM_ARM_HOST=y" >> arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+            echo "CONFIG_VIRTUALIZATION=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
+            echo "CONFIG_KVM=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
+            echo "CONFIG_KVM_MMIO=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
+            echo "CONFIG_KVM_ARM_HOST=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
          fi
 
          if [ ${{ inputs.lxc }} = true ]; then
@@ -369,9 +369,10 @@ runs:
              export PATH=$CLANG_PATH/bin:$PATH
              if [ ${{ inputs.ccache }} = true ]; then
                  export USE_CCACHE=1
+                 make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC="ccache clang" ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
+             else
+                 make -j$(nproc --all) CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- CLANG_TRIPLE=aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
              fi
-             cd ..
-             cd ${{ inputs.kernel-dir }} && $HOME/android-ndk-${{ inputs.android-ndk-version }}/ndk-build
          elif [ ${{ inputs.android-ndk }} = false ] && [ ${{ inputs.aosp-gcc }} = true ]; then
              export CLANG_PATH=$HOME/clang
              export PATH=$CLANG_PATH/bin:$PATH
