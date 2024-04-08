@@ -15,16 +15,16 @@ jobs:
     - name: Build Kernel With Testing Action
       uses: dabao1955/kernel_build_action@main
       with:
-          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
-          kernel-dir: msm-4.19
-          branch: taffy
-          config: cas_defconfig
+          kernel-url: https://github.com/OPPO-MT6765/kernel_oppo_OP4BFB.git
+          kernel-dir: 4.9.117
+          branch: android-9.0
+          config: OP4BFB_defconfig 
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
           ksu: true
           ksu-version: main
-          android-version: 12
+          android-version: 9
           aosp-clang-version: r383902
           python-27: true
           disable-lto: true
