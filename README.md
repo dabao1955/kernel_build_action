@@ -52,8 +52,7 @@ jobs:
 ```
 Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_action/blob/main/.github/workflows/build.yml) to modify it.
 
-> **Note**
->
+> [!NOTE]
 > You do not need to fork this repository.
 >
 > If you just want to compile the kernel, please do not submit PR after modification!
@@ -90,7 +89,8 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | android-ndk | false | Use Android-NDK to compile kernel . Before enable this option，you should disable aosp-gcc and aosp-clang bacause android-ndk will conflict with them | false |
 | android-ndk-version | false | | r23b |
 | python-27 | false | Use python2.7 instead of python3, this is helpful for some kernel compilations | false |
-| anykernel3 | false | Package the compiled kernel using anykernel3. If this option is disabled, You need to fill `bootimg-url`. | false |
+| anykernel3 | false | Package the compiled kernel using AnyKernel3. If this option is disabled, You need to fill `bootimg-url`. | false |
+| anykernel3-url | false | 3rdparty AnyKernel3 url | https://github.com/username/AnyKernel3 |
 | release | flase | After the kernel compilation is completed, it will be automatically published to the releases page | true |
 | access-token | false | Please fill it if you want to release kernel | ghp_xxxxxx |
 | bootimg-url | false | A URL that can download the local boot.img | https://127.0.0.1/boot.img |

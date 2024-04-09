@@ -116,6 +116,9 @@ inputs:
     description: 'Package kernel use anykernel3.'
     required: false
     default: false
+  anykernel3-url:
+    required: false
+    default: false
   bootimg-url:
     description: "boot.img path"
     required: false
@@ -254,7 +257,7 @@ runs:
              echo "::group:: Downloading AOSP clang"
              if [ ${{ inputs.aosp-gcc }} = true ]; then
                  mkdir $HOME/clang -p -v
-                 if [[ ${{ inputs.android-version }} =~ ^[0-9]$|^([1-9][0-9])$ ]]; then
+                 if [ ! -z ${{ inputs.android-version }} ]; then
                      aria2c -o aosp-clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${{ inputs.android-version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz
                  else
                      aria2c -o aosp-clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-${{ inputs.aosp-clang-version }}.tar.gz
@@ -421,7 +424,11 @@ runs:
             echo "::endgroup::"
          else
             echo "::group:: Packaging Anykernel3 flasher"
-            git clone https://github.com/osm0sis/AnyKernel3
+            if [ ! -z ${{ inputs.anykernel3-url }} ]; then
+                git clone ${{ inputs.anykernel3-url }} AnyKernel3
+            else
+                git clone https://github.com/osm0sis/AnyKernel3
+            fi
             sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
             sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
             sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
