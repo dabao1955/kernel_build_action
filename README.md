@@ -52,7 +52,11 @@ jobs:
 ```
 Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_action/blob/main/.github/workflows/build.yml) to modify it.
 
-Note: You do not need to fork this repository.
+> **Note**
+>
+> You do not need to fork this repository.
+>
+> If you just want to compile the kernel, please do not submit PR after modification!
 
 - Finally, run the workflow you just wrote.
 ## Inputs
