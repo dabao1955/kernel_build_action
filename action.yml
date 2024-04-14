@@ -117,8 +117,9 @@ inputs:
     required: false
     default: false
   anykernel3-url:
+    description: '3rdparty anykernrl3 url path'
     required: false
-    default: false
+    default: ""
   bootimg-url:
     description: "boot.img path"
     required: false
