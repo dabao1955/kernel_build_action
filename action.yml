@@ -219,7 +219,7 @@ runs:
              echo "::group:: Downloading Android NDK"
              if [ ${{ inputs.aosp-gcc }} = false ]; then
                  export NDKVER=$(echo "${{ inputs.android-ndk-version }}" | sed 's/r\([0-9]\+\)[a-zA-Z]\?/\1/g')
-                 if [ "$NDKVER" < "23" ]; then
+                 if [ "$NDKVER" -lt "23" ]; then
                      aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux.zip
                      unzip -d $HOME android-ndk.zip
                  else
@@ -311,7 +311,7 @@ runs:
                  git apply add-wifi-injection.patch
                  aria2c https://github.com/tomxi1997/kali-nethunter_patches/raw/main/fix-ath9k-naming-conflict.patch
                  git apply fix-ath9k-naming-conflict.patch
-                 if [ "$SUBLEVEL" ＜ "19" ]; then
+                 if [ "$SUBLEVEL" -lt "19" ]; then
                      aria2c https://github.com/tomxi1997/kali-nethunter_patches/raw/main/add-wifi-injection-4.14.patch
                      git apply add-wifi-injection-4.14.patch
                  fi
