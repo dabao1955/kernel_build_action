@@ -6,7 +6,7 @@ branding:
   color: 'blue'
 
 inputs:
-  kernel-url:
+  kernel-url: https://github.com/mello-kernel/kernel_realme_sm7125
     description: 'Kernel Source Url'
     required: true
   depth:
@@ -18,7 +18,7 @@ inputs:
   kernel-dir:
     required: false
     default: kernel
-  vendor:
+  vendor: https://github.com/realme-sm7125/platform_device_realme_sm7125-common
     required: false
     default: false
   vendor-dir:
@@ -27,7 +27,7 @@ inputs:
   branch:
     description: 'Branch name'
     required: false
-    default: main
+    default: 14
   config:
     description: 'configuration for building android kernel'
     required: true
@@ -45,8 +45,8 @@ inputs:
     default: main
   ksu:
     description: 'KernelSU function support'
-    required: false
-    default: false
+    required: true
+    default: main
   ksu-version:
     description: 'KernelSU default branch'
     required: false
@@ -93,7 +93,7 @@ inputs:
     default: false
   aosp-clang-version:
     required: false
-    default: "r383902"
+    default: "r487747c"
   other-clang-url:
     required: false
     default: ''
@@ -126,11 +126,11 @@ inputs:
     default: ""
   release:
     description: "After the kernel compilation is completed, it will be automatically published to the releases page"
-    required: false
-    default: false
-  access-token:
+    required: true
+    default: main
+  access-token: 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
     description: 'PAT with repository scope (https://github.com/settings/tokens)'
-    required: false
+    required: true
   extra-cmd:
     description: 'Extra options of building kernel.'
     required: false
