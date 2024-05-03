@@ -31,7 +31,7 @@ inputs:
   config:
     description: 'configuration for building android kernel'
     required: true
-    default: defconfig
+    default: atoll_defconfig
   arch:
     required: true
     default: arm64
@@ -49,7 +49,7 @@ inputs:
     default: main
   ksu-version:
     description: 'KernelSU default branch'
-    required: false
+    required: true
     default: "main"
   ksu-lkm:
     description: "Build KernelSU as a linux kernel module"
@@ -89,8 +89,8 @@ inputs:
     default: true
   aosp-clang:
     description: 'Use clang from aosp project.'
-    required: false
-    default: false
+    required: true
+    default: main
   aosp-clang-version:
     required: false
     default: "r487747c"
