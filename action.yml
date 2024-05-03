@@ -6,7 +6,7 @@ branding:
   color: 'blue'
 
 inputs:
-  kernel-url: 'https://github.com/mello-kernel/kernel_realme_sm7125'
+  kernel-url:
     description: 'Kernel Source Url'
     required: true
   depth:
@@ -18,7 +18,7 @@ inputs:
   kernel-dir:
     required: false
     default: kernel
-  vendor: 'https://github.com/realme-sm7125/platform_device_realme_sm7125-common'
+  vendor:
     required: false
     default: false
   vendor-dir:
@@ -27,29 +27,29 @@ inputs:
   branch:
     description: 'Branch name'
     required: false
-    default: 14
+    default: main
   config:
     description: 'configuration for building android kernel'
     required: true
-    default: atoll_defconfig
+    default: defconfig
   arch:
     required: true
     default: arm64
   android-version:
     description: 'Android version.'
     required: true
-    default: 14
+    default: 12
   apatch:
     description: 'APatch function support'
-    required: true
-    default: main
+    required: false
+    default: false
   ksu:
     description: 'KernelSU function support'
-    required: true
-    default: main
+    required: false
+    default: false
   ksu-version:
     description: 'KernelSU default branch'
-    required: true
+    required: false
     default: "main"
   ksu-lkm:
     description: "Build KernelSU as a linux kernel module"
@@ -89,11 +89,11 @@ inputs:
     default: true
   aosp-clang:
     description: 'Use clang from aosp project.'
-    required: true
-    default: main
+    required: false
+    default: false
   aosp-clang-version:
     required: false
-    default: "r487747c"
+    default: "r383902"
   other-clang-url:
     required: false
     default: ''
@@ -126,11 +126,11 @@ inputs:
     default: ""
   release:
     description: "After the kernel compilation is completed, it will be automatically published to the releases page"
-    required: true
-    default: main
-  access-token: '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'
+    required: false
+    default: false
+  access-token:
     description: 'PAT with repository scope (https://github.com/settings/tokens)'
-    required: true
+    required: false
   extra-cmd:
     description: 'Extra options of building kernel.'
     required: false
