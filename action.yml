@@ -6,7 +6,7 @@ branding:
   color: 'blue'
 
 inputs:
-  kernel-url: https://github.com/mello-kernel/kernel_realme_sm7125
+  kernel-url: 'https://github.com/mello-kernel/kernel_realme_sm7125'
     description: 'Kernel Source Url'
     required: true
   depth:
@@ -18,7 +18,7 @@ inputs:
   kernel-dir:
     required: false
     default: kernel
-  vendor: https://github.com/realme-sm7125/platform_device_realme_sm7125-common
+  vendor: 'https://github.com/realme-sm7125/platform_device_realme_sm7125-common'
     required: false
     default: false
   vendor-dir:
@@ -128,7 +128,7 @@ inputs:
     description: "After the kernel compilation is completed, it will be automatically published to the releases page"
     required: true
     default: main
-  access-token: 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
+  access-token: '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'
     description: 'PAT with repository scope (https://github.com/settings/tokens)'
     required: true
   extra-cmd:
