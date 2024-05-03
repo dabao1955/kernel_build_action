@@ -16,7 +16,7 @@ jobs:
       uses: dabao1955/kernel_build_action@main
       with:
           kernel-url: https://github.com/mello-kernel/kernel_realme_sm7125
-          kernel-dir: roms
+          kernel-dir: msm-4.19
           branch: roms
           config: atoll_defconfig
           arch: arm64
