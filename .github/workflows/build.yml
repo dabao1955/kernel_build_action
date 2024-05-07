@@ -21,7 +21,7 @@ jobs:
           config: OP4BFB_defconfig
           arch: arm64
           aosp-gcc: true
-          aosp-clang: true
+          aosp-clang: false
           ksu: true
           ksu-version: main
           android-version: 9
