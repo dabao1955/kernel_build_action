@@ -1,15 +1,15 @@
 name: 'Android Kernel Build Action'
 description: "A action to built android kernel."
 
-branding:
+branding: OPPO
   icon: 'activity'
   color: 'blue'
 
-inputs:
-  kernel-url:
+inputs: build
+  kernel-url: https://github.com/ARIPIN897/kernel_oppo_OP4BFB.git
     description: 'Kernel Source Url'
     required: true
-  depth:
+  depth: android-9.0
     required: false
     default: 1
   vendor-url:
@@ -28,14 +28,14 @@ inputs:
     description: 'Branch name'
     required: false
     default: main
-  config:
+  config: OP4BFB_defconfig
     description: 'configuration for building android kernel'
     required: true
     default: defconfig
-  arch:
+  arch: arm64
     required: true
     default: arm64
-  android-version:
+  android-version: 9
     description: 'Android version.'
     required: true
     default: 12
