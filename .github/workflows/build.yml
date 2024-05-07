@@ -16,7 +16,7 @@ jobs:
       uses: dabao1955/kernel_build_action@main
       with:
           kernel-url: https://github.com/ARIPIN897/kernel_oppo_OP4BFB.git
-          kernel-dir: OP4BFB-4.9
+          kernel-dir: kernel_oppo_OP4BFB
           branch: android_9.0
           config: OP4BFB_defconfig
           arch: arm64
@@ -24,7 +24,7 @@ jobs:
           aosp-clang: true
           ksu: true
           ksu-version: main
-          android-version: 12
+          android-version: 9
           aosp-clang-version: r383902
           python-27: true
           disable-lto: true
