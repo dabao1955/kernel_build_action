@@ -1,12 +1,12 @@
 name: 'Android Kernel Build Action'
 description: "A action to built android kernel."
 
-branding:
+branding: OPPO
   icon: 'activity'
   color: 'blue'
 
 inputs:
-  kernel-url:
+  kernel-url: file:///home/aripin/Unduhan/proton-clang-master
     description: 'Kernel Source Url'
     required: true
   depth:
@@ -28,14 +28,14 @@ inputs:
     description: 'Branch name'
     required: false
     default: main
-  config:
+  config: OP4BFB_defconfig
     description: 'configuration for building android kernel'
     required: true
     default: defconfig
   arch:
     required: true
     default: arm64
-  android-version:
+  android-version: 9
     description: 'Android version.'
     required: true
     default: 12
