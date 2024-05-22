@@ -388,9 +388,13 @@ runs:
              else
                  make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }}
              fi
-         else
+         else    
              make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.config }}
-             make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
+             if [ ${{ inputs.ccache }} = true ]; then
+                 make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CC="ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc" ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
+             else
+                 make -j$(nproc --all) CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- ARCH=${{ inputs.arch }} O=out ${{ inputs.extra-cmd }} 
+             fi
          fi
          echo "::endgroup::"
 
