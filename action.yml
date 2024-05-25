@@ -453,8 +453,8 @@ runs:
             if [ ${{ inputs.release }} = false ]; then
                 cp AnyKernel3 ../../build -r -v
             else
-                zip Anykernel3-flasher.zip Anykernel3/*
-                mv Anykernel3-flasher.zip ../../build -rv
+                zip Anykernel3-flasher.zip AnyKernel3/*
+                mv Anykernel3-flasher.zip ../../build -v
             fi
             echo "::endgroup::"
          fi
