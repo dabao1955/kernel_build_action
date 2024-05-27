@@ -434,10 +434,10 @@ runs:
                 git clone ${{ inputs.anykernel3-url }} AnyKernel3
             else
                 git clone https://github.com/osm0sis/AnyKernel3
+                sed -i 's!BLOCK=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!BLOCK=auto;!g' AnyKernel3/anykernel.sh
+                sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
+                sed -i 's/is_slot_device=0;/IS_SLOT_DEVICE=auto;/g' AnyKernel3/anykernel.sh
             fi
-            sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
-            sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
-            sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
 
             if [ -f out/arch/${{ inputs.arch }}/boot/Image.*-dtb ]; then
                 cp out/arch/${{ inputs.arch }}/boot/Image.*-dtb AnyKernel3/ -rv
