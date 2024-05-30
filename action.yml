@@ -274,7 +274,7 @@ runs:
 
          if [ !-z ${{ inputs.vendor-url }} ]; then
              echo "::group:: Pulling Kernel vendor source"
-             git clone ${{ inputs.vendor-url }} --depth=${{ inputs.depth }} kernel/${{ inputs.vendor-dir }} -b ${{ inputs.vendor-branch }}
+             git clone ${{ inputs.vendor-url }} --depth=${{ inputs.kernel-branch }} kernel/${{ inputs.vendor-dir }} -b ${{ inputs.vendor-branch }}
              test -d kernel/${{ inputs.vendor-dir }}/vendor && cp -rv kernel/${{ inputs.vendor-dir }}/vendor kernel
              test -d kernel/${{ inputs.vendor-dir }}/vendor && cp -rv kernel/${{ inputs.vendor-dir }}/vendor ./
              echo "::endgroup::"
