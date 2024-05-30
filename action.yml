@@ -18,14 +18,14 @@ inputs:
   kernel-dir:
     required: false
     default: kernel
-  vendor:
-    required: false
-    default: false
   vendor-dir:
     required: false
     default: vendor
-  branch:
+  kernel-branch:
     description: 'Branch name'
+    required: false
+    default: main
+  vendor-branch:
     required: false
     default: main
   config:
@@ -51,10 +51,6 @@ inputs:
     description: 'KernelSU default branch'
     required: false
     default: "main"
-  ksu-lkm:
-    description: "Build KernelSU as a linux kernel module"
-    required: false
-    default: false
   disable-lto:
     description: 'Disable LTO configs for configs.'
     required: false
@@ -276,9 +272,9 @@ runs:
          git clone --recursive ${{ inputs.kernel-url }} -b "${{ inputs.branch }}" --depth=${{ inputs.depth }} kernel/${{ inputs.kernel-dir }}
          echo "::endgroup::"
 
-         if [ ${{ inputs.vendor }} = true ]; then
+         if [ !-z ${{ inputs.vendor-url }} ]; then
              echo "::group:: Pulling Kernel vendor source"
-             git clone ${{ inputs.vendor-url }} --depth=${{ inputs.depth }} kernel/${{ inputs.vendor-dir }}
+             git clone ${{ inputs.vendor-url }} --depth=${{ inputs.depth }} kernel/${{ inputs.vendor-dir }} -b ${{ inputs.vendor-branch }}
              test -d kernel/${{ inputs.vendor-dir }}/vendor && cp -rv kernel/${{ inputs.vendor-dir }}/vendor kernel
              test -d kernel/${{ inputs.vendor-dir }}/vendor && cp -rv kernel/${{ inputs.vendor-dir }}/vendor ./
              echo "::endgroup::"

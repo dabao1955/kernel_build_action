@@ -17,7 +17,7 @@ jobs:
       with:
           kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
           kernel-dir: msm-4.19
-          branch: taffy
+          kernel-branch: taffy
           config: cas_defconfig
           arch: arm64
           aosp-gcc: true
