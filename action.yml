@@ -289,12 +289,13 @@ runs:
                 echo "KernelSU has been initialized,skipped."
             else
                 if [[ "${{ inputs.ksu-version }}" == "main" ]] || version_gt "${{ inputs.ksu-version }}" "v0.9.5"; then
-                    printf "Warning: The KernelSU version you selected was detected to be ${{ inputs.ksu-version }}, but KernelSU has dropped support for the non-gki kernel since 0.9.5. This will force switch to v0.9.5."
+                    echo "Warning: The KernelSU version you selected was detected to be ${{ inputs.ksu-version }}, but KernelSU has dropped support for the non-gki kernel since 0.9.5. 
+                    This will force switch to v0.9.5."
                     export KVER=v0.9.5
                 else
                     export KVER=${{ inputs.ksu-version }}
-                    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$KVER"
                 fi
+                    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$KVER"
             fi
             if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
                 echo "CONFIG_KPROBES is enabled, skip patch."
