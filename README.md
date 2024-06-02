@@ -108,6 +108,9 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 ### How to use 3rd clang？
 You should disable aosp-clang and android-ndk options to use it.
 
+### Why KernelSU version built with this action is still v0.9.5？
+See [KernelSU 's release note](https://github.com/tiann/KernelSU/releases/tag/v1.0.0) for more details.
+
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
 - [KernelSU_Action](https://github.com/XiaoleGun/KernelSU_Action)
