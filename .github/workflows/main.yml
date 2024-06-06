@@ -11,4 +11,31 @@ jobs:
   ci-test:
     needs:
       - lint
-    uses: ./.github/workflows/build.yml
+    name: Build Kernel
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Build Kernel
+      uses: ./
+      with:
+          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
+          kernel-dir: msm-4.19
+          kernel-branch: taffy
+          config: cas_defconfig
+          arch: arm64
+          aosp-gcc: true
+          aosp-clang: true
+          ksu: true
+          ksu-version: main
+          android-version: 12
+          aosp-clang-version: r383902
+          python-27: true
+          disable-lto: true
+          anykernel3: true

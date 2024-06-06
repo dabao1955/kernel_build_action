@@ -1,7 +1,7 @@
+# A simple action usage
 name: Build Kernel
 on:
   workflow_dispatch:
-  workflow_call:
 
 jobs:
   Build-Kernel:
