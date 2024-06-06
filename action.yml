@@ -483,13 +483,14 @@ runs:
 
     - id: release
       if: inputs.release == 'true'
-      uses: softprops/action-gh-release@v0.1.15
+      uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ inputs.access-token }}
       with:
         name: Last CI build kernel
-        tag: last-ci
+        tag_name: last-ci
         files: build/*
+        make_latest: true
 
 posts:
   using: 'composite'

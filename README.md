@@ -41,7 +41,7 @@ jobs:
         uses: dabao1955/kernel_build_action@main
         with:
           kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
-          branch: taffy
+          kernel-branch: taffy
           config: cas_defconfig
           arch: arm64
           aosp-gcc: true
