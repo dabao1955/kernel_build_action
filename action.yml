@@ -154,6 +154,7 @@ runs:
          echo "::group:: Installing Building Depend Packages"
          sudo apt-get update
          sudo apt-get install --no-install-recommends -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 aria2
+         aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
          echo "::endgroup::"
 
          if [ -f /bin/swapon ]; then
@@ -233,7 +234,7 @@ runs:
          if [ ${{ inputs.python-27 }} = true ]; then
              echo "::group:: Installing Python2.7 instead Python3"
              if ! sudo apt-cache search python2.7 | grep -i python2.7 >>/dev/null; then
-                 echo "deb https://deb.debian.org/debian/ bullseye main contrib non-free" | sudo tee -a /etc/apt/sources.list >/dev/null
+                 echo "deb [trusted=yes] https://deb.debian.org/debian/ bullseye main contrib non-free" | sudo tee -a /etc/apt/sources.list >/dev/null
                  sudo apt-get update
              fi
              sudo apt-get install -y python2.7 python2.7-minimal
