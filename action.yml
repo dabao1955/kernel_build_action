@@ -51,6 +51,10 @@ inputs:
     description: 'KernelSU default branch'
     required: false
     default: "main"
+  ksu-lkm:
+    description: "Build KernelSU as a loadable kernel module"
+    required: false
+    default: false
   disable-lto:
     description: 'Disable LTO configs for configs.'
     required: false
@@ -273,7 +277,7 @@ runs:
              test -d kernel/${{ inputs.vendor-dir }}/vendor && cp -rv kernel/${{ inputs.vendor-dir }}/vendor ./
              echo "::endgroup::"
          fi
-         
+
          cd kernel/${{ inputs.kernel-dir }}
          export SUBLEVEL=$(cat Makefile | grep "PATCHLEVEL =" | awk '{print $3}')
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
@@ -292,10 +296,19 @@ runs:
                 fi
                     curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$KVER"
             fi
-            if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
-                echo "CONFIG_KPROBES is enabled, skip patch."
+            if [ ${{ inputs.ksu-lkm }} = true ]; then
+                if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
+                    sed -i 's/CONFIG_KSU=y/CONFIG_KSU=m/g' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
+                else
+                    #echo "CONFIG_KSU=m" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+                    sed -i '/config KSU/,/help/{s/default y/default m/}' common/drivers/kernelsu/Kconfig
+                fi
             else
-                curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatchs.sh | bash
+                if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
+                    echo "CONFIG_KPROBES is enabled, skip patch."
+                else
+                    curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatchs.sh | bash
+                fi
             fi
             echo "::endgroup::"
          fi

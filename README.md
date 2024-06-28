@@ -74,6 +74,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | apatch | false | Enable APatch | true |
 | ksu | false | Enable KernelSU | true |
 | ksu-version | false | KernelSU version | v0.6.6 |
+| ksu-lkm(GKI ONLY) | false | Build KernelSU as a linux kernel module | true |
 | disable-lto | false | | false |
 | lxc | false | Enable LXC and docker to config | false |
 | lxc-patch | false | Add patch avoid not booting after enable lxc | false |
