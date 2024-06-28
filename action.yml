@@ -246,7 +246,7 @@ runs:
              test -f /bin/python || sudo ln -v -s /bin/python2.7 /bin/python
              test -f /bin/python2 || sudo ln -v -s /bin/python2.7 /bin/python2
              echo "::endgroup::"
-             grep -i "bullseye" /etc/apt/sources.list && sudo sed '$d' /etc/apt/sources.list >>/dev/null
+             grep -i "bullseye" /etc/apt/sources.list >>/dev/null && sudo sed '$d' /etc/apt/sources.list >>/dev/null
          fi
 
          if [ ${{ inputs.aosp-clang }} = true ]; then
@@ -377,7 +377,6 @@ runs:
              echo "::endgroup::"
          fi
 
-         export A=$(date +%s)
          echo "::group:: Building Kernel with selected cross compiler"
          mkdir out -p -v
          if [ ${{ inputs.android-ndk }} = true ]; then
