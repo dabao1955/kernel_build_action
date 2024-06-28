@@ -108,6 +108,9 @@ You should disable aosp-clang and android-ndk options to use it.
 ### Why KernelSU version built with this action is still v0.9.5？
 See [KernelSU 's release note](https://github.com/tiann/KernelSU/releases/tag/v1.0.0) for more details.
 
+### How to submit issue about features requests?
+In principle, it only accept Bug Reports and do not accept external Feature Requests; if you want new features, you are welcome to submit a Pull Request. It will still develop new features that we think are useful.
+
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
 - [KernelSU_Action](https://github.com/XiaoleGun/KernelSU_Action)
