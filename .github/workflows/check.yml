@@ -21,10 +21,10 @@ jobs:
         run: cd tests && yarn install
 
       - name: Check yaml
-        run: cd tests && node index.js
+        run: cd tests && node index.js && cd ..
 
       - name: Clean Workspace
-        run: git clean -dxf
+        run: perl tests/clean.pl
 
   sh-check:
     runs-on: ubuntu-latest
@@ -55,5 +55,5 @@ jobs:
             ./shfmt -w -i 2 kernelsu/ksupatch.sh
 
       - name: Clean Workspace
-        run: git clean -dxf
+        run: perl tests/clean.pl
 
