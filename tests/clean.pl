@@ -1,9 +1,30 @@
 #!/bin/perl -w
 
-$fileExist = -e "./.git";
+use strict;
+use Cwd;
+use warnings;
+use HTTP::Tiny;
+
+my $fileExist = -e "./.git";
+my $T = -e "./tests";
+
 if ( $fileExist ) {
-        system("git clean -dxf");
-        system("git checkout .");
+	system("git clean -dxf");
+	system("git checkout .");
 } else {
-        system("rm -rf out && make -C src clean");
+	if ( $T ) {
+		unlink "tests/yarn.lock";
+		unlink "kernelsu/ksupatch.sh";
+		rmdir "tests/node_modules";
+		chdir("kernelsu/");
+		my $url = 'https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatch.sh';
+		my $httpVariable = HTTP::Tiny->new;
+		my $response = $httpVariable->get($url);
+		if ($response -> {success}) {
+			print "$response->{status}.$response->{reasons}";
+		} else {
+			print "$response->{status}.$response->{reasons}";
+			exit 1;
+		}
+	}
 }
