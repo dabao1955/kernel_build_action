@@ -39,10 +39,6 @@ inputs:
     description: 'Android version.'
     required: true
     default: 12
-  apatch:
-    description: 'APatch function support'
-    required: false
-    default: false
   ksu:
     description: 'KernelSU function support'
     required: false
@@ -330,18 +326,6 @@ runs:
                   echo "skip patch"
              fi
              echo "::endgroup::"
-         fi
-
-         if [ ${{ inputs.apatch }} = true ]; then
-             echo "::group:: Initializing Apatch"
-             mkdir drivers/apatch
-             aria2c https://github.com/dabao1955/kernel_build_action/raw/main/apatch/Kconfig -o drivers/apatch/Kconfig
-             grep -q "apatch" || sed -i "/endmenu/i\\source \"drivers/apatch/Kconfig\"" drivers/Kconfig
-             aria2c https://github.com/dabao1955/kernel_build_action/raw/main/apatch/module_fix.patch
-             git apply module_fix.patch
-             echo "CONFIG_APATCH_SUPPORT=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
-             echo "CONFIG_APATCH_FIX_MODULES=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
-             echo "CONFIG_APATCH_CUSTOMS=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
          fi
 
          if [ ${{ inputs.disable-lto }} = true ]; then
