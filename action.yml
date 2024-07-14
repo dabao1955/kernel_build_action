@@ -146,6 +146,7 @@ runs:
     - name: Build Kernel
       shell: bash
       run: |
+         ########
          if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" || ! -f /bin/apt || "$(id -u)" -eq 0 ]]; then
              printf "This Action Is Intended For non-root Ubuntu Runner.\n"
              exit 127
@@ -185,8 +186,8 @@ runs:
                  git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
                  git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
              fi
-         echo "::endgroup::"
          fi
+         echo "::endgroup::"
 
          if [ ${{ inputs.aosp-clang }} = false ] && [ ${{ inputs.android-ndk }} = false ]; then
              echo "::group:: Downloading 3rd clang"

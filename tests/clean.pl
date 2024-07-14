@@ -15,6 +15,7 @@ if ( $fileExist ) {
 	if ( $T ) {
 		unlink "tests/yarn.lock";
 		unlink "kernelsu/ksupatch.sh";
+		unlink"tests/shfmt*";
 		rmdir "tests/node_modules";
 		chdir("kernelsu/");
 		my $url = 'https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatch.sh';
