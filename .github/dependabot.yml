@@ -3,8 +3,16 @@ updates:
   - package-ecosystem: github-actions
     directory: .
     schedule:
-      interval: weekly
+      interval: daily
+    groups:
+      actions:
+        patterns:
+          - "*"
   - package-ecosystem: npm
     directory: tests
     schedule:
-      interval: weekly
+      interval: daily
+    groups:
+      actions:
+        patterns:
+          - "*"
