@@ -217,7 +217,7 @@ runs:
                      aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux-x86_64.zip
                      unzip -d $HOME android-ndk.zip
                  fi
-p             else
+             else
                  echo "Please disable aosp-gcc and aosp-clang."
                  exit 127
              fi
@@ -277,7 +277,6 @@ p             else
 
          cd kernel/${{ inputs.kernel-dir }}
          export SUBLEVEL=$(cat Makefile | grep "PATCHLEVEL =" | awk '{print $3}')
-         export LEVEL=$(cat Makefile | grep "VERSION =" | awk '{print $3}')
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
 
          if [ ${{ inputs.ksu }} = true ]; then
@@ -366,7 +365,7 @@ p             else
          mkdir out -p -v
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
          if [ ${{ inputs.aosp-clang }} = true ] || [ ! -z ${{ inputs.other-clang-url}} ]; then
-              COMMAND+=" CLANG_PATH=$HOME/clang PATH=$CLANG_PATH/bin:$PATH"
+              COMMAND+=" PATH=$HOME/clang/bin:$PATH"
          elif [ ${{ inputs.android-ndk }} = true ]; then
               COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
@@ -387,11 +386,10 @@ p             else
                  COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
              fi
          fi
-         echo "using command: ${COMMAND}"
          ${COMMAND}
          echo "::endgroup::"
 
-         unset USE_CCACHE CLANG_TRIPLE COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES SUBLEVEL KVER LEVEL COMMAND
+         unset USE_CCACHE CLANG_TRIPLE COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES SUBLEVEL KVER COMMAND
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
