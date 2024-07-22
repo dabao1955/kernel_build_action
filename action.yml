@@ -286,12 +286,8 @@ runs:
                 echo "KernelSU has been initialized,skipped."
             else
                 if [[ "${{ inputs.ksu-version }}" == "main" ]] || version_gt "${{ inputs.ksu-version }}" "v0.9.5"; then
-                    if [ "$LEVEL" -lt 5 ] || [ "$SUBLEVEL" -lt 15 ]; then
-                        printf "Warning: The KernelSU version you selected was detected to be ${{ inputs.ksu-version }}, but KernelSU has dropped support for the non-gki kernel since 0.9.5. \n This will force switch to v0.9.5."
-                        export KVER=v0.9.5
-                    else
-                        export KVER=${{ inputs.ksu-version }}
-                    fi
+                    printf "Warning: The KernelSU version you selected was detected to be ${{ inputs.ksu-version }}, but KernelSU has dropped support for the non-gki kernel since 0.9.5. \n This will force switch to v0.9.5."
+                    export KVER=v0.9.5
                 else
                     export KVER=${{ inputs.ksu-version }}
                 fi
@@ -368,30 +364,30 @@ runs:
 
          echo "::group:: Building Kernel with selected cross compiler"
          mkdir out -p -v
-         COMMAND="make -j$(nproc --all) ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out "
+         COMMAND="make -j$(nproc --all) ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
          if [ ${{ inputs.aosp-clang }} = true ] || [ ! -z ${{ inputs.other-clang-url}} ]; then
-              COMMAND+="export CLANG_PATH=$HOME/clang "
+              COMMAND+=" CLANG_PATH=$HOME/clang"
          elif [ ${{ inputs.android-ndk }} = true ]; then
-              COMMAND+="export CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64 "
+              COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
          export PATH=$CLANG_PATH/bin:$PATH
          if [ ${{ inputs.aosp-gcc }} = true ]; then
-             COMMAND+="CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- "
+             COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu-"
          elif [ ${{ inputs.android-ndk }} = true ]; then
-             COMMAND+="CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm- "
+             COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
          fi
          if [ ${{ inputs.aosp-clang }} = true ] || [ ! -z ${{ inputs.other-clang-url}} ]; then
              if [ ${{ inputs.ccache }} = true ]; then
-                 COMMAND+="CC='ccache clang' "
+                 COMMAND+=" CC='ccache clang'"
              else
-                 COMMAND+="CC=clang "
+                 COMMAND+=" CC=clang"
              fi
          else
              if [ ${{ inputs.ccache }} = true ]; then
-                 COMMAND+="CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc' "
+                 COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
              fi
          fi
-         "$COMMAND"
+         ${COMMAND}
          echo "::endgroup::"
 
          unset USE_CCACHE CLANG_TRIPLE COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES SUBLEVEL KVER LEVEL COMMAND
