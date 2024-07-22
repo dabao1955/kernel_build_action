@@ -217,7 +217,7 @@ runs:
                      aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux-x86_64.zip
                      unzip -d $HOME android-ndk.zip
                  fi
-             else
+p             else
                  echo "Please disable aosp-gcc and aosp-clang."
                  exit 127
              fi
@@ -364,9 +364,9 @@ runs:
 
          echo "::group:: Building Kernel with selected cross compiler"
          mkdir out -p -v
-         COMMAND="make -j$(nproc --all) ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
+         COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
          if [ ${{ inputs.aosp-clang }} = true ] || [ ! -z ${{ inputs.other-clang-url}} ]; then
-              COMMAND+=" CLANG_PATH=$HOME/clang"
+              COMMAND+=" CLANG_PATH=$HOME/clang PATH=$CLANG_PATH/bin:$PATH"
          elif [ ${{ inputs.android-ndk }} = true ]; then
               COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
@@ -387,6 +387,7 @@ runs:
                  COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
              fi
          fi
+         echo "using command: ${COMMAND}"
          ${COMMAND}
          echo "::endgroup::"
 
