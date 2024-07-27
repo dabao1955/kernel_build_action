@@ -26,7 +26,7 @@ Strongly recommends using the stable version (such as v1.2) instead of the devel
 - First, you need to determine the kernel source code and configuration files.
 - Find your kernel source repository and configure the workflow file according to the following example and README.md:
 
-```
+```yml
 name: CI
 
 on:
@@ -108,7 +108,7 @@ You should disable aosp-clang and android-ndk options to use it.
 See [KernelSU 's release note](https://github.com/tiann/KernelSU/releases/tag/v1.0.0) for more details.
 
 ### How to submit issue about features requests?
-In principle, it only accept Bug Reports and do not accept external Feature Requests; if you want new features, you are welcome to submit a Pull Request. It will still develop new features that we think are useful.
+In principle, it only accept Bug Reports and do not accept external Feature Requests; if you want new features, you are welcome to submit a Pull Request. It will still developed new features that we think are useful.
 
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
