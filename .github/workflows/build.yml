@@ -12,20 +12,22 @@ jobs:
       contents: read
 
     steps:
-    - name: Build Kernel
-      uses: dabao1955/kernel_build_action@main
+    - name: Android Kernel Build Action
+      uses: dabao1955/kernel_build_action@v1.6.2
       with:
-          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
-          kernel-dir: msm-4.19
-          kernel-branch: taffy
-          config: cas_defconfig
+          kernel-url: https://github.com/rooteduniverse1003/TCL-A3-kernel-source-code
+          kernel-dir: 
+          kernel-branch: main
+          config: bangkok_TF_debug_defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
           ksu: true
-          ksu-version: main
-          android-version: 12
+          ksu-version: v0.9.5
+          android-version: 11
           aosp-clang-version: r383902
           python-27: true
           disable-lto: true
           anykernel3: true
+          kvm: true
+          nethunter: true
