@@ -9,7 +9,7 @@ close($fh);
 
 my ($level) = $content =~ /VERSION\s*=\s*(\d+)/;
 my ($sublevel) = $content =~ /PATCHLEVEL\s*=\s*(\d+)/;
-my $command = "curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatch.sh | bash"
+my $command = "curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatch.sh | bash";
 
 die "Can not find PATCHLEVEL in Makefile." unless defined $sublevel;
 
