@@ -211,10 +211,10 @@ runs:
              if [ ${{ inputs.aosp-gcc }} = false ]; then
                  export NDKVER=$(echo "${{ inputs.android-ndk-version }}" | sed 's/r\([0-9]\+\)[a-zA-Z]\?/\1/g')
                  if [ "$NDKVER" -lt "23" ]; then
-                     aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux.zip
+                     aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux-x86_64.zip
                      unzip -d $HOME android-ndk.zip
                  else
-                     aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux-x86_64.zip
+                     aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux.zip
                      unzip -d $HOME android-ndk.zip
                  fi
              else
