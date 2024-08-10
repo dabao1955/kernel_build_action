@@ -18,13 +18,11 @@ print "Kernel version: $level.$sublevel\n";
 my $gkilevel = 10;
 my $gkiversion = 5;
 
-if ($level >= $gkiversion) {
-	if ($sublevel >= $gkilevel) {
-		print "nothing todo.";
-	} else {
+if ($level < $gkiversion) {
+	system($command);
+} else {
+	if ($sublevel < $gkilevel) {
 		system($command);
 	}
-} else {
-	system($command);
 }
 
