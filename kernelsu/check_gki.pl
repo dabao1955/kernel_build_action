@@ -13,13 +13,13 @@ my $command = "curl -SsL https://github.com/dabao1955/kernel_build_action/raw/ma
 
 die "Can not find PATCHLEVEL in Makefile." unless defined $sublevel;
 
-print "SUBLEVEL: $sublevel\n";
+print "Kernel version: $level.$sublevel\n";
 
 my $gkilevel = 10;
 my $gkiversion = 5;
 
-if ($level > $gkiversion) {
-	if ($sublevel > $gkilevel) {
+if ($level >= $gkiversion) {
+	if ($sublevel >= $gkilevel) {
 		print "nothing todo.";
 	} else {
 		system($command);
