@@ -158,16 +158,15 @@ runs:
          aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
          echo "::endgroup::"
 
+         export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
          if [ -f /bin/swapon ]; then
              echo "::group:: Setting Up Swap"
-             export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
              sudo swapoff $SWAP_FILE
              sudo rm $SWAP_FILE
              sudo fallocate -l 16G $SWAP_FILE
              sudo chmod 600 $SWAP_FILE
              sudo mkswap $SWAP_FILE
              sudo swapon $SWAP_FILE
-             unset SWAP_FILE
              echo "::endgroup::"
          fi
 
@@ -389,7 +388,7 @@ runs:
          ${COMMAND}
          echo "::endgroup::"
 
-         unset USE_CCACHE CLANG_TRIPLE COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES SUBLEVEL KVER COMMAND
+         unset USE_CCACHE CLANG_TRIPLE COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES SUBLEVEL KVER COMMAND SWAP_FILE
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
