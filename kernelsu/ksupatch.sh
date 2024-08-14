@@ -5,6 +5,8 @@
 # Tested kernel versions: 5.4, 4.19, 4.14, 4.9
 # 20240321
 
+set -e
+
 patch_files=(
     fs/exec.c
     fs/open.c

@@ -283,7 +283,8 @@ runs:
             if [ -f KernelSU/kernel/Kconfig ]; then
                 echo "KernelSU has been initialized,skipped."
             else
-                if [[ "${{ inputs.ksu-version }}" == "main" ]] || version_gt "${{ inputs.ksu-version }}" "v0.9.5"; then
+                aria2c https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/check_gki.pl && perl check_gki.pl
+                if [ -f nongki.txt ]; then
                     printf "Warning: The KernelSU version you selected was detected to be ${{ inputs.ksu-version }}, but KernelSU has dropped support for the non-gki kernel since 0.9.5. \n This will force switch to v0.9.5.\n"
                     export KVER=v0.9.5
                 else
@@ -302,7 +303,7 @@ runs:
                 if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
                     echo "CONFIG_KPROBES is enabled, skip patch."
                 else
-                    aria2c https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/check_gki.pl && perl check_gki.pl
+                    curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatch.sh | bash
                 fi
             fi
             echo "::endgroup::"
