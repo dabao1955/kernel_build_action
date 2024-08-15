@@ -113,6 +113,7 @@ In principle, it only accept Bug Reports and do not accept external Feature Requ
 ### Why the workflow exits with a code with an error value of some nubmer？
 - If you get an error while downloading the toolchain or pulling the source code, please check whether your option or source code address is legitimate.
 - If you encounter problems during compilation, consider replacing the source code or replacing the compiler.
+- If action has some typo problem,PR welcome！
 
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
