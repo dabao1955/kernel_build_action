@@ -110,6 +110,10 @@ See [KernelSU 's release note](https://github.com/tiann/KernelSU/releases/tag/v1
 ### How to submit issue about features requests?
 In principle, it only accept Bug Reports and do not accept external Feature Requests; if you want new features, you are welcome to submit a Pull Request. It will still developed new features that we think are useful.
 
+### Why the workflow exits with a code with an error value of some nubmer？
+- If you get an error while downloading the toolchain or pulling the source code, please check whether your option or source code address is legitimate.
+- If you encounter problems during compilation, consider replacing the source code or replacing the compiler.
+
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
 - [KernelSU_Action](https://github.com/XiaoleGun/KernelSU_Action)
