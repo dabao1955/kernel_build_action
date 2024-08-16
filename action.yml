@@ -104,10 +104,6 @@ inputs:
     description: 'Please press nember instead of r(e.g. : 26).'
     required: false
     default: r21b
-  python-27:
-    description: 'Use python2.7 when build kernel.'
-    required: false
-    default: false
   anykernel3:
     description: 'Package kernel use anykernel3.'
     required: false
@@ -231,20 +227,6 @@ runs:
              cd $HOMES
          fi
 
-         if [ ${{ inputs.python-27 }} = true ]; then
-             echo "::group:: Installing Python2.7 instead Python3"
-             if ! sudo apt-cache search python2.7 | grep -i python2.7 >>/dev/null; then
-                 echo "deb [trusted=yes] https://deb.debian.org/debian/ bullseye main contrib non-free" | sudo tee -a /etc/apt/sources.list >/dev/null
-                 sudo apt-get update
-             fi
-             sudo apt-get install -y python2.7 python2.7-minimal
-             test -f /bin/python && sudo rm -v /bin/python
-             test -f /bin/python || sudo ln -v -s /bin/python2.7 /bin/python
-             test -f /bin/python2 || sudo ln -v -s /bin/python2.7 /bin/python2
-             echo "::endgroup::"
-             grep -i "bullseye" /etc/apt/sources.list >>/dev/null && sudo sed '$d' /etc/apt/sources.list >>/dev/null
-         fi
-
          if [ ${{ inputs.aosp-clang }} = true ]; then
              echo "::group:: Downloading AOSP clang"
              if [ ${{ inputs.aosp-gcc }} = true ]; then
@@ -309,18 +291,23 @@ runs:
             echo "::endgroup::"
          fi
 
+         if [ -f scripts/dtc/libfdt/mkdtboimg.py ]; then
+            if grep python2 scripts/Makefile.lib >/dev/null; then
+                echo "::group:: Uning mkdtboimg Python3 version instead of Python2 version"
+                rm -rf -v scripts/dtc/libfdt/mkdtboimg.py && aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o scripts/dtc/libfdt/mkdtboimg.py
+                test -f /usr/bin/python2 || sudo ln -s -f -v /usr/bin/python3 /usr/bin/python2
+            fi
+         fi
+         echo "::endgroup::"
+
          if [ ${{ inputs.nethunter }} = true ]; then
              echo "::group:: Initializing Kali nethunter"
-             aria2c https://github.com/Biohazardousrom/Kali-defconfig-checker/raw/master/check-kernel-config
-             bash check-kernel-config ${{ inputs.config }} -w
+             curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/config.sh | bash -s ${{ inputs.config }} -w
              if [ ${{ inputs.nethunter-patch }} = true ]; then
-                 aria2c https://github.com/tomxi1997/kali-nethunter_patches/raw/main/add-wifi-injection.patch
-                 git apply add-wifi-injection.patch
-                 aria2c https://github.com/tomxi1997/kali-nethunter_patches/raw/main/fix-ath9k-naming-conflict.patch
-                 git apply fix-ath9k-naming-conflict.patch
+                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/add-wifi-injection.patch && git apply add-wifi-injection.patch
+                 aria2c apply https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/fix-ath9k-naming-conflict.patch && git apply fix-ath9k-naming-confict.patch
                  if [ "$SUBLEVEL" -lt "19" ]; then
-                     aria2c https://github.com/tomxi1997/kali-nethunter_patches/raw/main/add-wifi-injection-4.14.patch
-                     git apply add-wifi-injection-4.14.patch
+                     aria2c https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/add-wifi-injection-4.14.patch && git apply add-wifi-injection-4.14.patch
                  fi
              else
                   echo "skip patch"
@@ -347,16 +334,15 @@ runs:
 
          if [ ${{ inputs.lxc }} = true ]; then
              echo "::group:: Enabling LXC"
-             aria2c https://github.com/wu17481748/lxc-docker/raw/main/LXC-DOCKER-OPEN-CONFIG.sh
-             bash LXC-DOCKER-OPEN-CONFIG.sh ${{ inputs.config }} -w
+             curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/lxc/config.sh | bash -s ${{ inputs.config }} -w
              grep -q "CONFIG_ANDROID_PARANOID_NETWORK" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" && sed -i 's/CONFIG_ANDROID_PARANOID_NETWORK=y/#CONFIG_ANDROID_PARANOID_NETWORK=y/' arch/${{ inputs.arch }}/configs/${{ inputs.config }}
              if [ ${{ inputs.lxc-patch }} = true ]; then
-                 aria2c https://github.com/wu17481748/lxc-docker/raw/main/cgroup.patch
+                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/xt_qtaguid.patch
+                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/cgroup.patch
                  patch kernel/cgroup/cgroup.c < cgroup.patch
-                 aria2c https://github.com/wu17481748/lxc-docker/raw/main/xt_qtaguid.patch
                  patch net/netfilter/xt_qtaguid.c < xt_qtaguid.patch
              else
-                 echo skip lxc patch
+                 echo skip lxc patching
              fi
              echo "::endgroup::"
          fi
