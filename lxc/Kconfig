@@ -1,0 +1,179 @@
+menu "Utilities"
+
+config LXC
+	bool "LXC support"
+	default y
+	help
+		Enable options required for LXC.
+
+	select PROC_PID_CPUSET
+	select NET
+	select NETDEVICES
+	select NET_CORE
+	select INET
+	select IPV6
+	select NET_L3_MASTER_DEV
+	select NETFILTER
+	select NETFILTER_ADVANCED
+	select NF_CONNTRACK
+	select NETFILTER_XTABLES
+	select NF_CONNMARK_IPV4
+	select IP_NF_IPTABLES
+	select NF_NAT_MASQUERADE_IPV4
+	select IP_NF_NAT
+	select IP_NF_TARGET_NETMAP # TODO: required?
+	select IP_NF_TARGET_REDIRECT # TODO: required?
+	select NET_SCHED
+	select CGROUP_NET_PRIO
+	select CGROUP_NET_CLASSID
+	select MD
+	select TTY
+	select UNIX98_PTYS
+	select HUGETLBFS # TODO: overlay?
+	select PERSISTENT_KEYRINGS # TODO: required?
+	select ENCRYPTED_KEYS # TODO: required?
+	select KEY_DH_OPERATIONS # TODO: required?
+
+	# From ebuild
+	select NAMESPACES
+	select NET_NS
+	select PID_NS
+	select IPC_NS
+	select UTS_NS
+	select CGROUPS
+	select CGROUP_CPUACCT
+	select CGROUP_DEVICE
+	select CGROUP_FREEZER
+	select CGROUP_SCHED
+	select CPUSETS
+	select MEMCG
+	select KEYS
+	select VETH
+	select BRIDGE
+	select BRIDGE_NETFILTER
+	select NF_NAT_IPV4
+	select IP_NF_FILTER
+	select IP_NF_TARGET_MASQUERADE
+	select NETFILTER_XT_MATCH_ADDRTYPE
+	select NETFILTER_XT_MATCH_CONNTRACK
+	select NF_NAT
+	select NF_NAT_NEEDED
+	select POSIX_MQUEUE
+	select USER_NS
+	select SECCOMP
+	select CGROUP_PIDS
+	select BLK_DEV_THROTTLING
+	select CFQ_GROUP_IOSCHED
+	select CGROUP_HUGETLB
+	select NET_CLS_CGROUP
+	select FAIR_GROUP_SCHED
+	select RT_GROUP_SCHED
+	select IP_VS
+	select IP_VS_PROTO_TCP
+	select IP_VS_PROTO_UDP
+	select IP_VS_NFCT
+	select VXLAN
+	select IPVLAN
+	select MACVLAN
+	select DUMMY
+	select DEVPTS_MULTIPLE_INSTANCES
+	select MEMCG_KMEM
+        select NETFILTER_XT_MATCH_IPVS
+        select IP_VS_RR
+        select SECURITY_APPARMOR
+        select BRIDGE_VLAN_FILTERING
+        #select IP6_NF_TARGET_MASQUERADE
+        select NETFILTER_XT_TARGET_CHECKSUM
+        select FHANDLE
+        select UNIX_DIAG
+        select PACKET_DIAG
+        select NETLINK_DIAG
+        select CHECKPOINT_RESTORE
+        select NETFILTER_XT_MATCH_CGROUP
+
+
+
+
+config LXC_STATISTICS
+	bool "Gathering statistics"
+	default y if LXC
+	depends on LXC
+	help
+		Allow gathering statistics from running containers
+
+	select RESOURCE_COUNTERS
+	select BLK_CGROUP
+	select IOSCHED_CFQ
+	select CGROUP_PERF
+	select CFS_BANDWIDTH
+
+## Required kernel version: 4.5
+
+
+config LXC_SWAP
+	bool "Enable swap limit"
+	default n
+	depends on LXC
+	help
+		Yes if you want to be able to limit swap usage of containers
+
+	select MEMCG_SWAP
+	select MEMCG_SWAP_ENABLED
+
+config LXC_SECURE_NETWORKS
+	bool "Secure networks"
+	default y if LXC
+	depends on LXC
+	help
+		Yes if you use secure networks
+
+	select XFRM_ALGO
+	select XFRM_USER
+
+
+config LXC_AUFS
+	bool "Use aufs"
+	default y if LXC
+	depends on LXC
+	help
+		Yes if you are using aufs
+
+	select AUFS_FS
+	select EXT4_FS_POSIX_ACL
+	select EXT4_FS_SECURITY
+
+config LXC_BTRFS
+	bool "Use btrfs"
+	default y
+	depends on LXC
+	help
+		Yes if you are using btrfs
+
+	select BTRFS_FS
+	select BTRFS_FS_POSIX_ACL
+
+config LXC_DEVICE_MAPPER
+	bool "Device Mapper support"
+	default y if LXC
+	depends on LXC
+	help
+		Yes if you want support for device mapper (recommended)
+
+	select BLK_DEV_DM
+	select DM_THIN_PROVISIONING
+	select EXT4_FS
+	select EXT4_FS_POSIX_ACL
+	select EXT4_FS_SECURITY
+
+config LXC_OVERLAY_FS
+	bool "Use overlay FS"
+	default y
+	depends on LXC
+	help
+		Yes if want to use the Overlay FS (recommended)
+
+	select OVERLAY_FS
+	select EXT4_FS_SECURITY
+	select EXT4_FS_POSIX_ACL
+
+endmenu
