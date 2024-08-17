@@ -20,8 +20,8 @@ jobs:
       - name: Install dependence
         run: cd tests && yarn install
 
-      - name: Check yaml
-        run: npm run && npm check
+      - name: Check yaml and js
+        run: cd tests && npm run && npm check
 
       - name: Clean Workspace
         run: perl tests/clean.pl
