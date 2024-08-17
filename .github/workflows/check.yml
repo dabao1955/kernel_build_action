@@ -3,7 +3,7 @@ on:
   workflow_call:
 
 jobs:
-  js-check:
+  check-yaml-js:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,7 +21,7 @@ jobs:
         run: cd tests && yarn install
 
       - name: Check yaml and js
-        run: cd tests && npm run && npm check
+        run: cd tests && npm run run && npm run check
 
       - name: Clean Workspace
         run: perl tests/clean.pl
