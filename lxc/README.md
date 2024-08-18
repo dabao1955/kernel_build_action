@@ -4,9 +4,9 @@ Add a simple option for enabling all the requirements for LXC to run.
 
 ## Install
 
-1. Create a folder inside your kernel source tree, for example `utils`, then
+1. Create a folder inside your kernel source tree, for example `lxc`, then
 place the Kconfig in there.
-2. Add a line into the root Kconfig: `source "utils/Kconfig"`.
+2. Add a line into the root Kconfig: `source "lxc/Kconfig"`.
 
 Sample final Kconfig:
 
@@ -20,14 +20,14 @@ Sample final Kconfig:
             string
             option env="SRCARCH"
 
-    source "utils/Kconfig"
+    source "lxc/Kconfig"
 
     source "arch/$SRCARCH/Kconfig"
 
 
 Now enable the LXC support option:
 
-    Utilities --->
+    LXC --->
       [*] LXC support
 
 And you should be good to go. Compile the kernel, install, reboot, enjoy.

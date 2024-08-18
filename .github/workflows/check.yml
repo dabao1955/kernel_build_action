@@ -20,7 +20,7 @@ jobs:
       - name: Install dependence
         run: cd tests && yarn install
 
-      - name: Check yaml and js
+      - name: Check yaml
         run: cd tests && npm run check
 
       - name: Clean Workspace
@@ -43,7 +43,7 @@ jobs:
       - name: Install dependence
         run: cd tests && yarn install
 
-      - name: Check yaml and js
+      - name: Check js
         run: cd tests && npm run lint
 
   sh-check:

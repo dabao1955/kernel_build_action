@@ -1,4 +1,4 @@
-menu "Utilities"
+menu "LXC"
 
 config LXC
 	bool "LXC support"
