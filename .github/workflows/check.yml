@@ -3,7 +3,7 @@ on:
   workflow_call:
 
 jobs:
-  check-yaml-js:
+  yaml-check:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,10 +21,30 @@ jobs:
         run: cd tests && yarn install
 
       - name: Check yaml and js
-        run: cd tests && npm run run && npm run check
+        run: cd tests && npm run check
 
       - name: Clean Workspace
         run: perl tests/clean.pl
+
+  js-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+         node-version: 20
+
+      - name: Install dependence
+        run: cd tests && yarn install
+
+      - name: Check yaml and js
+        run: cd tests && npm run lint
 
   sh-check:
     runs-on: ubuntu-latest

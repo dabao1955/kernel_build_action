@@ -1,13 +1,13 @@
 {
   "name": "kernel_build_action_yaml_eheck",
   "description": "A test to check all required yaml files",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "dabao1955",
   "license": "Apache-2.0",
   "private": true,
   "scripts": {
-    "run": "node index.js",
-    "check": "npx eslint -c eslint.config.mjs"
+    "check": "node index.js",
+    "lint": "npx eslint -c eslint.config.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
