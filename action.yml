@@ -359,7 +359,7 @@ runs:
          fi
          export PATH=$CLANG_PATH/bin:$PATH
          if [ ${{ inputs.aosp-gcc }} = true ]; then
-             COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu-"
+             COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu-"
          elif [ ${{ inputs.android-ndk }} = true ]; then
              COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
          fi
