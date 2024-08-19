@@ -3,7 +3,7 @@
 # Shell authon: xiaoleGun <1592501605@qq.com>
 #               bdqllW <bdqllT@gmail.com>
 # Tested kernel versions: 5.4, 4.19, 4.14, 4.9
-# 20240321
+# 20240601
 
 set -e
 
@@ -18,7 +18,7 @@ patch_files=(
 
 for i in "${patch_files[@]}"; do
 
-    if grep -q "ksu" "$i"; then
+    if grep -iq "ksu" "$i"; then
         echo "Warning: $i contains KernelSU"
         continue
     fi
@@ -71,6 +71,8 @@ static int can_umount(const struct path *path, int flags)\
 {\
     struct mount *mnt = real_mount(path->mnt);\
 \
+    if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))\
+        return -EINVAL;\
     if (!may_mount())\
         return -EPERM;\
     if (path->dentry != path->mnt->mnt_root)\
@@ -84,7 +86,6 @@ static int can_umount(const struct path *path, int flags)\
     return 0;\
 }\
 \
-// caller is responsible for flags being sane\
 int path_umount(struct path *path, int flags)\
 {\
     struct mount *mnt = real_mount(path->mnt);\
