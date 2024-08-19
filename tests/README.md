@@ -1,7 +1,7 @@
 Android Kernel Build action tests
-======
+=========
 
-> [!NOTE] Note
+> [!NOTE]
 > that this is not strictly a test, it is just a yaml-lint to check if each yml file is legitimate.
 
 ## How to use
