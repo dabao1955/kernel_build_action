@@ -1,7 +1,7 @@
 Android Kernel Build action tests
 ======
 
-> [!NOTE] Note 
+> [!NOTE] Note
 > that this is not strictly a test, it is just a yaml-lint to check if each yml file is legitimate.
 
 ## How to use
@@ -9,7 +9,7 @@ First, you must install nodejs and npm.
 
 Second, run `npm install` in tests directory.
 
-Finally, run `npm run chrck` or `node index.js` in tests directory.
+Finally, run `npm run check` or `node index.js` in tests directory.
 
 Such as:
 
