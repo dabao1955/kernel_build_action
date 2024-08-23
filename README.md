@@ -58,6 +58,10 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 
 - Finally, run the workflow you just wrote.
 ## Inputs
+> [!WARNING]
+>
+> enable lxc or nethunter input options may cause kernel compilation failed!
+
 | input               | required | description | example value |
 |---------------------|----------|-------------|---------|
 | kernel-url | true | URL of Android kernel source code for your phone | https://github.com/username/project |
@@ -74,6 +78,10 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | ksu-version | false | KernelSU version | v0.6.6 |
 | ksu-lkm(may not build successfully for non-GKI devices) | false | Build KernelSU as a linux kernel module | true |
 | disable-lto | false | | false |
+| lxc | false | Enable LXC and docker to config | false | 
+ | lxc-patch | false | Add patch avoid not booting after enable lxc | false | 
+ | nethunter | false | Enable Kali nethunter | false | 
+ | nethunter-patch | false | | false |
 | kvm | false | | false |
 | ccache | false | Enable ccache(Only valid when compiled with clang) | false |
 | aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
