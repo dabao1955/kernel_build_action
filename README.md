@@ -74,10 +74,6 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | ksu-version | false | KernelSU version | v0.6.6 |
 | ksu-lkm(may not build successfully for non-GKI devices) | false | Build KernelSU as a linux kernel module | true |
 | disable-lto | false | | false |
-| lxc | false | Enable LXC and docker to config | false |
-| lxc-patch | false | Add patch avoid not booting after enable lxc | false |
-| nethunter | false | Enable Kali nethunter | false |
-| nethunter-patch | false | | false |
 | kvm | false | | false |
 | ccache | false | Enable ccache(Only valid when compiled with clang) | false |
 | aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
@@ -112,6 +108,8 @@ In principle, it only accept Bug Reports and do not accept external Feature Requ
 - If you get an error while downloading the toolchain or pulling the source code, please check whether your option or source code address is legitimate.
 - If you encounter problems during compilation, consider replacing the source code or replacing the compiler.
 - If action has some typo problem,PR welcome！
+## Where is lxc config inputs
+[Because of some reason](https://github.com/dabao1955/kernel_build_action/pulls/30),Wee decide to delete it.
 
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
