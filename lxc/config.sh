@@ -2,7 +2,7 @@
 
 # shellcheck disable=SC2086,SC2068,SC2006
 
-set -e
+set -x
 
 FILE=$1
 
