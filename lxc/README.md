@@ -1,34 +1,18 @@
-# Enable kernel options for LXC
+LXC in Android
+======
+usage:
+```bash
+bash config.sh -w <kernel config>
+```
+in kernel source directory
 
-Add a simple option for enabling all the requirements for LXC to run.
+## About patch
+# Patch 1: Solve the problem of panic in the kernel
+```bash
+git appply xt_qtagui.patch
+```
 
-## Install
-
-1. Create a folder inside your kernel source tree, for example `lxc`, then
-place the Kconfig in there.
-2. Add a line into the root Kconfig: `source "lxc/Kconfig"`.
-
-Sample final Kconfig:
-
-    #
-    # For a description of the syntax of this configuration file,
-    # see Documentation/kbuild/kconfig-language.txt.
-    #
-    mainmenu "Linux/$ARCH $KERNELVERSION Kernel Configuration"
-
-    config SRCARCH
-            string
-            option env="SRCARCH"
-
-    source "lxc/Kconfig"
-
-    source "arch/$SRCARCH/Kconfig"
-
-
-Now enable the LXC support option:
-
-    LXC --->
-      [*] LXC support
-
-And you should be good to go. Compile the kernel, install, reboot, enjoy.
-
+# Patch 2 to solve the problem of running docker (find the location of the cgroup.c file and function)
+```bash
+git apply cgroup.patch
+```

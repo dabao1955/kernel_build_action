@@ -20,7 +20,7 @@ A Workflow to build Android Kernel automatically
 
 ## Warning
 
-Strongly recommends using the stable version (tags such as v1.2) instead of the development version (main barnch), because main branch is not a stable branch which may have some technical problems.
+Strongly recommends using the stable version (tags such as v1.2) instead of the development version (main branch), because main branch is not a stable branch which may have some technical problems.
 
 ## How to use?
 - First, you need to determine the kernel source code and configuration files.

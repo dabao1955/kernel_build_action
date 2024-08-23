@@ -336,10 +336,7 @@ runs:
 
          if [ ${{ inputs.lxc }} = true ]; then
              echo "::group:: Enabling LXC"
-             test -d lxc || mkdir -p -v lxc
-             aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/Kconfig -o lxc/Kconfig
-             echo 'source "lxc/Kconfig"' >> Kconfig
-             grep -q "CONFIG_ANDROID_PARANOID_NETWORK" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" && sed -i 's/CONFIG_ANDROID_PARANOID_NETWORK=y/#CONFIG_ANDROID_PARANOID_NETWORK=y/' arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+             curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/lxc/config.sh | bash -s ${{ inputs.config }} -w
              if [ ${{ inputs.lxc-patch }} = true ]; then
                  aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/xt_qtaguid.patch
                  aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/cgroup.patch
