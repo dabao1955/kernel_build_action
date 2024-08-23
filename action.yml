@@ -304,7 +304,7 @@ runs:
 
          if [ ${{ inputs.nethunter }} = true ]; then
              echo "::group:: Initializing Kali nethunter"
-             curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/config.sh | bash -s ${{ inputs.config }} -w
+             curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/config.sh | bash -s arch/${{ inputs.arch }}/configs/${{ inputs.config }} -w
              if [ ${{ inputs.nethunter-patch }} = true ]; then
                  aria2c https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/add-wifi-injection.patch && git apply add-wifi-injection.patch
                  aria2c apply https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/fix-ath9k-naming-conflict.patch && git apply fix-ath9k-naming-confict.patch
@@ -336,7 +336,7 @@ runs:
 
          if [ ${{ inputs.lxc }} = true ]; then
              echo "::group:: Enabling LXC"
-             aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/config.sh && bash config.sh ${{ inputs.config }} -w
+             aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/config.sh && bash config.sh arch/${{ inputs.arch }}/configs/${{ inputs.config }} -w
              if [ ${{ inputs.lxc-patch }} = true ]; then
                  aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/xt_qtaguid.patch
                  aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/cgroup.patch
