@@ -338,7 +338,7 @@ runs:
              echo "::group:: Enabling LXC"
              aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/config.sh && bash config.sh arch/${{ inputs.arch }}/configs/${{ inputs.config }} -w
              if [ ${{ inputs.lxc-patch }} = true ]; then
-                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/xt_qtaguid.patch
+                 aria2c https://github.com/dabao1955/kernel_build_action/raw/dabao1955-patch-1/lxc/xt_qtaguid.patch
                  aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/cgroup.patch
                  patch kernel/cgroup/cgroup.c < cgroup.patch
                  patch net/netfilter/xt_qtaguid.c < xt_qtaguid.patch
