@@ -102,6 +102,8 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 - Support use 3rd party gcc to compile
 
 ## FAQ
+> [!CAUTION]
+> Please Read this first if you have some questions!
 
 ### How to use 3rd clang？
 You should disable aosp-clang and android-ndk options to use it.
@@ -110,14 +112,12 @@ You should disable aosp-clang and android-ndk options to use it.
 See [KernelSU 's release note](https://github.com/tiann/KernelSU/releases/tag/v1.0.0) for more details.
 
 ### How to submit issue about features requests?
-In principle, it only accept Bug Reports and do not accept external Feature Requests; if you want new features, you are welcome to submit a Pull Request. It will still developed new features that we think are useful.
+In principle, it only accept Bug Reports and do not accept external Feature Requests; if you want new features, you are welcome to submit a Pull Request. We will still develop new features that we think are useful.
 
 ### Why the workflow exits with a code with an error value of some nubmer？
 - If you get an error while downloading the toolchain or pulling the source code, please check whether your option or source code address is legitimate.
 - If you encounter problems during compilation, consider replacing the source code or replacing the compiler.
 - If action has some typo problem,PR welcome！
-## Where is lxc config inputs
-[Because of some reason](https://github.com/dabao1955/kernel_build_action/pulls/30),Wee decide to delete it.
 
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
