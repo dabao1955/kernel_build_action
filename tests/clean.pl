@@ -18,7 +18,7 @@ if ( $fileExist ) {
 		unlink"tests/shfmt*";
 		rmdir "tests/node_modules";
 		chdir("kernelsu/");
-		my $url = 'https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/ksupatch.sh';
+		my $url = 'https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/patch.sh';
 		my $httpVariable = HTTP::Tiny->new;
 		my $response = $httpVariable->get($url);
 		if ($response -> {success}) {
