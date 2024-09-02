@@ -18,10 +18,10 @@ jobs:
          node-version: 20
 
       - name: Install dependence
-        run: cd tests && yarn install
+        run: cd tests && yarn global add bun
 
       - name: Check yaml
-        run: cd tests && npm run check
+        run: cd tests && bun run index.js
 
       - name: Clean Workspace
         run: perl tests/clean.pl
