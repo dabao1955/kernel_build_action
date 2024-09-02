@@ -12,13 +12,10 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
+      - name: Setup bun
+      - uses: oven-sh/setup-bun@v2
         with:
-         node-version: 20
-
-      - name: Install dependence
-        run: cd tests && yarn global add bun
+          bun-version: latest
 
       - name: Check yaml
         run: cd tests && bun run index.js
