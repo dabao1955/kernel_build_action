@@ -143,26 +143,32 @@ runs:
       shell: bash
       run: |
          ########
-         if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" || ! -f /bin/apt || "$(id -u)" -eq 0 ]]; then
-             printf "This Action Is Intended For non-root Ubuntu Runner.\n"
+         if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" || ! -f /bin/apt ]]; then
+             printf "This Action Is Intended For Debian-based Runner.\n"
              exit 127
          fi
 
+         if [ "$(id -u)" -eq 0 ]; then
+             export SU=
+         else
+             export SU=sudo
+         fi
+
          echo "::group:: Installing Building Depend Packages"
-         sudo apt-get update
-         sudo apt-get install --no-install-recommends -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 aria2 perl
+         "$SU" apt-get update
+         "$SU" apt-get install --no-install-recommends -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 aria2 perl
          aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
          echo "::endgroup::"
 
          export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
          if [ -f /bin/swapon ]; then
              echo "::group:: Setting Up Swap"
-             sudo swapoff $SWAP_FILE
-             sudo rm $SWAP_FILE
-             sudo fallocate -l 16G $SWAP_FILE
-             sudo chmod 600 $SWAP_FILE
-             sudo mkswap $SWAP_FILE
-             sudo swapon $SWAP_FILE
+             "$SU" swapoff $SWAP_FILE
+             "$SU" rm $SWAP_FILE
+             "$SU" fallocate -l 16G $SWAP_FILE
+             "$SU" chmod 600 $SWAP_FILE
+             "$SU" mkswap $SWAP_FILE
+             "$SU" swapon $SWAP_FILE
              echo "::endgroup::"
          fi
 
@@ -298,7 +304,7 @@ runs:
             elif grep scripts/ufdt && test ! -d scripts/ufdt >/dev/null; then
                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o ufdt/libufdt/utils/src/mkdtboimg.py
             fi
-            test -f /usr/bin/python2 || sudo ln -s -f -v /usr/bin/python3 /usr/bin/python2
+            test -f /usr/bin/python2 || "$SU" ln -s -f -v /usr/bin/python3 /usr/bin/python2
          fi
          echo "::endgroup::"
 
