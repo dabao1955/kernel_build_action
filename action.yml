@@ -153,13 +153,18 @@ runs:
          else
              export SU=sudo
          fi
+         if [ -f /usr/bin/docker ]; then
+             echo "::group:: Cleaning necessary disk space"
+             "$SU" docker image prune --all --force
+             "$SU" rm -rf /home/linuxbrew
+         fi
+         echo "::endgroup::"
 
          echo "::group:: Installing Building Depend Packages"
          "$SU" apt-get update
          "$SU" apt-get install --no-install-recommends -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 aria2 perl
          aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
          echo "::endgroup::"
-
          export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
          if [ -f /bin/swapon ]; then
              echo "::group:: Setting Up Swap"
