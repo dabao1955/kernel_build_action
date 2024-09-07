@@ -156,8 +156,6 @@ runs:
          if [ -f /usr/bin/docker ]; then
              echo "::group:: Cleaning necessary disk space"
              "$SU" docker image prune --all --force
-             "$SU" rm -rf /home/linuxbrew
-         fi
          echo "::endgroup::"
 
          echo "::group:: Installing Building Depend Packages"
