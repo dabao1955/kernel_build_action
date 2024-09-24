@@ -15,16 +15,16 @@ jobs:
     - name: Build Kernel
       uses: dabao1955/kernel_build_action@main
       with:
-          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
-          kernel-dir: msm-4.19
-          kernel-branch: taffy
-          config: cas_defconfig
+          kernel-url: https://github.com/OnePlusOSS/android_kernel_oneplus_sm8650.git
+          kernel-dir:  android_kernel_oneplus_sm8650
+          kernel-branch: oneplus/sm8650_u_14.0.0_oneplus12 default
+          config: defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
-          ksu: true
+          ksu: false
           ksu-version: main
-          android-version: 12
+          android-version: 14
           aosp-clang-version: r383902
           disable-lto: true
           anykernel3: true
