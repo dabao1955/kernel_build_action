@@ -1,5 +1,6 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
+import eslintPluginTypescript from "@typescript-eslint/eslint-plugin";
 
 export default [
     {
@@ -12,9 +13,11 @@ export default [
             sourceType: "script",
             parser: "@typescript-eslint/parser",
         },
-        plugins: ["@typescript-eslint"],
+        plugins: {
+            "@typescript-eslint": eslintPluginTypescript,
+        },
         rules: {
-            semi: "error",  // 保持现有规则
+            semi: "error",
             "@typescript-eslint/no-unused-vars": "error",
         },
     },

@@ -71,6 +71,4 @@ jobs:
             chmod 755 -R ./shfmt
             ./shfmt -w -i 2 $(find -name *.sh)
 
-      - name: Clean Workspace
-        run: npx ts-node tests/clean.ts
 
