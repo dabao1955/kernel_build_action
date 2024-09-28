@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "check": "npx ts-node index.ts",
-    "lint": "npx eslint -c eslint.config.ts",
+    "lint": "npx eslint -c eslint.config.mjs",
     "clean": "npx ts-node clean.ts"
   },
   "devDependencies": {

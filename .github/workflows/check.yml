@@ -72,5 +72,5 @@ jobs:
             ./shfmt -w -i 2 $(find -name *.sh)
 
       - name: Clean Workspace
-        run: perl tests/clean.pl
+        run: npx ts-node tests/clean.ts
 

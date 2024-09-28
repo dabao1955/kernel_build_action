@@ -14,7 +14,7 @@ export default [
         },
         plugins: ["@typescript-eslint"],
         rules: {
-            semi: "error",
+            semi: "error",  // 保持现有规则
             "@typescript-eslint/no-unused-vars": "error",
         },
     },
