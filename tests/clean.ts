@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import * as https from 'https';
 import { execSync } from 'child_process';
 
