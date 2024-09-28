@@ -3,17 +3,20 @@ import pluginJs from "@eslint/js";
 
 export default [
     {
-        files: ["index.js"],
+        files: ["*.ts"],
         linterOptions: {
             reportUnusedDisableDirectives: true
         },
         languageOptions: {
             ecmaVersion: 2020,
-            sourceType: "script"
+            sourceType: "script",
+            parser: "@typescript-eslint/parser",
         },
+        plugins: ["@typescript-eslint"],
         rules: {
-            semi: "error"
-        }
-    }
+            semi: "error",
+            "@typescript-eslint/no-unused-vars": "error",
+        },
+    },
 ];
 

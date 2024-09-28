@@ -267,15 +267,22 @@ runs:
          fi
 
          cd kernel/${{ inputs.kernel-dir }}
-         export SUBLEVEL=$(cat Makefile | grep "PATCHLEVEL =" | awk '{print $3}')
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
+         VERSION=$(grep -E '^VERSION = ' Makefile | awk '{print $3}')
+         PATCHLEVEL=$(grep -E '^PATCHLEVEL = ' Makefile | awk '{print $3}')
+         SUBLEVEL=$(grep -E '^SUBLEVEL = ' Makefile | awk '{print $3}')
+         if [ "$VERSION" -lt 5 ]; then
+             touch nongki.txt
+         elif [ "PATCHLEVEL" -lt 10 ]; then
+             touch nongki.txt
+         fi
 
          if [ ${{ inputs.ksu }} = true ]; then
             echo "::group:: Initializing KernelSU"
             if [ -f KernelSU/kernel/Kconfig ]; then
                 echo "KernelSU has been initialized,skipped."
             else
-                aria2c https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/check_gki.pl && perl check_gki.pl
+                echo "Kernel: version: $VERSION.$PATCHLEVEL.$SUBLEVEL"
                 if [ -f nongki.txt ]; then
                     printf "Warning: The KernelSU version you selected was detected to be ${{ inputs.ksu-version }}, but KernelSU has dropped support for the non-gki kernel since 0.9.5. \n This will force switch to v0.9.5.\n"
                     export KVER=v0.9.5
@@ -386,7 +393,7 @@ runs:
          ${COMMAND}
          echo "::endgroup::"
 
-         unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES SUBLEVEL KVER COMMAND SWAP_FILE
+         unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES SUBLEVEL KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"

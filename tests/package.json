@@ -1,21 +1,25 @@
 {
   "name": "kernel_build_action_yaml_eheck",
   "description": "A test to check all required yaml files",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "dabao1955",
   "license": "Apache-2.0",
   "private": true,
   "scripts": {
-    "check": "node index.js",
-    "lint": "npx eslint -c eslint.config.mjs"
+    "check": "npx ts-node index.ts",
+    "lint": "npx eslint -c eslint.config.ts",
+    "clean": "npx ts-node clean.ts"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.0",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
     "eslint": "^9.9.0",
     "@eslint/create-config": "^1.3.1",
     "globals": "^15.9.0"
   },
   "dependencies": {
-    "yaml-lint": "^1.7.0"
+    "yaml-lint": "^1.7.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.0.0"
   }
 }
