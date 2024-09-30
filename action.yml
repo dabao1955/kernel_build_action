@@ -12,6 +12,9 @@ inputs:
   depth:
     required: false
     default: 1
+  vendor:
+    required: false
+    default: false
   vendor-url:
     description: 'Kernel Vendor Source Url'
     required: false
@@ -265,7 +268,7 @@ runs:
          git clone --recursive ${{ inputs.kernel-url }} -b "${{ inputs.kernel-branch }}" --depth=${{ inputs.depth }} kernel/${{ inputs.kernel-dir }}
          echo "::endgroup::"
 
-         if [ ! -z  "${{ inputs.vendor-url }}" ]; then
+         if [ "${{ inputs.vendor }}" = true ]; then
              echo "::group:: Pulling Kernel vendor source"
              git clone ${{ inputs.vendor-url }} --depth=${{ inputs.depth }} kernel/${{ inputs.vendor-dir }} -b ${{ inputs.vendor-branch }}
              test -d kernel/${{ inputs.vendor-dir }}/vendor && cp -rv kernel/${{ inputs.vendor-dir }}/vendor kernel

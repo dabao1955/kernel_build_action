@@ -67,6 +67,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | kernel-url | true | URL of Android kernel source code for your phone | https://github.com/username/project |
 | kernel-dir | false | The directory name of the Android kernel source code. This option may be used for OPLUS Kernel source code. | kernel |
 | depth | false | | 1 |
+| vendor | false | | false |
 | vendor-url | false | url of additional source code for the Android kernel source code. This option may be used for OPLUS source code. | https://github.com/username/project|
 | vendor-dir | false | | vendor |
 | kernel-branch | true | The branch of the source code that needs to be cloned, defaults branch to git clone is main | main |
