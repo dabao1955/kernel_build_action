@@ -75,8 +75,9 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | arch | true | The architecture of your mobile phone SOC is arm64 by default | arm64 |
 | android-version | true | The Android version required when downloading aosp-clang. If you want to use the latest aosp-clang or you do not use aosp-clang to compile the kernel, please ignore this option | 12 |
 | ksu | false | Enable KernelSU | true |
-| ksu-version | false | KernelSU version | v0.6.6 |
+| ksu-version | false | KernelSU version | v0.9.5 |
 | ksu-lkm(may not build successfully for non-GKI devices) | false | Build KernelSU as a linux kernel module | true |
+| ksu-url | false | Ude 3rd KernelSU | https://github.com/xxx/KernelSU/ |
 | disable-lto | false | | false |
 | lxc | false | Enable LXC and docker to config | false | 
  | lxc-patch | false | Add patch avoid not booting after enable lxc | false | 

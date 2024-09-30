@@ -47,6 +47,10 @@ inputs:
     description: 'KernelSU default branch'
     required: false
     default: "main"
+  ksu-url:
+    description: "Use 3rd KernelSU"
+    required: false
+    default: ""
   ksu-lkm:
     description: "Build KernelSU as a loadable kernel module"
     required: false
@@ -282,19 +286,23 @@ runs:
             if [ -f KernelSU/kernel/Kconfig ]; then
                 echo "KernelSU has been initialized,skipped."
             else
-                echo "Kernel version: $VERSION.$PATCHLEVEL.$SUBLEVEL"
-                if [ -f nongki.txt ]; then
-                    printf "Warning: The KernelSU version you selected was detected to be ${{ inputs.ksu-version }}, but KernelSU has dropped support for the non-gki kernel since 0.9.5. \n This will force switch to v0.9.5.\n"
-                    export KVER=v0.9.5
+                if [ ! -z "${{ inputs.ksu-vrl }}" ]; then
+                    curl -SsL "${{ inputs.ksu-url }}/raw/${{ inputs.ksu-version }}/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
                 else
-                    export KVER=${{ inputs.ksu-version }}
+                    echo "Kernel version: $VERSION.$PATCHLEVEL.$SUBLEVEL"
+                    if [ -f nongki.txt ]; then
+                        printf "Warning: The KernelSU version you selected was detected to be ${{ inputs.ksu-version }}, but KernelSU has dropped support for the non-gki kernel since 0.9.5. \n This will force switch to v0.9.5.\n"
+                        export KVER=v0.9.5
+                    else
+                        export KVER=${{ inputs.ksu-version }}
+                    fi
+                        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$KVER"
+                    fi
                 fi
-                    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$KVER"
-            fi
-            if [ ${{ inputs.ksu-lkm }} = true ]; then
-                if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
-                    sed -i 's/CONFIG_KSU=y/CONFIG_KSU=m/g' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
-                else
+                if [ ${{ inputs.ksu-lkm }} = true ]; then
+                    if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
+                        sed -i 's/CONFIG_KSU=y/CONFIG_KSU=m/g' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
+                     else
                     #echo "CONFIG_KSU=m" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }}
                     sed -i '/config KSU/,/help/{s/default y/default m/}' drivers/kernelsu/Kconfig
                 fi
