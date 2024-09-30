@@ -47,6 +47,9 @@ inputs:
     description: 'KernelSU default branch'
     required: false
     default: "main"
+  ksu-other:
+    required: false
+    default: false
   ksu-url:
     description: "Use 3rd KernelSU"
     required: false
@@ -286,8 +289,8 @@ runs:
             if [ -f KernelSU/kernel/Kconfig ]; then
                 echo "KernelSU has been initialized,skipped."
             else
-                if [ -z "${{ inputs.ksu-url }}" ]; then
-                    curl -SsL "${{ inputs.ksu-url }}/raw/${{ inputs.ksu-version }}/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
+                if [ ${{ inputs.ksu-other }} = true ]; then
+                    curl -SsL "${{ inputs.ksu-url }}/raw/${{ inputs.ksu-version }}/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
                 else
                     echo "Kernel version: $VERSION.$PATCHLEVEL.$SUBLEVEL"
                     if [ -f nongki.txt ]; then

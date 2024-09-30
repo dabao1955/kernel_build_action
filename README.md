@@ -77,6 +77,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | ksu | false | Enable KernelSU | true |
 | ksu-version | false | KernelSU version | v0.9.5 |
 | ksu-lkm(may not build successfully for non-GKI devices) | false | Build KernelSU as a linux kernel module | true |
+| ksu-other | false | | false |
 | ksu-url | false | Ude 3rd KernelSU | https://github.com/xxx/KernelSU/ |
 | disable-lto | false | | false |
 | lxc | false | Enable LXC and docker to config | false | 
