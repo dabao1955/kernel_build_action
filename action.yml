@@ -286,7 +286,7 @@ runs:
             if [ -f KernelSU/kernel/Kconfig ]; then
                 echo "KernelSU has been initialized,skipped."
             else
-                if [ ! -z "${{ inputs.ksu-vrl }}" ]; then
+                if [ -z "${{ inputs.ksu-url }}" ]; then
                     curl -SsL "${{ inputs.ksu-url }}/raw/${{ inputs.ksu-version }}/main/kernel/setup.sh" | bash -s ${{ inputs.ksu-version }}
                 else
                     echo "Kernel version: $VERSION.$PATCHLEVEL.$SUBLEVEL"
