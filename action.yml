@@ -171,7 +171,7 @@ runs:
 
          echo "::group:: Installing Building Depend Packages"
          "$SU" apt-get update
-         "$SU" apt-get install --no-install-recommends -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 aria2 perl
+         "$SU" apt-get install --no-install-recommends -y binutils binutils-aarch64-linux-gnu binutils-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 libc6-dev aria2
          aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
          echo "::endgroup::"
          export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
@@ -185,24 +185,6 @@ runs:
              "$SU" swapon $SWAP_FILE
              echo "::endgroup::"
          fi
-
-         if [ ${{ inputs.aosp-gcc }} = true ]; then
-             echo "::group:: Downloading AOSP GCC"
-             if [ ${{ inputs.aosp-clang }} = true ] || [ ${{ inputs.android.ndk }} = true ]; then
-                 mkdir -p -v $HOME/gcc-64
-                 aria2c -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-                 tar -C $HOME/gcc-64 -zxf gcc-aarch64.tar.gz
-                 mkdir -p -v $HOME/gcc-32
-                 aria2c -o gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-                 tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
-             elif [ ${{ inputs.aosp-clang }} = true ] && [ ${{ inputs.android-ndk }} = true ]; then
-                 echo "Error: The two options aosp-clang and android-ndk will conflict with each other, please turn off one." && exit 15
-             else
-                 git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
-                 git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
-             fi
-         fi
-         echo "::endgroup::"
 
          if [ ${{ inputs.aosp-clang }} = false ] && [ ${{ inputs.android-ndk }} = false ]; then
              echo "::group:: Downloading 3rd clang"
@@ -263,6 +245,24 @@ runs:
              fi
              echo "::endgroup::"
          fi
+
+         if [ ${{ inputs.aosp-gcc }} = true ]; then
+             echo "::group:: Downloading AOSP GCC"
+             if [ -d $HOME/clang ]; then
+                 mkdir -p -v $HOME/gcc-64
+                 aria2c -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+                 tar -C $HOME/gcc-64 -zxf gcc-aarch64.tar.gz
+                 mkdir -p -v $HOME/gcc-32
+                 aria2c -o gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+                 tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
+             elif [ ${{ inputs.aosp-clang }} = true ] && [ ${{ inputs.android-ndk }} = true ]; then
+                 echo "Error: The two options aosp-clang and android-ndk will conflict with each other, please turn off one." && exit 15
+             else
+                 git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
+                 git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
+             fi
+         fi
+         echo "::endgroup::"
 
          echo "::group:: Pulling Kernel Source"
          git clone --recursive ${{ inputs.kernel-url }} -b "${{ inputs.kernel-branch }}" --depth=${{ inputs.depth }} kernel/${{ inputs.kernel-dir }}
@@ -382,18 +382,18 @@ runs:
          echo "::group:: Building Kernel with selected cross compiler"
          mkdir out -p -v
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
-         if [ ${{ inputs.aosp-clang }} = true ] || [ ! -z ${{ inputs.other-clang-url}} ]; then
+         if [ -d $HOME/clang ]; then
               COMMAND+=" PATH=$HOME/clang/bin:$PATH"
          elif [ ${{ inputs.android-ndk }} = true ]; then
+              export PATH=$CLANG_PATH/bin:$PATH
               COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
-         export PATH=$CLANG_PATH/bin:$PATH
          if [ ${{ inputs.aosp-gcc }} = true ]; then
              COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu-"
          elif [ ${{ inputs.android-ndk }} = true ]; then
              COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- CROSS_COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
          fi
-         if [ ${{ inputs.aosp-clang }} = true ] || [ ! -z ${{ inputs.other-clang-url}} ]; then
+         if [ -d $HOME/clang ]; then
              if [ ${{ inputs.ccache }} = true ]; then
                  COMMAND+=" CC='ccache clang'"
              else
@@ -401,9 +401,14 @@ runs:
              fi
          else
              if [ ${{ inputs.ccache }} = true ]; then
-                 COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
+                 if [ -d $HOME/gcc-64 ]; then
+                     COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
+                 else
+                     COMMAND+=" CC='ccache $HOME/gcc-32/bin/arm-linux-androidabeihf-gcc'"
+                 fi
              fi
          fi
+         echo "using command: ${COMMAND}"
          ${COMMAND}
          echo "::endgroup::"
 
