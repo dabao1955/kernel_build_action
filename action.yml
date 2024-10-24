@@ -382,18 +382,18 @@ runs:
          echo "::group:: Building Kernel with selected cross compiler"
          mkdir out -p -v
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
-         if [ ${{ inputs.aosp-clang }} = true ] || [ ${{ inputs.android-ndk }} = false ]; then
+         if [ -d $HOME/clang ]; then
               COMMAND+=" PATH=$HOME/clang/bin:$PATH"
          elif [ ${{ inputs.android-ndk }} = true ]; then
+              export PATH=$CLANG_PATH/bin:$PATH
               COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
-         export PATH=$CLANG_PATH/bin:$PATH
          if [ ${{ inputs.aosp-gcc }} = true ]; then
              COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu-"
          elif [ ${{ inputs.android-ndk }} = true ]; then
              COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- CROSS_COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
          fi
-         if [ ${{ inputs.aosp-clang }} = true ] || [ ${{ inputs.android-ndk }} = true ]; then
+         if [ -d $HOME/clang ]; then
              if [ ${{ inputs.ccache }} = true ]; then
                  COMMAND+=" CC='ccache clang'"
              else
@@ -401,7 +401,11 @@ runs:
              fi
          else
              if [ ${{ inputs.ccache }} = true ]; then
-                 COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
+                 if [ -d $HOME/gcc-64 ]; then
+                     COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
+                 else
+                     COMMAND+=" CC='ccache $HOME/gcc-32/bin/arm-linux-androidabeihf-gcc'"
+                 fi
              fi
          fi
          echo "using command: ${COMMAND}"
