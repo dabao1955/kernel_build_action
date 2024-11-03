@@ -200,6 +200,9 @@ runs:
              else
                  git clone "$OTHER_CLANG_URL" $HOME/clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
              fi
+             if [ ! -d $HOME/clang/bin/ ]; then
+                 mv $HOME/clang/*/* $HOME/clang/
+             fi
          fi
          echo "::endgroup::"
 
