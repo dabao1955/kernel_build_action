@@ -2,3 +2,12 @@ name: Common
 description: "(⋟﹏⋞) I have some question."
 title: "[common]: "
 labels: ["Not important"]
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the problem
+      description: A clear and concise description of what the question is.
+      placeholder: |
+        I used this action but have some error.
+        Please help me!
