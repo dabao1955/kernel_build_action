@@ -3,6 +3,7 @@ description: "(⋟﹏⋞) I have some question."
 title: "[common]: "
 labels: ["Not important"]
 
+body:
   - type: textarea
     id: description
     attributes:
