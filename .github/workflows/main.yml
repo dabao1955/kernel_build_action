@@ -38,3 +38,5 @@ jobs:
           aosp-clang-version: r383902
           disable-lto: true
           anykernel3: true
+          ksu-other: true
+          ksu-url: https://github.com/NekoSekaiMoe/test
