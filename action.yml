@@ -165,6 +165,7 @@ runs:
          fi
          if [ -f /usr/bin/docker ]; then
              echo "::group:: Cleaning necessary disk space"
+             echo "id: ${{ github.sha }}"
              "$SU" docker image prune --all --force
          fi
          echo "::endgroup::"
@@ -501,7 +502,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.access-token }}
       with:
         name: Last CI build kernel
-        tag_name: last-ci
+        tag_name: last-ci-${{ github.sha }}
         files: build/*
         make_latest: true
         body: |
