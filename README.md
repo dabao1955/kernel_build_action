@@ -90,7 +90,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
 | aosp-clang | false | Compile the kernel using aosp-clang | false |
 | aosp-clang-version | false | please search for them according to your own needs at [official website](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86) and choose the appropriate clang according to the Android system version instead of blindly choosing `r383902` | r383902 |
-| other-clang-url | false | Please fill in the download link of other clang in this option. Supports .zip, .tar and .git formats | https://github.com/kdrag0n/proton-clang |
+| other-clang-url | false | Please fill in the download link of other clang in this option. Supports .xz, .zip, .tar and .git formats | https://github.com/kdrag0n/proton-clang |
 | other-clang-branch | false | | 10.0|
 | android-ndk | false | Use Android-NDK to compile kernel . Before enable this option，you should disable aosp-gcc and aosp-clang bacause android-ndk will conflict with them | false |
 | android-ndk-version | false | | r23b |
@@ -100,9 +100,6 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | access-token | false | Please fill it if you want to release kernel | ghp_xxxxxx |
 | bootimg-url | false | A URL that can download the local boot.img | https://127.0.0.1/boot.img |
 | extra-cmd | false | Compile the kernel with extra options, such as LD=ld.lld | AS=llvm-as |
-
-## Todo
-- Support use 3rd party gcc to compile
 
 ## FAQ
 > [!CAUTION]
@@ -121,6 +118,9 @@ In principle, it only accept Bug Reports and do not accept external Feature Requ
 - If you get an error while downloading the toolchain or pulling the source code, please check whether your option or source code address is legitimate.
 - If you encounter problems during compilation, consider replacing the source code or replacing the compiler.
 - If action has some typo problem,PR welcome！
+
+### Build failed while using third-party GCC ?
+Try add LLVM=1 option with clang.
 
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
