@@ -262,7 +262,7 @@ runs:
              echo "::endgroup::"
          fi
 
-            if [ ${{ inputs.aosp-gcc }} = true ]; then
+         if [ ${{ inputs.aosp-gcc }} = true ]; then
              if [ -d $HOME/clang ]; then
          if [ ! -z ${{ inputs.other-gcc64-url }} ] && [ ! -z ${{ inputs.other-gcc32-url }} ]; then
              echo "::group:: Downloading 3rd gcc"
