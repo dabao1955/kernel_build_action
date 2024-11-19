@@ -263,8 +263,9 @@ runs:
          fi
 
          if [ ${{ inputs.aosp-gcc }} = true ]; then   
-         if [ ! -z ${{ inputs.other-gcc64-url }} ] && [ ! -z ${{ inputs.other-gcc32-url }} ]; then
+         if [ ! -z ${{ inputs.other-gcc64-url }} ] || [ ! -z ${{ inputs.other-gcc32-url }} ]; then
              echo "::group:: Downloading 3rd gcc"
+         if [ ! -z ${{ inputs.other-gcc64-url }} ] && [ ! -z ${{ inputs.other-gcc32-url }} ]; then
              if [ -d $HOME/clang ]; then
              export OTHER_GCC64_URL=${{ inputs.other-gcc64-url }}
              export OTHER_GCC32_URL=${{ inputs.other-gcc32-url }}
@@ -299,6 +300,9 @@ runs:
              else
                  git clone "$OTHER_GCC32_URL" $HOME/gcc-32 --depth=${{ inputs.depth }} -b ${{ inputs.other-gcc32-branch }}  
              fi                  
+         fi
+         else
+             echo "Error: Please enable 3rd other-gcc32-url and other-gcc64-url." && exit 15
          fi
          else
              echo "::group:: Downloading AOSP GCC"
