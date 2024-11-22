@@ -345,7 +345,7 @@ runs:
 
          if [ ${{ inputs.ksu }} = true ]; then
             echo "::group:: Initializing KernelSU"
-            if [ -f KernelSU/kernel/Kconfig ]; then
+            if grep -qsi "path = .*KernelSU" .gitmodules || [ -f KernelSU/kernel/Kconfig ]; then
                 echo "KernelSU has been initialized,skipped."
             else
                 if [ ${{ inputs.ksu-other }} = true ]; then
