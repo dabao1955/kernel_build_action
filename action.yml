@@ -351,6 +351,7 @@ runs:
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
          VERSION=$(grep -E '^VERSION = ' Makefile | awk '{print $3}')
          PATCHLEVEL=$(grep -E '^PATCHLEVEL = ' Makefile | awk '{print $3}')
+         SUBLEVEL=$(grep -E '^SUBLEVEL = ' Makefile | awk '{print $3}')
          if [ "$VERSION" -lt 5 ]; then
              touch nongki.txt
          elif [ "$PATCHLEVEL" -lt 10 ]; then
