@@ -99,7 +99,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | release | flase | After the kernel compilation is completed, it will be automatically published to the releases page | true |
 | access-token | false | Please fill it if you want to release kernel | ghp_xxxxxx |
 | bootimg-url | false | A URL that can download the local boot.img | https://127.0.0.1/boot.img |
-| extra-cmd | false | Compile the kernel with extra options, such as LLVM=1 LD=ld.lld | AS=llvm-as |
+| extra-cmd | false | Compile the kernel with extra options, such as LLVM=1 and LD=ld.lld | AS=llvm-as |
 
 ## Todo
 - Modify unreasonable options
