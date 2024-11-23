@@ -105,9 +105,6 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 > [!CAUTION]
 > Please Read this first if you have some questions!
 
-### How to use 3rd gcc？
-You should enable other-gcc32-url and other-gcc64-url options to use it.
-
 ### How to use 3rd clang？
 You should disable aosp-clang and android-ndk options to use it.
 
