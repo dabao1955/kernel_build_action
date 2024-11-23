@@ -446,9 +446,13 @@ runs:
               COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
          if [ ${{ inputs.aosp-gcc }} = true ]; then
-             COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu-"
-         elif [ ${{ inputs.android-ndk }} = true ]; then
-             COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- CROSS_COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
+             if [ -d $HOME/gcc-64/aarch64-elf ] && [ -d $HOME/gcc-32/arm-eabi ]; then
+                 COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/aarch64-elf/bin/aarch64-elf- CROSS_COMPILE_ARM32=$HOME/gcc-32/arm-eabi/bin/arm-eabi- CLANG_TRIPLE=aarch64-linux-gnu-"
+             elif [ -d $HOME/gcc-64 ] && [ -d $HOME/gcc-32 ]; then
+                 COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu-"
+             elif [ ${{ inputs.android-ndk }} = true ]; then
+                 COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- CROSS_COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
+             fi
          fi
          if [ -d $HOME/clang ]; then
              if [ ${{ inputs.ccache }} = true ]; then
@@ -458,19 +462,24 @@ runs:
              fi
          else
              if [ ${{ inputs.ccache }} = true ]; then
-                 if [ -d $HOME/gcc-64 ]; then
+                 if [ -d $HOME/gcc-64/aarch64-elf ]; then
+                     COMMAND+=" CC='ccache $HOME/gcc-64/aarch64-elf/bin/aarch64-elf-gcc'"
+                 elif [ -d $HOME/gcc-64 ]; then
                      COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
-                 else
+                 fi
+             else
+                 if [ -d $HOME/gcc-32/arm-eabi ]; then
+                     COMMAND+=" CC='ccache $HOME/gcc-32/arm-eabi/bin/arm-eabi-gcc'"
+                 elif [ -d $HOME/gcc-32 ]; then
                      COMMAND+=" CC='ccache $HOME/gcc-32/bin/arm-linux-androidabeihf-gcc'"
                  fi
              fi
          fi
          echo "using command: ${COMMAND}"
-         ${COMMAND}
+         eval ${COMMAND}
          echo "::endgroup::"
 
          unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION
-
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
             mkdir split
