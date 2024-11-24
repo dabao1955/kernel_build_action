@@ -446,15 +446,13 @@ runs:
               COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
          if [ ${{ inputs.aosp-gcc }} = true ]; then
-             if [ -d $HOME/gcc-64/aarch64-elf ] && [ -d $HOME/gcc-32/arm-eabi ]; then
-                 COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/aarch64-elf/bin/aarch64-elf- CROSS_COMPILE_ARM32=$HOME/gcc-32/arm-eabi/bin/arm-eabi- CLANG_TRIPLE=aarch64-linux-gnu-"
-             elif [ -d $HOME/gcc-64 ] && [ -d $HOME/gcc-32 ]; then
-                 COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu-"
-             fi
-         else
-             if [ ${{ inputs.android-ndk }} = true ]; then
-                 COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- CROSS_COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
-             fi
+            if [ -d $HOME/gcc-64/aarch64-elf ] && [ -d $HOME/gcc-32/arm-eabi ]; then
+               COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/aarch64-elf/bin/aarch64-elf- CROSS_COMPILE_ARM32=$HOME/gcc-32/arm-eabi/bin/arm-eabi- CLANG_TRIPLE=aarch64-linux-gnu-"
+            elif [ -d $HOME/gcc-64 ] && [ -d $HOME/gcc-32 ]; then
+               COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu-"
+            fi
+         elif [ ${{ inputs.android-ndk }} = true ]; then
+               COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- CROSS_COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
          fi
          if [ -d $HOME/clang ]; then
              if [ ${{ inputs.ccache }} = true ]; then
