@@ -329,11 +329,22 @@ runs:
          fi
 
          cd kernel/${{ inputs.kernel-dir }}
-         if ! grep -qsi "LD *= *ld.lld" Makefile; then
-             if [ -f "$HOME/clang/bin/ld" ]; then
-                 rm -f "$HOME/clang/bin/ld"
-             fi
-         fi   
+         if ! grep -qsi "LD *= *ld.lld" Makefile && [ -f "$HOME/clang/bin/ld" ]; then
+             rm -f "$HOME/clang/bin/ld"
+         fi
+
+         if [ ! -z ${{ inputs.other-gcc64-url }} ] && [ ! -z ${{ inputs.other-gcc32-url }} ]; then
+             [ ! -d $HOME/gcc-64/aarch64-elf ] || [ ! -d $HOME/gcc-32/arm-eabi ] || {
+                 for gcc_dir in "$HOME/gcc-64" "$HOME/gcc-32"; do
+                     gcc_name="${gcc_dir}/$([ "$gcc_dir" == "$HOME/gcc-64" ] && echo "aarch64-elf" || echo "arm-eabi")"
+                     if [ ! -d "$gcc_name" ]; then
+                         find "$gcc_dir"/*/*/ -type d -name bin -exec dirname {} \; -exec mv {} "$gcc_dir/$gcc_name" \; -quit
+                         [ ! -d "$gcc_name" ] && find "$gcc_dir"/*/ -type d -name bin -exec dirname {} \; -exec mv {} "$gcc_name" \; -quit
+                     fi
+                 done
+             }
+         fi
+         
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
          VERSION=$(grep -E '^VERSION = ' Makefile | awk '{print $3}')
          PATCHLEVEL=$(grep -E '^PATCHLEVEL = ' Makefile | awk '{print $3}')
