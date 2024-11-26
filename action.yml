@@ -41,7 +41,7 @@ inputs:
   android-version:
     description: 'Android version.'
     required: true
-    default: 12
+    default: ""
   ksu:
     description: 'KernelSU function support'
     required: false
