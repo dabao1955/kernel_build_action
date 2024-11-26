@@ -41,7 +41,7 @@ inputs:
   android-version:
     description: 'Android version.'
     required: true
-    default: 12
+    default: ""
   ksu:
     description: 'KernelSU function support'
     required: false
@@ -192,11 +192,11 @@ runs:
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
              if [[ "$OTHER_CLANG_URL" == *'.tar.gz' ]]; then
                  aria2c -o clang.tar.gz "$OTHER_CLANG_URL"
-                 mkdir clang
+                 mkdir $HOME/clang -p -v
                  tar -C $HOME/clang/ -zxvf clang.tar.gz
              elif [[ "$OTHER_CLANG_URL" == *'.zip' ]]; then
                  aria2c -o clang.zip "$OTHER_CLANG_URL"
-                 mkdir clang
+                 mkdir $HOME/clang -p -v
                  unzip clang.zip -d $HOME/clang/
              else
                  git clone "$OTHER_CLANG_URL" $HOME/clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
