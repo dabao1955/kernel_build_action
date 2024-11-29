@@ -474,7 +474,7 @@ runs:
              echo "::endgroup::"
          fi
 
-          echo "::group:: Building Kernel with selected cross compiler"
+         echo "::group:: Building Kernel with selected cross compiler"
          mkdir out -p -v
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
          if [ -d $HOME/clang ]; then
@@ -514,7 +514,7 @@ runs:
              fi
          fi
          echo "using command: ${COMMAND}"
-         eval ${COMMAND}
+         ${COMMAND}
          echo "::endgroup::"
 
          unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION
