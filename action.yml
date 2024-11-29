@@ -1,4 +1,4 @@
-/name: 'Android Kernel Build Action'
+name: 'Android Kernel Build Action'
 description: "A action to built android kernel."
 
 branding:
