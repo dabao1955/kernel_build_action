@@ -14,6 +14,10 @@ jobs:
     steps:
       - name: Check out PR code
         uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+
       - name: Fetch base branch
         run: |
           # Fetch the base branch from the upstream repository
