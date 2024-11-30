@@ -470,13 +470,13 @@ runs:
               COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
          if [ ${{ inputs.aosp-gcc }} = true ]; then
-            if [ -n "${gcc64}" ] && [ -n "${gcc32}" ]; then
-               COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/${gcc64}/bin/${gcc64}- CROSS_COMPILE_ARM32=$HOME/gcc-32/${gcc32}/bin/${gcc32}- CLANG_TRIPLE=aarch64-linux-gnu-"
-            elif [ -d $HOME/gcc-64 ] && [ -d $HOME/gcc-32 ]; then
-               COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu-"
-            fi
+             [ -n "${gcc64}" ] && CROSS_COMPILE="$HOME/gcc-64/${gcc64}/bin/${gcc64}-"
+             [ -z "${gcc64}" ] && CROSS_COMPILE="$HOME/gcc-64/bin/aarch64-linux-android-"
+             [ -n "${gcc32}" ] && CROSS_COMPILE_ARM32="$HOME/gcc-32/${gcc32}/bin/${gcc32}-"
+             [ -z "${gcc32}" ] && CROSS_COMPILE_ARM32="$HOME/gcc-32/bin/arm-linux-androideabi-"
+             COMMAND+=" CROSS_COMPILE=${CROSS_COMPILE} CROSS_COMPILE_ARM32=${CROSS_COMPILE_ARM32} CLANG_TRIPLE=aarch64-linux-gnu-"
          elif [ ${{ inputs.android-ndk }} = true ]; then
-           COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- CROSS_COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
+             COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- CROSS_COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
          fi
          if [ -d $HOME/clang ]; then
              if [ ${{ inputs.ccache }} = true ]; then
@@ -488,13 +488,13 @@ runs:
              if [ ${{ inputs.ccache }} = true ]; then
                  if [ -n "${gcc64}" ]; then
                      COMMAND+=" CC='ccache $HOME/gcc-64/${gcc64}/bin/${gcc64}-gcc'"
-                 elif [ -d $HOME/gcc-64 ]; then
+                 elif [ -z "${gcc64}" ]; then
                      COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
                  fi
              else
                  if [ -n "${gcc32}" ]; then
                      COMMAND+=" CC='ccache $HOME/gcc-32/${gcc32}/bin/${gcc32}-gcc'"
-                 elif [ -d $HOME/gcc-32 ]; then
+                 elif [ -z "${gcc32}" ]; then
                      COMMAND+=" CC='ccache $HOME/gcc-32/bin/arm-linux-androidabeihf-gcc'"
                  fi
              fi
