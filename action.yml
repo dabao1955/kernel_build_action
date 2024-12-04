@@ -329,10 +329,6 @@ runs:
          fi
 
          cd kernel/${{ inputs.kernel-dir }}
-         if ! grep -qsi "LD *= *ld.lld" Makefile && [ -f "$HOME/clang/bin/ld" ]; then
-             rm -f "$HOME/clang/bin/ld"
-         fi
-
          if [ ! -z ${{ inputs.other-gcc64-url }} ] && [ ! -z ${{ inputs.other-gcc32-url }} ]; then
              declare -A sub_dirs=(
                  ["$HOME/gcc-64"]="aarch64-linux-android"
@@ -356,6 +352,10 @@ runs:
                      done
                  fi
              done
+         fi
+
+         if [ -f "$HOME/clang/bin/ld" ] || [ -f "$HOME/gcc-64/bin/${gcc64}-ld" ]; then
+             rm -f "$HOME/clang/bin/ld" "$HOME/gcc-64/bin/${gcc64}-ld"
          fi
          
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
@@ -470,9 +470,9 @@ runs:
               COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
          if [ ${{ inputs.aosp-gcc }} = true ]; then
-             [ -n "${gcc64}" ] && CROSS_COMPILE="$HOME/gcc-64/${gcc64}/bin/${gcc64}-"
+             [ -n "${gcc64}" ] && CROSS_COMPILE="$HOME/gcc-64/bin/${gcc64}-"
              [ -z "${gcc64}" ] && CROSS_COMPILE="$HOME/gcc-64/bin/aarch64-linux-android-"
-             [ -n "${gcc32}" ] && CROSS_COMPILE_ARM32="$HOME/gcc-32/${gcc32}/bin/${gcc32}-"
+             [ -n "${gcc32}" ] && CROSS_COMPILE_ARM32="$HOME/gcc-32/bin/${gcc32}-"
              [ -z "${gcc32}" ] && CROSS_COMPILE_ARM32="$HOME/gcc-32/bin/arm-linux-androideabi-"
              COMMAND+=" CROSS_COMPILE=${CROSS_COMPILE} CROSS_COMPILE_ARM32=${CROSS_COMPILE_ARM32} CLANG_TRIPLE=aarch64-linux-gnu-"
          elif [ ${{ inputs.android-ndk }} = true ]; then
