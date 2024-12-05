@@ -339,7 +339,7 @@ runs:
                  ["$HOME/gcc-32"]="arm-linux-androideabi"
              )
              for gcc_dir in "$HOME/gcc-64" "$HOME/gcc-32"; do
-                 find "$gcc_dir"/*/*/bin -type d -exec sh -c 'mv "$(dirname "{}")"/* "$gcc_dir"/' _ {} \; -quit > /dev/null 2>&1 || true
+                 find "$gcc_dir"/*/*/bin -type d -exec sh -c 'mv "$(dirname "{}")"/* "$gcc_dir"/' _ {} \; -quit || true 2>/dev/null
                  sub_dir="${sub_dirs[$gcc_dir]}"
                  if [ ! -d "$gcc_dir/$sub_dir" ]; then
                      for file in "$gcc_dir/bin"/*; do
