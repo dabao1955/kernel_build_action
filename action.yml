@@ -1,4 +1,4 @@
-/name: 'Android Kernel Build Action'
+name: 'Android Kernel Build Action'
 description: "A action to built android kernel."
 
 branding:
@@ -223,12 +223,26 @@ runs:
                      ;;
              esac
          }
-
+         
          if [ ${{ inputs.aosp-clang }} = false ] && [ ${{ inputs.android-ndk }} = false ]; then
              echo "::group:: Downloading 3rd clang"
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
-             mkdir -p -v $HOME/clang
+<<<<<<< HEAD
+             if [[ "$OTHER_CLANG_URL" == *'.tar.gz' ]]; then
+                 aria2c -o clang.tar.gz "$OTHER_CLANG_URL"
+                 mkdir $HOME/clang -p -v
+                 tar -C $HOME/clang/ -zxvf clang.tar.gz
+             elif [[ "$OTHER_CLANG_URL" == *'.zip' ]]; then
+                 aria2c -o clang.zip "$OTHER_CLANG_URL"
+                 mkdir $HOME/clang -p -v
+                 unzip clang.zip -d $HOME/clang/
+             else
+                 git clone "$OTHER_CLANG_URL" $HOME/clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
+             fi
+=======
+             mkdir -p -v $HOME/clang 
              download_and_extract "$OTHER_CLANG_URL" "clang" "$HOME/clang" "${{ inputs.other-clang-branch }}"
+>>>>>>> 1350313 (Add 3rd-gcc.yml)
              if [ ! -d $HOME/clang/bin/ ]; then
                  mv $HOME/clang/*/* $HOME/clang/
              fi
