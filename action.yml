@@ -353,7 +353,7 @@ runs:
                  fi
              done
          fi
-         
+
          if [ -f "$HOME/clang/bin/ld" ] || [ -f "$HOME/gcc-64/bin/${GCC64}-ld" ]; then
              rm -f "$HOME/clang/bin/ld" "$HOME/gcc-64/bin/${GCC64}-ld"
          fi
