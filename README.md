@@ -99,7 +99,10 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | release | flase | After the kernel compilation is completed, it will be automatically published to the releases page | true |
 | access-token | false | Please fill it if you want to release kernel | ghp_xxxxxx |
 | bootimg-url | false | A URL that can download the local boot.img | https://127.0.0.1/boot.img |
-| extra-cmd | false | Compile the kernel with extra options, such as LD=ld.lld | AS=llvm-as |
+| extra-cmd | false | Compile the kernel with extra options, such as LLVM=1 and LD=ld.lld | AS=llvm-as |
+
+## Todo
+- Modify unreasonable options
 
 ## FAQ
 > [!CAUTION]
@@ -121,9 +124,6 @@ In principle, it only accept Bug Reports and do not accept external Feature Requ
 - If you get an error while downloading the toolchain or pulling the source code, please check whether your option or source code address is legitimate.
 - If you encounter problems during compilation, consider replacing the source code or replacing the compiler.
 - If action has some typo problem,PR welcome！
-
-### Build failed while using third-party GCC ?
-Try add LLVM=1 option with clang.
 
 ## Credits
 - [KernelSU](https://github.com/tiann/KernelSU)
