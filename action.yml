@@ -199,35 +199,9 @@ runs:
              echo "::endgroup::"
          fi
 
-         download_and_extract() {
-             local url=$1
-             local output_name=$2
-             local extract_dir=$3
-             local branch=${4:-main}
-
-             case "$url" in
-                 *.tar.gz)
-                     aria2c -o "${output_name}.tar.gz" "$url"
-                     tar -C "$extract_dir" -zxf "${output_name}.tar.gz"
-                     ;;
-                 *.zip)
-                     aria2c -o "${output_name}.zip" "$url"
-                     unzip -q "${output_name}.zip" -d "$extract_dir"
-                     ;;
-                 *.tar.xz)
-                     aria2c -o "${output_name}.tar.xz" "$url"
-                     tar -C "$extract_dir" -xf "${output_name}.tar.xz"
-                     ;;
-                 *)
-                     git clone "$url" "$extract_dir" --depth=${{ inputs.depth }} -b "$branch"
-                     ;;
-             esac
-         }
-         
          if [ ${{ inputs.aosp-clang }} = false ] && [ ${{ inputs.android-ndk }} = false ]; then
              echo "::group:: Downloading 3rd clang"
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
-<<<<<<< HEAD
              if [[ "$OTHER_CLANG_URL" == *'.tar.gz' ]]; then
                  aria2c -o clang.tar.gz "$OTHER_CLANG_URL"
                  mkdir $HOME/clang -p -v
@@ -239,10 +213,6 @@ runs:
              else
                  git clone "$OTHER_CLANG_URL" $HOME/clang --depth=${{ inputs.depth }} -b ${{ inputs.other-clang-branch }}
              fi
-=======
-             mkdir -p -v $HOME/clang 
-             download_and_extract "$OTHER_CLANG_URL" "clang" "$HOME/clang" "${{ inputs.other-clang-branch }}"
->>>>>>> 1350313 (Add 3rd-gcc.yml)
              if [ ! -d $HOME/clang/bin/ ]; then
                  mv $HOME/clang/*/* $HOME/clang/
              fi
@@ -300,9 +270,32 @@ runs:
                          export OTHER_GCC64_URL=${{ inputs.other-gcc64-url }}
                          export OTHER_GCC32_URL=${{ inputs.other-gcc32-url }}
                          mkdir -p -v $HOME/gcc-64
-                         download_and_extract "$OTHER_GCC64_URL" "gcc-aarch64" "$HOME/gcc-64" "${{ inputs.other-gcc64-branch }}"
+                         if [[ "$OTHER_GCC64_URL" == *'.tar.gz' ]]; then
+                             aria2c -o gcc-aarch64.tar.gz "$OTHER_GCC64_URL"
+                             tar -C $HOME/gcc-64 -zxf gcc-aarch64.tar.gz
+                         elif [[ "$OTHER_GCC64_URL" == *'.zip' ]]; then
+                             aria2c -o gcc-aarch64.zip "$OTHER_GCC64_URL"
+                             unzip -q gcc-aarch64.zip -d $HOME/gcc-64
+                         elif [[ "$OTHER_GCC64_URL" == *'.tar.xz' ]]; then
+                             aria2c -o gcc-aarch64.tar.xz "$OTHER_GCC64_URL"
+                             tar -C $HOME/gcc-64 -xf gcc-aarch64.tar.xz
+                         else
+                             git clone "$OTHER_GCC64_URL" $HOME/gcc-64 --depth=${{ inputs.depth }} -b ${{ inputs.other-gcc64-branch }}
+                         fi
+
                          mkdir -p -v $HOME/gcc-32
-                         download_and_extract "$OTHER_GCC32_URL" "gcc-arm" "$HOME/gcc-32" "${{ inputs.other-gcc32-branch }}"
+                         if [[ "$OTHER_GCC32_URL" == *'.tar.gz' ]]; then
+                             aria2c -o gcc-arm.tar.gz "$OTHER_GCC32_URL"
+                             tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
+                         elif [[ "$OTHER_GCC32_URL" == *'.zip' ]]; then
+                             aria2c -o gcc-arm.zip "$OTHER_GCC32_URL"
+                             unzip -q gcc-arm.zip -d $HOME/gcc-32
+                         elif [[ "$OTHER_GCC32_URL" == *'.tar.xz' ]]; then
+                             aria2c -o gcc-arm.tar.xz "$OTHER_GCC32_URL"
+                             tar -C $HOME/gcc-32 -xf gcc-arm.tar.xz
+                         else
+                             git clone "$OTHER_GCC32_URL" $HOME/gcc-32 --depth=${{ inputs.depth }} -b ${{ inputs.other-gcc32-branch }}
+                         fi
                      fi
                  else
                      echo "Error: Please enable 3rd other-gcc32-url and other-gcc64-url." && exit 15
@@ -343,17 +336,13 @@ runs:
          fi
 
          cd kernel/${{ inputs.kernel-dir }}
-         if ! grep -qsi "LD *= *ld.lld" Makefile; then
-             if [ -f "$HOME/clang/bin/ld" ]; then
-                 rm -f "$HOME/clang/bin/ld"
-             fi
-         fi   
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
          VERSION=$(grep -E '^VERSION = ' Makefile | awk '{print $3}')
          PATCHLEVEL=$(grep -E '^PATCHLEVEL = ' Makefile | awk '{print $3}')
+         SUBLEVEL=$(grep -E '^SUBLEVEL = ' Makefile | awk '{print $3}')
          if [ "$VERSION" -lt 5 ]; then
              touch nongki.txt
-         elif [ "$PATCHLEVEL" -lt 10 ]; then
+         elif [ "PATCHLEVEL" -lt 10 ]; then
              touch nongki.txt
          fi
 
