@@ -357,7 +357,7 @@ runs:
          if [ -f "$HOME/clang/bin/ld" ] || [ -f "$HOME/gcc-64/bin/${GCC64}-ld" ]; then
              rm -f "$HOME/clang/bin/ld" "$HOME/gcc-64/bin/${GCC64}-ld"
          fi
-
+         
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
          VERSION=$(grep -E '^VERSION = ' Makefile | awk '{print $3}')
          PATCHLEVEL=$(grep -E '^PATCHLEVEL = ' Makefile | awk '{print $3}')
