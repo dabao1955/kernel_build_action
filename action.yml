@@ -504,7 +504,7 @@ runs:
          echo "::endgroup::"
 
          unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION SUB_DIRS GCC_DIR SUB_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32
-
+         
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
             mkdir split
