@@ -490,7 +490,7 @@ runs:
              fi
          fi
          echo "using command: ${COMMAND}"
-         ${COMMAND}
+         eval ${COMMAND}
          echo "::endgroup::"
 
          unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION
