@@ -487,13 +487,13 @@ runs:
          else
              if [ ${{ inputs.ccache }} = true ]; then
                  if [ -n "${gcc64}" ]; then
-                     COMMAND+=" CC='ccache $HOME/gcc-64/${gcc64}/bin/${gcc64}-gcc'"
+                     COMMAND+=" CC='ccache $HOME/gcc-64/bin/${gcc64}-gcc'"
                  elif [ -z "${gcc64}" ]; then
                      COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
                  fi
              else
                  if [ -n "${gcc32}" ]; then
-                     COMMAND+=" CC='ccache $HOME/gcc-32/${gcc32}/bin/${gcc32}-gcc'"
+                     COMMAND+=" CC='ccache $HOME/gcc-32/bin/${gcc32}-gcc'"
                  elif [ -z "${gcc32}" ]; then
                      COMMAND+=" CC='ccache $HOME/gcc-32/bin/arm-linux-androidabeihf-gcc'"
                  fi
