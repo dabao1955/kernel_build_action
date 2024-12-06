@@ -225,7 +225,7 @@ runs:
          }
 
          if [ ${{ inputs.aosp-clang }} = false ] && [ ${{ inputs.android-ndk }} = false ]; then
-             echo "::group:: Downloading Third Party Clang"
+             echo "::group:: Downloading Third party clang"
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
              mkdir -p -v $HOME/clang
              download_and_extract "$OTHER_CLANG_URL" "clang" "$HOME/clang" "${{ inputs.other-clang-branch }}"
@@ -262,7 +262,7 @@ runs:
          fi
 
          if [ ${{ inputs.aosp-clang }} = true ]; then
-             echo "::group:: Downloading AOSP Clang"
+             echo "::group:: Downloading AOSP clang"
              if [ ${{ inputs.aosp-gcc }} = true ]; then
                  mkdir $HOME/clang -p -v
                  if [ ! -z ${{ inputs.android-version }} ]; then
@@ -280,7 +280,7 @@ runs:
 
          if [ ${{ inputs.aosp-gcc }} = true ]; then
              if [ ! -z ${{ inputs.other-gcc64-url }} ] || [ ! -z ${{ inputs.other-gcc32-url }} ]; then
-                 echo "::group:: Downloading Third Party GCC"
+                 echo "::group:: Downloading Third party gcc"
                  if [ ! -z ${{ inputs.other-gcc64-url }} ] && [ ! -z ${{ inputs.other-gcc32-url }} ]; then
                      if [ -d $HOME/clang ]; then
                          export OTHER_GCC64_URL=${{ inputs.other-gcc64-url }}
