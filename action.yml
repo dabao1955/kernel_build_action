@@ -280,7 +280,7 @@ runs:
 
          if [ ${{ inputs.aosp-gcc }} = true ]; then
              if [ ! -z ${{ inputs.other-gcc64-url }} ] || [ ! -z ${{ inputs.other-gcc32-url }} ]; then
-                 echo "::group:: Downloading 3rd gcc"
+                 echo "::group:: Downloading 3RD GCC"
                  if [ ! -z ${{ inputs.other-gcc64-url }} ] && [ ! -z ${{ inputs.other-gcc32-url }} ]; then
                      if [ -d $HOME/clang ]; then
                          export OTHER_GCC64_URL=${{ inputs.other-gcc64-url }}
@@ -329,34 +329,25 @@ runs:
          fi
 
          cd kernel/${{ inputs.kernel-dir }}
-         if [ ! -z ${{ inputs.other-gcc64-url }} ] && [ ! -z ${{ inputs.other-gcc32-url }} ]; then
-             declare -A SUB_DIRS=(
-                 ["$HOME/gcc-64"]="aarch64-linux-android"
-                 ["$HOME/gcc-32"]="arm-linux-androideabi"
-             )
-             for GCC_DIR in "$HOME/gcc-64" "$HOME/gcc-32"; do
-                 find "$GCC_DIR"/*/*/bin -type d -exec sh -c 'mv "$(dirname "{}")"/* "$GCC_DIR"/' _ {} \; -quit > /dev/null 2>&1 || true
-                 SUB_DIR="${SUB_DIRS[$GCC_DIR]}"
-                 if [ ! -d "$GCC_DIR/$SUB_DIR" ]; then
-                     for FILE in "$GCC_DIR/bin"/*; do
-                         FILE_NAME=$(basename "$FILE")
-                         MATCHED_DIR=""
-                         for FOLDER in $(find "$GCC_DIR" -mindepth 1 -maxdepth 1 -type d | sort -r); do
-                             FOLDER_NAME=$(basename "$FOLDER")
-                             [[ "$FILE_NAME" == "$FOLDER_NAME"* ]] && MATCHED_DIR="$FOLDER_NAME" && break
-                         done
-                         [ -n "$MATCHED_DIR" ] && case "$GCC_DIR" in
-                             "$HOME/gcc-64") GCC64="$MATCHED_DIR" ;;
-                             "$HOME/gcc-32") GCC32="$MATCHED_DIR" ;;
-                         esac
-                     done
-                 fi
+         for GCC_DIR in "$HOME/gcc-64" "$HOME/gcc-32"; do
+             find "$GCC_DIR"/*/*/bin -type d -exec sh -c 'mv "$(dirname "{}")"/* "$GCC_DIR"/' _ {} \; -quit > /dev/null 2>&1 || true
+             for FILE in "$GCC_DIR/bin"/*; do
+                 FILE_NAME=$(basename "$FILE")
+                 MATCHED_DIR=""
+                 for FOLDER in $(find "$GCC_DIR" -mindepth 1 -maxdepth 1 -type d | sort -r); do
+                     FOLDER_NAME=$(basename "$FOLDER")
+                     [[ "$FILE_NAME" == "$FOLDER_NAME"* ]] && MATCHED_DIR="$FOLDER_NAME" && break
+                 done
+                 [ -n "$MATCHED_DIR" ] && case "$GCC_DIR" in
+                     "$HOME/gcc-64") GCC64="$MATCHED_DIR" ;;
+                     "$HOME/gcc-32") GCC32="$MATCHED_DIR" ;;
+                 esac
              done
-         fi
+         done
 
-         if [ -f "$HOME/clang/bin/ld" ] || [ -f "$HOME/gcc-64/bin/${GCC64}-ld" ] || [ -f "$HOME/gcc-32/bin/${GCC32}-ld" ]; then
-             rm -f "$HOME/clang/bin/ld" "$HOME/gcc-64/bin/${GCC64}-ld" "$HOME/gcc-32/bin/${GCC32}-ld"
-         fi
+         [ ! -d "$HOME/gcc-64/aarch64-linux-android" ] && rm -f "$HOME/gcc-64/bin/${GCC64}-ld"
+         [ ! -d "$HOME/gcc-32/arm-linux-androideabi" ] && rm -f "$HOME/gcc-32/bin/${GCC32}-ld"
+         ! grep -qsi "LD *= *ld.lld" Makefile && [ -f "$HOME/clang/bin/ld" ] && rm -f "$HOME/clang/bin/ld"
 
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
          VERSION=$(grep -E '^VERSION = ' Makefile | awk '{print $3}')
@@ -470,11 +461,7 @@ runs:
               COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
          if [ ${{ inputs.aosp-gcc }} = true ]; then
-             [ -n "${GCC64}" ] && CROSS_COMPILE="$HOME/gcc-64/bin/${GCC64}-"
-             [ -z "${GCC64}" ] && CROSS_COMPILE="$HOME/gcc-64/bin/aarch64-linux-android-"
-             [ -n "${GCC32}" ] && CROSS_COMPILE_ARM32="$HOME/gcc-32/bin/${GCC32}-"
-             [ -z "${GCC32}" ] && CROSS_COMPILE_ARM32="$HOME/gcc-32/bin/arm-linux-androideabi-"
-             COMMAND+=" CROSS_COMPILE=${CROSS_COMPILE} CROSS_COMPILE_ARM32=${CROSS_COMPILE_ARM32} CLANG_TRIPLE=aarch64-linux-gnu-"
+             COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/${GCC64}- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
          elif [ ${{ inputs.android-ndk }} = true ]; then
              COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- CROSS_COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
          fi
@@ -488,14 +475,8 @@ runs:
              if [ ${{ inputs.ccache }} = true ]; then
                  if [ -n "${GCC64}" ]; then
                      COMMAND+=" CC='ccache $HOME/gcc-64/bin/${GCC64}-gcc'"
-                 elif [ -z "${GCC64}" ]; then
-                     COMMAND+=" CC='ccache $HOME/gcc-64/bin/aarch64-linux-android-gcc'"
-                 fi
-             else
-                 if [ -n "${GCC32}" ]; then
+                 else
                      COMMAND+=" CC='ccache $HOME/gcc-32/bin/${GCC32}-gcc'"
-                 elif [ -z "${GCC32}" ]; then
-                     COMMAND+=" CC='ccache $HOME/gcc-32/bin/arm-linux-androidabeihf-gcc'"
                  fi
              fi
          fi
@@ -503,7 +484,7 @@ runs:
          ${COMMAND}
          echo "::endgroup::"
 
-         unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION SUB_DIRS GCC_DIR SUB_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32
+         unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
