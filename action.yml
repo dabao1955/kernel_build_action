@@ -229,9 +229,7 @@ runs:
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
              mkdir -p -v $HOME/clang
              download_and_extract "$OTHER_CLANG_URL" "clang" "$HOME/clang" "${{ inputs.other-clang-branch }}"
-             if [ ! -d $HOME/clang/bin/ ]; then
-                 mv $HOME/clang/*/* $HOME/clang/
-             fi
+             [ ! -d $HOME/clang/bin/ ] && mv $HOME/clang/*/* $HOME/clang/
          fi
          echo "::endgroup::"
 
@@ -309,10 +307,8 @@ runs:
                      git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
                  fi
              fi
-             if [ ! -d $HOME/gcc-64/bin/ ] || [ ! -d $HOME/gcc-32/bin/ ]; then
-                 [ ! -d $HOME/gcc-64/bin/ ] && mv $HOME/gcc-64/*/* $HOME/gcc-64/
-                 [ ! -d $HOME/gcc-32/bin/ ] && mv $HOME/gcc-32/*/* $HOME/gcc-32/
-             fi
+             [ ! -d $HOME/gcc-64/bin/ ] && mv $HOME/gcc-64/*/* $HOME/gcc-64/
+             [ ! -d $HOME/gcc-32/bin/ ] && mv $HOME/gcc-32/*/* $HOME/gcc-32/
          fi
          echo "::endgroup::"
 
