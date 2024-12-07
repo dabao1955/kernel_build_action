@@ -5,18 +5,18 @@ Android Kernel Build action tests
 > that this is not strictly a test, it is just a yaml-lint to check if each yml file is legitimate.
 
 ## How to use
-First, you must install nodejs and npm.
+First, you must install a TypeScript runtime(such as nodejs or bun).
 
-Second, run `npm install` in tests directory.
+Second, run `npm install` in tests directory if using nodejs.
 
-Finally, run `npm run check` or `npx index.js` in tests directory.
+Finally, run `npm run check` or `npx ts-node index.ts` or `bun run index.ts` in tests directory.
 
 Such as:
 
 ```bash
 user@localhost ~/k/tests (main)> npm run check
 > kernel_build_action_yaml_eheck@0.0.3 check
-> npx index.ts
+> npx ts-node index.ts
 
 Starting check...
 Android Kernel Build Action YAML Checker v0.0.3
@@ -35,7 +35,7 @@ While breaking changes cause failed checking:
 ```bash
 user@localhost ~/k/tests (main)> npm run check
 > kernel_build_action_yaml_eheck@0.0.3 check
-> node index.js
+> npx ts-node index.ts
 
 Starting check...
 Android Kernel Build Action YAML Checker v0.0.3
@@ -54,3 +54,6 @@ Error: YAMLException: bad indentation of a mapping entry (257:9)
 
 YAML file check failed. Exiting ...
 ```
+
+## Clean
+run `npm clean` or `bun run clean.ts` to clean test directory
