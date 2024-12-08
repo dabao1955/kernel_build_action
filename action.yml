@@ -286,7 +286,7 @@ runs:
                          download_and_extract "$OTHER_GCC32_URL" "gcc-arm" "$HOME/gcc-32" "${{ inputs.other-gcc32-branch }}"
                      fi
                  else
-                     echo "Error: Please enable third party other-gcc64-url and other-gcc32-url." && exit 15
+                     echo "Error: Please enable third party 'gcc64-url' and 'gcc32-url', and ensure that 'clang' directory exists." && exit 15
                  fi
              else
                  echo "::group:: Downloading AOSP GCC"
