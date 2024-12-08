@@ -196,7 +196,7 @@ runs:
              local output_name=$2
              local extract_dir=$3
              local branch=${4:-main}
-
+             mkdir -p -v "$extract_dir"
              case "$url" in
                  *.tar.gz)
                      aria2c -o "${output_name}.tar.gz" "$url"
@@ -219,7 +219,6 @@ runs:
          if [ ${{ inputs.aosp-clang }} = false ]; then
              echo "::group:: Downloading Third party clang"
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
-             mkdir -p -v $HOME/clang
              download_and_extract "$OTHER_CLANG_URL" "clang" "$HOME/clang" "${{ inputs.other-clang-branch }}"
              [ ! -d $HOME/clang/bin/ ] && mv $HOME/clang/*/* $HOME/clang/
          fi
@@ -249,21 +248,18 @@ runs:
                      if [ -d $HOME/clang ]; then
                          export OTHER_GCC64_URL=${{ inputs.other-gcc64-url }}
                          export OTHER_GCC32_URL=${{ inputs.other-gcc32-url }}
-                         mkdir -p -v $HOME/gcc-64
                          download_and_extract "$OTHER_GCC64_URL" "gcc-aarch64" "$HOME/gcc-64" "${{ inputs.other-gcc64-branch }}"
-                         mkdir -p -v $HOME/gcc-32
                          download_and_extract "$OTHER_GCC32_URL" "gcc-arm" "$HOME/gcc-32" "${{ inputs.other-gcc32-branch }}"
                      fi
                  else
-                     echo "Error: Please enable third party other-gcc64-url and other-gcc32-url." && exit 15
+                     echo "Error: Please enable third party 'gcc64-url' and 'gcc32-url', and ensure that 'clang' directory exists." && exit 15
                  fi
              else
                  echo "::group:: Downloading AOSP GCC"
                  if [ -d $HOME/clang ]; then
-                     mkdir -p -v $HOME/gcc-64
+                     mkdir -p -v $HOME/gcc-64 $HOME/gcc-32
                      aria2c -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
                      tar -C $HOME/gcc-64 -zxf gcc-aarch64.tar.gz
-                     mkdir -p -v $HOME/gcc-32
                      aria2c -o gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
                      tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
                  else
