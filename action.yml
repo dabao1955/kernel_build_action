@@ -118,14 +118,6 @@ inputs:
   other-clang-branch:
     required: false
     default: main
-  android-ndk:
-    description: 'Use Android NDK to build kernrl (Experimental features)'
-    required: false
-    default: false
-  android-ndk-version:
-    description: 'Please press nember instead of r(e.g. : 26).'
-    required: false
-    default: r21b
   anykernel3:
     description: 'Package kernel use anykernel3.'
     required: false
@@ -224,7 +216,7 @@ runs:
              esac
          }
 
-         if [ ${{ inputs.aosp-clang }} = false ] && [ ${{ inputs.android-ndk }} = false ]; then
+         if [ ${{ inputs.aosp-clang }} = false ]; then
              echo "::group:: Downloading Third party clang"
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
              mkdir -p -v $HOME/clang
@@ -232,32 +224,6 @@ runs:
              [ ! -d $HOME/clang/bin/ ] && mv $HOME/clang/*/* $HOME/clang/
          fi
          echo "::endgroup::"
-
-         if [ ${{ inputs.android-ndk }} = true ]; then
-             echo "::group:: Downloading Android NDK"
-             if [ ${{ inputs.aosp-gcc }} = false ]; then
-                 export NDKVER=$(echo "${{ inputs.android-ndk-version }}" | sed 's/r\([0-9]\+\)[a-zA-Z]\?/\1/g')
-                 if [ "$NDKVER" -lt "23" ]; then
-                     aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux-x86_64.zip
-                     unzip -d $HOME android-ndk.zip
-                 else
-                     aria2c -o android-ndk.zip https://dl.google.com/android/repository/android-ndk-${{ inputs.android-ndk-version }}-linux.zip
-                     unzip -d $HOME android-ndk.zip
-                 fi
-             else
-                 echo "Please disable aosp-gcc and aosp-clang."
-                 exit 127
-             fi
-             echo "::endgroup::"
-
-             export HOMES=$(pwd)
-             export LLVMS=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64/bin
-             cd $LLVMS
-             for file in $(ls llvm-*); do
-                 ln -s -v "$file" "aarch64-linux-android$(( ${{ inputs.android-version }} + 19 ))-${file#llvm-}"
-             done
-             cd $HOMES
-         fi
 
          if [ ${{ inputs.aosp-clang }} = true ]; then
              echo "::group:: Downloading AOSP clang"
@@ -300,8 +266,6 @@ runs:
                      mkdir -p -v $HOME/gcc-32
                      aria2c -o gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
                      tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
-                 elif [ ${{ inputs.aosp-clang }} = true ] && [ ${{ inputs.android-ndk }} = true ]; then
-                     echo "Error: The two options aosp-clang and android-ndk will conflict with each other, please turn off one." && exit 15
                  else
                      git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
                      git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
@@ -452,14 +416,9 @@ runs:
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
          if [ -d $HOME/clang ]; then
               COMMAND+=" PATH=$HOME/clang/bin:$PATH"
-         elif [ ${{ inputs.android-ndk }} = true ]; then
-              export PATH=$CLANG_PATH/bin:$PATH
-              COMMAND+=" CLANG_PATH=$HOME/android-ndk-${{ inputs.android-ndk-version }}/toolchains/llvm/prebuilt/linux-x86_64"
          fi
          if [ ${{ inputs.aosp-gcc }} = true ]; then
              COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/${GCC64}- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
-         elif [ ${{ inputs.android-ndk }} = true ]; then
-             COMMAND+=" CROSS_COMPILE=$CLANG_PATH/bin/llvm- CROSS_COMPILE_ARM32=$CLANG_PATH/bin/llvm-"
          fi
          if [ -d $HOME/clang ]; then
              if [ ${{ inputs.ccache }} = true ]; then

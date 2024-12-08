@@ -96,8 +96,6 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | aosp-clang-version | false | please search for them according to your own needs at [official website](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86) and choose the appropriate clang according to the Android system version instead of blindly choosing `r383902` | r383902 |
 | other-clang-url | false | Please fill in the download link of other clang in this option. Supports .xz, .zip, .tar and .git formats | https://github.com/kdrag0n/proton-clang |
 | other-clang-branch | false | | 10.0|
-| android-ndk | false | Use Android-NDK to compile kernel . Before enable this option，you should disable aosp-gcc and aosp-clang bacause android-ndk will conflict with them | false |
-| android-ndk-version | false | | r23b |
 | anykernel3 | false | Package the compiled kernel using AnyKernel3. If this option is disabled, You need to fill `bootimg-url`. | false |
 | anykernel3-url | false | 3rdparty AnyKernel3 url | https://github.com/username/AnyKernel3 |
 | release | flase | After the kernel compilation is completed, it will be automatically published to the releases page | true |
