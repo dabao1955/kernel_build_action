@@ -216,14 +216,6 @@ runs:
              esac
          }
 
-         if [ ${{ inputs.aosp-clang }} = false ]; then
-             echo "::group:: Downloading Third party clang"
-             export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
-             download_and_extract "$OTHER_CLANG_URL" "clang" "$HOME/clang" "${{ inputs.other-clang-branch }}"
-             [ ! -d $HOME/clang/bin/ ] && mv $HOME/clang/*/* $HOME/clang/
-         fi
-         echo "::endgroup::"
-
          if [ ${{ inputs.aosp-clang }} = true ]; then
              echo "::group:: Downloading AOSP clang"
              if [ ${{ inputs.aosp-gcc }} = true ]; then
@@ -238,8 +230,13 @@ runs:
                  echo "Please enable aosp-gcc."
                  exit 127
              fi
-             echo "::endgroup::"
+         elif [ ! -z ${{ inputs.other-clang-url }} ]; then
+             echo "::group:: Downloading Third party clang"
+             export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
+             download_and_extract "$OTHER_CLANG_URL" "clang" "$HOME/clang" "${{ inputs.other-clang-branch }}"
+             [ ! -d $HOME/clang/bin/ ] && mv $HOME/clang/*/* $HOME/clang/
          fi
+         echo "::endgroup::"
 
          if [ ${{ inputs.aosp-gcc }} = true ]; then
              if [ ! -z ${{ inputs.other-gcc64-url }} ] || [ ! -z ${{ inputs.other-gcc32-url }} ]; then
