@@ -204,7 +204,7 @@ runs:
              local output_name=$2
              local extract_dir=$3
              local branch=${4:-main}
-             [ ! -d "$extract_dir" ] && mkdir -p -v "$extract_dir"
+             mkdir -p -v "$extract_dir"
              case "$url" in
                  *.tar.gz)
                      aria2c -o "${output_name}.tar.gz" "$url"
