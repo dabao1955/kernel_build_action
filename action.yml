@@ -230,7 +230,7 @@ runs:
                  echo "Please enable aosp-gcc."
                  exit 127
              fi
-         else
+         elif [ ! -z ${{ inputs.other-clang-url }} ]; then
              echo "::group:: Downloading Third party clang"
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
              download_and_extract "$OTHER_CLANG_URL" "clang" "$HOME/clang" "${{ inputs.other-clang-branch }}"
