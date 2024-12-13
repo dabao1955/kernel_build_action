@@ -282,21 +282,23 @@ runs:
          fi
 
          cd kernel/${{ inputs.kernel-dir }}
-         for GCC_DIR in "$HOME/gcc-64" "$HOME/gcc-32"; do
-             find "$GCC_DIR"/*/*/bin -type d -exec sh -c 'mv "$(dirname "{}")"/* "$GCC_DIR"/' _ {} \; -quit > /dev/null 2>&1 || true
-             for FILE in "$GCC_DIR/bin"/*; do
-                 FILE_NAME=$(basename "$FILE")
-                 MATCHED_DIR=""
-                 for FOLDER in $(find "$GCC_DIR" -mindepth 1 -maxdepth 1 -type d | sort -r); do
-                     FOLDER_NAME=$(basename "$FOLDER")
-                     [[ "$FILE_NAME" == "$FOLDER_NAME"* ]] && MATCHED_DIR="$FOLDER_NAME" && break
+         if [ -d $HOME/gcc-64/bin/ ] || [ -d $HOME/gcc-32/bin/ ]; then
+             for GCC_DIR in "$HOME/gcc-64" "$HOME/gcc-32"; do
+                 find "$GCC_DIR"/*/*/bin -type d -exec sh -c 'mv "$(dirname "{}")"/* "$GCC_DIR"/' _ {} \; -quit > /dev/null 2>&1 || true
+                 for FILE in "$GCC_DIR/bin"/*; do
+                     FILE_NAME=$(basename "$FILE")
+                     MATCHED_DIR=""
+                     for FOLDER in $(find "$GCC_DIR" -mindepth 1 -maxdepth 1 -type d | sort -r); do
+                         FOLDER_NAME=$(basename "$FOLDER")
+                         [[ "$FILE_NAME" == "$FOLDER_NAME"* ]] && MATCHED_DIR="$FOLDER_NAME" && break
+                     done
+                     [ -n "$MATCHED_DIR" ] && case "$GCC_DIR" in
+                         "$HOME/gcc-64") GCC64="$MATCHED_DIR" ;;
+                         "$HOME/gcc-32") GCC32="$MATCHED_DIR" ;;
+                     esac
                  done
-                 [ -n "$MATCHED_DIR" ] && case "$GCC_DIR" in
-                     "$HOME/gcc-64") GCC64="$MATCHED_DIR" ;;
-                     "$HOME/gcc-32") GCC32="$MATCHED_DIR" ;;
-                 esac
              done
-         done
+         fi
 
          [ ! -d "$HOME/gcc-64/aarch64-linux-android" ] && rm -f "$HOME/gcc-64/bin/${GCC64}-ld"
          [ ! -d "$HOME/gcc-32/arm-linux-androideabi" ] && rm -f "$HOME/gcc-32/bin/${GCC32}-ld"
