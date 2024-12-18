@@ -65,7 +65,7 @@ for i in "${patch_files[@]}"; do
         ;;
 
     fs/namespace.c)
-        sed -i '/int ksys_umount(char __user \*name, int flags)/i \
+        sed -i '/may_mandlock(void)/,/^}/ { /^}/a \
 #ifdef CONFIG_KSU\
 static int can_umount(const struct path *path, int flags)\
 {\
@@ -100,8 +100,8 @@ int path_umount(struct path *path, int flags)\
     mntput_no_expire(mnt);\
     return ret;\
 }\
-#endif\
-' fs/namespace.c
+#endif
+}' fs/namespace.c
         ;;
 
     # drivers/input changes
