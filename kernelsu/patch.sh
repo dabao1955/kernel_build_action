@@ -65,43 +65,48 @@ for i in "${patch_files[@]}"; do
         ;;
 
     fs/namespace.c)
-        sed -i '/may_mandlock(void)/,/^}/ { /^}/a \
-#ifdef CONFIG_KSU\
-static int can_umount(const struct path *path, int flags)\
-{\
-    struct mount *mnt = real_mount(path->mnt);\
-\
-    if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))\
-        return -EINVAL;\
-    if (!may_mount())\
-        return -EPERM;\
-    if (path->dentry != path->mnt->mnt_root)\
-        return -EINVAL;\
-    if (!check_mnt(mnt))\
-        return -EINVAL;\
-    if (mnt->mnt.mnt_flags & MNT_LOCKED) /* Check optimistically */\
-        return -EINVAL;\
-    if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))\
-        return -EPERM;\
-    return 0;\
-}\
-\
-int path_umount(struct path *path, int flags)\
-{\
-    struct mount *mnt = real_mount(path->mnt);\
-    int ret;\
-\
-    ret = can_umount(path, flags);\
-    if (!ret)\
-        ret = do_umount(mnt, flags);\
-\
-    /* we must not call path_put() as that would clear mnt_expiry_mark */\
-    dput(path->dentry);\
-    mntput_no_expire(mnt);\
-    return ret;\
-}\
+        if grep -q "may_mandlock(void)" "$i"; then
+            umount='may_mandlock(void)/,/^}/ { /^}/a'
+        else
+            umount='int ksys_umount(char __user \*name, int flags)/i'
+        fi
+        sed -i "/$umount \
+#ifdef CONFIG_KSU\n\
+static int can_umount(const struct path *path, int flags)\n\
+{\n\
+    struct mount *mnt = real_mount(path->mnt);\n\
+\n\
+    if (flags & ~(MNT_FORCE | MNT_DETACH | MNT_EXPIRE | UMOUNT_NOFOLLOW))\n\
+        return -EINVAL;\n\
+    if (!may_mount())\n\
+        return -EPERM;\n\
+    if (path->dentry != path->mnt->mnt_root)\n\
+        return -EINVAL;\n\
+    if (!check_mnt(mnt))\n\
+        return -EINVAL;\n\
+    if (mnt->mnt.mnt_flags & MNT_LOCKED) /* Check optimistically */\n\
+        return -EINVAL;\n\
+    if (flags & MNT_FORCE && !capable(CAP_SYS_ADMIN))\n\
+        return -EPERM;\n\
+    return 0;\n\
+}\n\
+\n\
+int path_umount(struct path *path, int flags)\n\
+{\n\
+    struct mount *mnt = real_mount(path->mnt);\n\
+    int ret;\n\
+\n\
+    ret = can_umount(path, flags);\n\
+    if (!ret)\n\
+        ret = do_umount(mnt, flags);\n\
+\n\
+    /* we must not call path_put() as that would clear mnt_expiry_mark */\n\
+    dput(path->dentry);\n\
+    mntput_no_expire(mnt);\n\
+    return ret;\n\
+}\n\
 #endif
-}' fs/namespace.c
+}" fs/namespace.c
         ;;
 
     # drivers/input changes
