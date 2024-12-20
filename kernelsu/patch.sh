@@ -65,7 +65,7 @@ for i in "${patch_files[@]}"; do
         ;;
 
     fs/namespace.c)
-        if grep -q "may_mandlock(void)" "$i"; then
+        if grep -q "may_mandlock(void)" fs/namespace.c; then
             umount='may_mandlock(void)/,/^}/ { /^}/a'
         else
             umount='int ksys_umount(char __user \*name, int flags)/i'
