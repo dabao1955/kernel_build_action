@@ -431,7 +431,6 @@ runs:
                  fi
              fi
          fi
-         echo "using command: ${COMMAND}"
          ${COMMAND}
          echo "::endgroup::"
 
