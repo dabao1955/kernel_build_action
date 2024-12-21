@@ -106,7 +106,7 @@ int path_umount(struct path *path, int flags)\n\
     return ret;\n\
 }\n\
 #endif
-}" fs/namespace.c
+" fs/namespace.c
         ;;
 
     # drivers/input changes
