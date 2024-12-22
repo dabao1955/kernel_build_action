@@ -70,7 +70,7 @@ for i in "${patch_files[@]}"; do
         else
             umount='int ksys_umount(char __user \*name, int flags)/i'
         fi
-        sed -i "/$umount \
+        sed -i "/${umount} \
 #ifdef CONFIG_KSU\n\
 static int can_umount(const struct path *path, int flags)\n\
 {\n\
