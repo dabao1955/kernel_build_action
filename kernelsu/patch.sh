@@ -33,7 +33,6 @@ for i in "${patch_files[@]}"; do
         else
             sed -i '/if (IS_ERR(filename))/i\	#ifdef CONFIG_KSU\n	if (unlikely(ksu_execveat_hook))\n		ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);\n	else\n		ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);\n	#endif' fs/exec.c
         fi
-        echo "Patch applied successfully to $i"
         ;;
 
     fs/open.c)
@@ -43,7 +42,6 @@ for i in "${patch_files[@]}"; do
             sed -i '/SYSCALL_DEFINE3(faccessat, int, dfd, const char __user \*, filename, int, mode)/i\#ifdef CONFIG_KSU\nextern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,\n			 int *flags);\n#endif' fs/open.c
         fi
         sed -i '/if (mode & ~S_IRWXO)/i\	#ifdef CONFIG_KSU\n	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);\n	#endif\n' fs/open.c
-        echo "Patch applied successfully to $i"
         ;;
 
     fs/read_write.c)
@@ -54,7 +52,6 @@ for i in "${patch_files[@]}"; do
         ksu_handle_vfs_read(&file, &buf, &count, &pos);\
     #endif
         }' fs/read_write.c
-        echo "Patch applied successfully to $i"
         ;;
 
     fs/stat.c)
@@ -65,7 +62,6 @@ for i in "${patch_files[@]}"; do
             sed -i '/int vfs_fstatat(int dfd, const char __user \*filename, struct kstat \*stat,/i\#ifdef CONFIG_KSU\nextern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);\n#endif\n' fs/stat.c
             sed -i '/if ((flag & ~(AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT |/i\	#ifdef CONFIG_KSU\n	ksu_handle_stat(&dfd, &filename, &flag);\n	#endif\n' fs/stat.c
         fi
-        echo "Patch applied successfully to $i"
         ;;
 
     fs/namespace.c)
@@ -111,15 +107,15 @@ int path_umount(struct path *path, int flags)\n\
 }\n\
 #endif
 }" fs/namespace.c
-        echo "Patch applied successfully to $i"
         ;;
 
     # drivers/input changes
     drivers/input/input.c)
         sed -i '/static void input_handle_event/i\#ifdef CONFIG_KSU\nextern bool ksu_input_hook __read_mostly;\nextern int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *value);\n#endif\n' drivers/input/input.c
         sed -i '/int disposition = input_get_disposition(dev, type, code, &value);/a\	#ifdef CONFIG_KSU\n	if (unlikely(ksu_input_hook))\n		ksu_handle_input_handle_event(&type, &code, &value);\n	#endif' drivers/input/input.c
-        echo "Patch applied successfully to $i"
         ;;
     esac
+
+    echo "Patch applied successfully to $i"
 
 done
