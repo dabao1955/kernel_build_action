@@ -397,7 +397,7 @@ runs:
              echo "::group:: Enabling LXC"
              aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/config.sh && bash config.sh arch/${{ inputs.arch }}/configs/${{ inputs.config }} -w
              if [ ${{ inputs.lxc-patch }} = true ]; then
-                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/lxc.sh; bash lxc.sh
+                 curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/lxc/patch.sh | bash
              else
                  echo skip lxc patching
              fi
