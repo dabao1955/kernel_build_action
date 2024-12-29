@@ -343,8 +343,8 @@ runs:
                 if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
                     echo "CONFIG_KPROBES is enabled, skip patch."
                 else
-                    curl -sSfL https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/patch.sh -o patch.sh
-                    grep -qsi "may_mandlock(void)" fs/namespace.c || sed -i 's/}\(" \)fs\/namespace.c/\1fs\/namespace.c/g' patch.sh; bash patch.sh
+                    aria2c -q https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/patch.sh
+                    grep -qs "may_mandlock(void)" fs/namespace.c || sed -i '109s|}||' patch.sh; bash patch.sh
                 fi
             fi
             echo "::endgroup::"
@@ -379,9 +379,9 @@ runs:
          if [ ${{ inputs.disable-lto }} = true ]; then
              if grep -q "LTO" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
              then
-                  sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
-                  sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
-                  sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }} 
+                  sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+                  sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }}
+                  sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ inputs.arch }}/configs/${{ inputs.config }}
                   echo "CONFIG_LTO_NONE=y" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }} >/dev/null
              fi
          fi
@@ -397,10 +397,7 @@ runs:
              echo "::group:: Enabling LXC"
              aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/config.sh && bash config.sh arch/${{ inputs.arch }}/configs/${{ inputs.config }} -w
              if [ ${{ inputs.lxc-patch }} = true ]; then
-                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/xt_qtaguid.patch
-                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/cgroup.patch
-                 patch kernel/cgroup/cgroup.c < cgroup.patch
-                 patch net/netfilter/xt_qtaguid.c < xt_qtaguid.patch
+                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/lxc.sh; bash lxc.sh
              else
                  echo skip lxc patching
              fi
