@@ -183,9 +183,9 @@ runs:
          if [ -f /bin/swapon ]; then
              echo "::group:: Setting Up Swap"
              "$SU" swapoff $SWAP_FILE
-             "$SU" rm $SWAP_FILE
+             "$SU" rm -v $SWAP_FILE
              "$SU" fallocate -l 16G $SWAP_FILE
-             "$SU" chmod 600 $SWAP_FILE
+             "$SU" chmod 600 -v $SWAP_FILE
              "$SU" mkswap $SWAP_FILE
              "$SU" swapon $SWAP_FILE
              echo "::endgroup::"
@@ -300,9 +300,9 @@ runs:
              done
          fi
 
-         [ ! -d "$HOME/gcc-64/aarch64-linux-android" ] && rm -f "$HOME/gcc-64/bin/${GCC64}-ld"
-         [ ! -d "$HOME/gcc-32/arm-linux-androideabi" ] && rm -f "$HOME/gcc-32/bin/${GCC32}-ld"
-         ! grep -qsi "LD *= *ld.lld" Makefile && [ -f "$HOME/clang/bin/ld" ] && rm -f "$HOME/clang/bin/ld"
+         [ ! -d "$HOME/gcc-64/aarch64-linux-android" ] && rm -vf "$HOME/gcc-64/bin/${GCC64}-ld"
+         [ ! -d "$HOME/gcc-32/arm-linux-androideabi" ] && rm -vf "$HOME/gcc-32/bin/${GCC32}-ld"
+         ! grep -qsi "LD *= *ld.lld" Makefile && [ -f "$HOME/clang/bin/ld" ] && rm -vf "$HOME/clang/bin/ld"
 
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
          VERSION=$(grep -E '^VERSION = ' Makefile | awk '{print $3}')
@@ -311,7 +311,7 @@ runs:
          if [ "$VERSION" -lt 5 ]; then
              touch nongki.txt
          elif [ "$PATCHLEVEL" -lt 10 ]; then
-             touch nongki.txt
+             echo false > nongki.txt
          fi
 
          if [ ${{ inputs.ksu }} = true ]; then
@@ -352,7 +352,7 @@ runs:
 
          if [ -f scripts/dtc/libfdt/mkdtboimg.py ]; then
             if grep python2 scripts/Makefile.lib >/dev/null; then
-                echo "::group:: Uning mkdtboimg Python3 version instead of Python2 version"
+                echo "::group:: Using mkdtboimg Python3 version instead of Python2 version"
                 rm -rf -v scripts/dtc/libfdt/mkdtboimg.py && aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o scripts/dtc/libfdt/mkdtboimg.py
             elif grep scripts/ufdt && test ! -d scripts/ufdt >/dev/null; then
                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o ufdt/libufdt/utils/src/mkdtboimg.py
