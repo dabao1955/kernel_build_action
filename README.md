@@ -87,7 +87,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
  | nethunter-patch | false | | false |
 | kvm | false | | false |
 | ccache | false | Enable ccache(Only valid when compiled with clang) | false |
-| aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
+| aosp-gcc | false | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
 | other-gcc32-url | false | Please fill in the download link of other gcc32 in this option. Supports .xz, .zip, .tar and .git formats | https://github.com/username/gcc |
 | other-gcc32-branch | false | | main |
 | other-gcc64-url | false | Please fill in the download link of other gcc64 in this option. Supports .xz, .zip, .tar and .git formats | https://github.com/username/gcc |
@@ -102,6 +102,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | access-token | false | Please fill it if you want to release kernel | ghp_xxxxxx |
 | bootimg-url | false | A URL that can download the local boot.img | https://127.0.0.1/boot.img |
 | extra-cmd | false | Compile the kernel with extra options, such as LD=ld.lld | AS=llvm-as |
+| include-dtbo | false | Include DTBO image in kernel package | true |
 
 ## FAQ
 > [!CAUTION]
