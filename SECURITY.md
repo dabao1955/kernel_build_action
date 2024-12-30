@@ -6,7 +6,7 @@
 | --------------- | ---------- |
 | `@v1`           | ✅         |
 | `@latest`       | ✅         |
-| `@main`         | ⚠️ [1]     |
+| `@main`         | ⚠️ [^1]     |
 | Historical Tags | ❌         |
 
 
@@ -37,4 +37,4 @@ To ensure the safe use of this GitHub Action:
    uses: dabao1955/kernel_build_action@v1
 
 
-[1]: The `@main` tag may include experimental or unstable changes. It is recommended to use stable tags such as `@v1` in production workflows.
+[^1]: The `@main` tag may include experimental or unstable changes. It is recommended to use stable tags such as `@v1` in production workflows.
