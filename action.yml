@@ -91,8 +91,8 @@ inputs:
     default: false
   aosp-gcc:
     description: 'Use gcc from aosp project.'
-    required: true
-    default: true
+    required: false
+    default: false
   other-gcc32-url:
     required: false
     default: ''
@@ -235,38 +235,35 @@ runs:
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
              download_and_extract "$OTHER_CLANG_URL" "clang" "$HOME/clang" "${{ inputs.other-clang-branch }}"
              [ ! -d $HOME/clang/bin/ ] && mv $HOME/clang/*/* $HOME/clang/
+
+             if ! ls "$HOME/clang/*-linux-*" &>/dev/null; then
+                 echo "Binutils not found in clang directory. Downloading AOSP GCC"
+                 export NEED_GCC=1
+             fi
          fi
          echo "::endgroup::"
 
-         if [ ${{ inputs.aosp-gcc }} = true ]; then
-             if [ ! -z ${{ inputs.other-gcc64-url }} ] || [ ! -z ${{ inputs.other-gcc32-url }} ]; then
-                 echo "::group:: Downloading Third party gcc"
-                 if [ ! -z ${{ inputs.other-gcc64-url }} ] && [ ! -z ${{ inputs.other-gcc32-url }} ]; then
-                     if [ -d $HOME/clang ]; then
-                         export OTHER_GCC64_URL=${{ inputs.other-gcc64-url }}
-                         export OTHER_GCC32_URL=${{ inputs.other-gcc32-url }}
-                         download_and_extract "$OTHER_GCC64_URL" "gcc-aarch64" "$HOME/gcc-64" "${{ inputs.other-gcc64-branch }}"
-                         download_and_extract "$OTHER_GCC32_URL" "gcc-arm" "$HOME/gcc-32" "${{ inputs.other-gcc32-branch }}"
-                     fi
-                 else
-                     echo "Error: Please enable third party 'gcc64-url' and 'gcc32-url', and ensure that 'clang' directory exists." && exit 15
-                 fi
+         if [ ${{ inputs.aosp-gcc }} = true ] || [ ! -z "$NEED_GCC" ]; then
+             echo "::group:: Downloading AOSP GCC"
+             if [ ! -z ${{ inputs.android-version }} ]; then
+                 git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
+                 git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
              else
-                 echo "::group:: Downloading AOSP GCC"
-                 if [ -d $HOME/clang ]; then
-                     mkdir -p -v $HOME/gcc-64 $HOME/gcc-32
-                     aria2c -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-                     tar -C $HOME/gcc-64 -zxf gcc-aarch64.tar.gz
-                     aria2c -o gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-                     tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
-                 else
-                     git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
-                     git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-32
-                 fi
+                 mkdir -p -v $HOME/gcc-64 $HOME/gcc-32
+                 aria2c -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+                 tar -C $HOME/gcc-64 -zxf gcc-aarch64.tar.gz
+                 aria2c -o gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
+                 tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
              fi
-             [ ! -d $HOME/gcc-64/bin/ ] && mv $HOME/gcc-64/*/* $HOME/gcc-64/
-             [ ! -d $HOME/gcc-32/bin/ ] && mv $HOME/gcc-32/*/* $HOME/gcc-32/
+         elif [ ! -z ${{ inputs.other-gcc64-url }} ] || [ ! -z ${{ inputs.other-gcc32-url }} ]; then
+             echo "::group:: Downloading Third party GCC"
+                 export OTHER_GCC64_URL=${{ inputs.other-gcc64-url }}
+                 export OTHER_GCC32_URL=${{ inputs.other-gcc32-url }}
+                 download_and_extract "$OTHER_GCC64_URL" "gcc-aarch64" "$HOME/gcc-64" "${{ inputs.other-gcc64-branch }}"
+                 download_and_extract "$OTHER_GCC32_URL" "gcc-arm" "$HOME/gcc-32" "${{ inputs.other-gcc32-branch }}"
          fi
+         [ ! -d $HOME/gcc-64/bin/ ] && mv $HOME/gcc-64/*/* $HOME/gcc-64/
+         [ ! -d $HOME/gcc-32/bin/ ] && mv $HOME/gcc-32/*/* $HOME/gcc-32/
          echo "::endgroup::"
 
          echo "::group:: Pulling Kernel Source"
@@ -299,10 +296,6 @@ runs:
                  done
              done
          fi
-
-         [ ! -d "$HOME/gcc-64/aarch64-linux-android" ] && rm -vf "$HOME/gcc-64/bin/${GCC64}-ld"
-         [ ! -d "$HOME/gcc-32/arm-linux-androideabi" ] && rm -vf "$HOME/gcc-32/bin/${GCC32}-ld"
-         ! grep -qsi "LD *= *ld.lld" Makefile && [ -f "$HOME/clang/bin/ld" ] && rm -vf "$HOME/clang/bin/ld"
 
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
          VERSION=$(grep -E '^VERSION = ' Makefile | awk '{print $3}')
@@ -408,10 +401,13 @@ runs:
          mkdir out -p -v
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
          if [ -d $HOME/clang ]; then
-              COMMAND+=" PATH=$HOME/clang/bin:$PATH"
-         fi
-         if [ ${{ inputs.aosp-gcc }} = true ]; then
-             COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/${GCC64}- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
+             COMMAND+=" PATH=$HOME/clang/bin:$PATH"
+             if [ -d $HOME/gcc-64/bin ] || [ -d $HOME/gcc-32/bin ]; then
+                 COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/${GCC64}- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
+             fi
+         elif [ -d $HOME/gcc-64/bin ] || [ -d $HOME/gcc-32/bin ]; then
+             COMMAND+=" PATH=$HOME/gcc-64/bin:$HOME/gcc-32/bin:$PATH"
+             COMMAND+=" CROSS_COMPILE=${GCC64}- CROSS_COMPILE_ARM32=${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
          fi
          if [ -d $HOME/clang ]; then
              if [ ${{ inputs.ccache }} = true ]; then
@@ -419,19 +415,18 @@ runs:
              else
                  COMMAND+=" CC=clang"
              fi
-         else
-             if [ ${{ inputs.ccache }} = true ]; then
-                 if [ -n "${GCC64}" ]; then
-                     COMMAND+=" CC='ccache $HOME/gcc-64/bin/${GCC64}-gcc'"
-                 else
-                     COMMAND+=" CC='ccache $HOME/gcc-32/bin/${GCC32}-gcc'"
-                 fi
+         fi
+         if [ ${{ inputs.ccache }} = true ]; then
+             if [ -n "${GCC64}" ]; then
+                 COMMAND+=" CC='ccache $HOME/gcc-64/bin/${GCC64}-gcc'"
+             else
+                 COMMAND+=" CC='ccache $HOME/gcc-32/bin/${GCC32}-gcc'"
              fi
          fi
          ${COMMAND}
          echo "::endgroup::"
 
-         unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32
+         unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32 NEED_GCC
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
