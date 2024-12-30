@@ -36,5 +36,6 @@ To ensure the safe use of this GitHub Action:
    ```yaml
    uses: dabao1955/kernel_build_action@v1
 
-
+---
+## Note
 [^1]: The `@main` tag may include experimental or unstable changes. It is recommended to use stable tags such as `@v1` in production workflows.
