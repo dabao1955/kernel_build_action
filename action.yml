@@ -400,10 +400,13 @@ runs:
          mkdir out -p -v
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
          if [ -d $HOME/clang ]; then
-              COMMAND+=" PATH=$HOME/clang/bin:$PATH"
-         fi
-         if [ ${{ inputs.aosp-gcc }} = true ]; then
-             COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/${GCC64}- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
+             COMMAND+=" PATH=$HOME/clang/bin:$PATH"
+             if [ -d $HOME/gcc-64/bin ] || [ -d $HOME/gcc-32/bin ]; then
+                 COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/${GCC64}- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
+             fi
+         elif [ -d $HOME/gcc-64/bin ] || [ -d $HOME/gcc-32/bin ]; then
+             COMMAND+=" PATH=$HOME/gcc-64/bin:$HOME/gcc-32/bin:$PATH"
+             COMMAND+=" CROSS_COMPILE=${GCC64}- CROSS_COMPILE_ARM32=${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
          fi
          if [ -d $HOME/clang ]; then
              if [ ${{ inputs.ccache }} = true ]; then
@@ -411,13 +414,12 @@ runs:
              else
                  COMMAND+=" CC=clang"
              fi
-         else
-             if [ ${{ inputs.ccache }} = true ]; then
-                 if [ -n "${GCC64}" ]; then
-                     COMMAND+=" CC='ccache $HOME/gcc-64/bin/${GCC64}-gcc'"
-                 else
-                     COMMAND+=" CC='ccache $HOME/gcc-32/bin/${GCC32}-gcc'"
-                 fi
+         fi
+         if [ ${{ inputs.ccache }} = true ]; then
+             if [ -n "${GCC64}" ]; then
+                 COMMAND+=" CC='ccache $HOME/gcc-64/bin/${GCC64}-gcc'"
+             else
+                 COMMAND+=" CC='ccache $HOME/gcc-32/bin/${GCC32}-gcc'"
              fi
          fi
          ${COMMAND}
