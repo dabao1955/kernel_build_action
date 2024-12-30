@@ -292,10 +292,6 @@ runs:
              done
          fi
 
-         [ ! -d "$HOME/gcc-64/aarch64-linux-android" ] && rm -vf "$HOME/gcc-64/bin/${GCC64}-ld"
-         [ ! -d "$HOME/gcc-32/arm-linux-androideabi" ] && rm -vf "$HOME/gcc-32/bin/${GCC32}-ld"
-         ! grep -qsi "LD *= *ld.lld" Makefile && [ -f "$HOME/clang/bin/ld" ] && rm -vf "$HOME/clang/bin/ld"
-
          function version_gt() { test "$(echo -e "$1\n$2" | sort -V | tail -n1)" == "$1"; }
          VERSION=$(grep -E '^VERSION = ' Makefile | awk '{print $3}')
          PATCHLEVEL=$(grep -E '^PATCHLEVEL = ' Makefile | awk '{print $3}')
