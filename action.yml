@@ -407,7 +407,7 @@ runs:
          mkdir out -p -v
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
          
-         if [ -d "$HOME/clang" ]; then
+         if [ -d "$HOME/clang/bin" ]; then
               CMD_PATH="$HOME/clang/bin"
               CMD_CC="clang"
               if [ -d "$HOME/gcc-64/bin" ] || [ -d "$HOME/gcc-32/bin" ]; then
@@ -435,7 +435,7 @@ runs:
               CMD_PATH="/usr/lib/ccache:${CMD_PATH}"
               
               # verify compiler exist in /usr/lib/ccache
-              if [ -d "${HOME}/clang" ]; then
+              if [ -d "${HOME}/clang/bin" ]; then
                   [ ! -e /usr/lib/clang ] && \
                       ln -s /usr/lib/clang /usr/bin/ccache
               else
