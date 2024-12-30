@@ -87,7 +87,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
  | nethunter-patch | false | | false |
 | kvm | false | | false |
 | ccache | false | Enable ccache(Only valid when compiled with clang) | false |
-| aosp-gcc |true | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
+| aosp-gcc | false | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
 | other-gcc32-url | false | Please fill in the download link of other gcc32 in this option. Supports .xz, .zip, .tar and .git formats | https://github.com/username/gcc |
 | other-gcc32-branch | false | | main |
 | other-gcc64-url | false | Please fill in the download link of other gcc64 in this option. Supports .xz, .zip, .tar and .git formats | https://github.com/username/gcc |
