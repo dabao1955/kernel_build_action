@@ -141,6 +141,10 @@ inputs:
     description: 'Extra options of building kernel.'
     required: false
     default: ""
+  include-dtbo:
+    description: 'Include DTBO image in kernel package'
+    required: false
+    default: true
 
 runs:
   using: 'composite'
@@ -472,7 +476,9 @@ runs:
                 cp out/arch/${{ inputs.arch }}/boot/Image AnyKernel3/ -rv
             fi
 
-            test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp -v out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
+            if [ ${{ inputs.include-dtbo }} = true ]; then
+                test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp -v out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
+            fi
 
             rm -rf -v AnyKernel3/.git* AnyKernel3/README.md
             if [ ${{ inputs.release }} = false ]; then
