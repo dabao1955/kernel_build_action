@@ -214,6 +214,10 @@ runs:
                      aria2c -o "${output_name}.tar.xz" "$url"
                      tar -C "$extract_dir" -xf "${output_name}.tar.xz"
                      ;;
+                 *.xz)
+                     aria2c -o "${output_name}.xz" "$url"
+                     tar -C "$extract_dir" -xf "${output_name}.xz"
+                     ;;
                  *)
                      git clone "$url" "$extract_dir" --depth=${{ inputs.depth }} -b "$branch"
                      ;;
