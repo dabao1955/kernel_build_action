@@ -403,13 +403,13 @@ runs:
          echo "::group:: Building Kernel with selected cross compiler"
          mkdir out -p -v
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
-         if [ -d $HOME/clang ]; then
+         if [ -d $HOME/clang/bin ]; then
               COMMAND+=" PATH=$HOME/clang/bin:$PATH"
          fi
          if [ -d $HOME/gcc-64/bin ] || [ -d $HOME/gcc-32/bin ]; then
              COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/${GCC64}- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
          fi
-         if [ -d $HOME/clang ]; then
+         if [ -d $HOME/clang/bin ]; then
              if [ ${{ inputs.ccache }} = true ]; then
                  COMMAND+=" CC='ccache clang'"
              else
