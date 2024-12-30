@@ -406,7 +406,7 @@ runs:
          if [ -d $HOME/clang ]; then
               COMMAND+=" PATH=$HOME/clang/bin:$PATH"
          fi
-         if [ ${{ inputs.aosp-gcc }} = true ]; then
+         if [ -d $HOME/gcc-64/bin ] || [ -d $HOME/gcc-32/bin ]; then
              COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/${GCC64}- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
          fi
          if [ -d $HOME/clang ]; then
@@ -415,13 +415,12 @@ runs:
              else
                  COMMAND+=" CC=clang"
              fi
-         else
-             if [ ${{ inputs.ccache }} = true ]; then
-                 if [ -n "${GCC64}" ]; then
-                     COMMAND+=" CC='ccache $HOME/gcc-64/bin/${GCC64}-gcc'"
-                 else
-                     COMMAND+=" CC='ccache $HOME/gcc-32/bin/${GCC32}-gcc'"
-                 fi
+         fi
+         if [ ${{ inputs.ccache }} = true ]; then
+             if [ -n "${GCC64}" ]; then
+                 COMMAND+=" CC='ccache $HOME/gcc-64/bin/${GCC64}-gcc'"
+             else
+                 COMMAND+=" CC='ccache $HOME/gcc-32/bin/${GCC32}-gcc'"
              fi
          fi
          ${COMMAND}
