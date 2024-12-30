@@ -235,10 +235,15 @@ runs:
              export OTHER_CLANG_URL=${{ inputs.other-clang-url }}
              download_and_extract "$OTHER_CLANG_URL" "clang" "$HOME/clang" "${{ inputs.other-clang-branch }}"
              [ ! -d $HOME/clang/bin/ ] && mv $HOME/clang/*/* $HOME/clang/
+
+             if ! ls "$HOME/clang/*-linux-*" &>/dev/null; then
+                 echo "Binutils not found in clang directory. Downloading AOSP GCC"
+                 export NEED_GCC=1
+             fi
          fi
          echo "::endgroup::"
 
-         if [ ${{ inputs.aosp-gcc }} = true ]; then
+         if [ ${{ inputs.aosp-gcc }} = true ] || [ ! -z "$NEED_GCC" ]; then
              echo "::group:: Downloading AOSP GCC"
              if [ ! -z ${{ inputs.android-version }} ]; then
                  git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/ --depth=1 -b android${{ inputs.android-version }}-release $HOME/gcc-64
@@ -421,7 +426,7 @@ runs:
          ${COMMAND}
          echo "::endgroup::"
 
-         unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32
+         unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32 NEED_GCC
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
