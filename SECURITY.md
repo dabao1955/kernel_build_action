@@ -14,7 +14,7 @@
 
 If you discover a vulnerability in this GitHub Action, please report it using one of the following methods:
 
-1. **GitHub Security Advisories**: Submit a private report using the [GitHub Security Advisories](https://github.com/dabao1955/kernrl_build_action/security/advisories).
+1. **GitHub Security Advisories**: Submit a private report using the [GitHub Security Advisories](https://github.com/dabao1955/kernel_build_action/security/advisories).
 2. **Email**: For sensitive vulnerabilities, contact us at dabao1955@163.com.
 3. Include the following details in your report:
    - Affected GitHub Action version(s) or tags.
