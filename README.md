@@ -18,9 +18,9 @@ A Workflow to build Android Kernel automatically
 > [!IMPORTANT]
 > This workflow is universal. You need to have a certain foundation in writing github workflows and a little knowledge of the Android kernel to use this.
 
-## Warning
+## Security Policy
+See [Security.md](./SECURITY.md) for more details.
 
-Strongly recommends using the stable version (tags such as v1.2) instead of the development version (main branch), because main branch is not a stable branch which may have some technical problems.
 
 ## How to use?
 - First, you need to determine the kernel source code and configuration files.
