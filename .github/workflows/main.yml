@@ -3,7 +3,8 @@ on:
   push:
     branches: main
     paths:
-      - '.github/workflows/**'
+      - '.github/workflows/main.yml'
+      - '.github/workflows/check.yml'
       - 'action.yml'
       - 'tests/**'
 
