@@ -35,11 +35,8 @@ jobs:
           fi
       - name: Close PR if build.yml changed
         if: env.file_changed == 'true'
-        uses: actions/stale@v9
-        with:
-          days-before-pr-stale: 0
-          # Number of days before a pull request is closed.
-          days-before-pr-close: 0
-          # Message posted when closing a pull request.
-          stale-pr-message: |
-            This pull request has been automatically closed because you can not submit pr while build.yml changing.
+        run: |
+          curl -X PATCH \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d '{"state": "closed", "body": "This pull request has been automatically closed because you cannot submit PRs while build.yml is changing."}' \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
