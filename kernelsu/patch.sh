@@ -119,11 +119,11 @@ int path_umount(struct path *path, int flags)\n\
     fs/devpts/inode.c)
         sed -i '/struct dentry \*devpts_pty_new/,/return dentry;/ {
     /return dentry;/ {n; a\
-extern int ksu_handle_devpts(struct inode*);
+#ifdef CONFIG_KSU\nextern int ksu_handle_devpts(struct inode*);\n#endif
     }
 }' fs/devpts/inode.c
         sed -i '/if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)/i\
-	ksu_handle_devpts(dentry->d_inode);' fs/devpts/inode.c
+	#ifdef CONFIG_KSU\n	ksu_handle_devpts(dentry->d_inode);\n	#endif' fs/devpts/inode.c
         ;;
     esac
 
