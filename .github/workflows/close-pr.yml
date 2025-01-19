@@ -2,6 +2,9 @@ name: Auto Close PR on build.yml Change
 
 on:
   pull_request:
+    paths:
+      - '.github/workflows/build.yml'
+      - '.github/workflows/close-pr.yml'
 
 jobs:
   auto-close:
