@@ -33,10 +33,13 @@ jobs:
           else
             echo "file_changed=false" >> $GITHUB_ENV
           fi
+      - run: actions/checkout@v4
+        with:
+          path: 1
       - name: Close PR if build.yml changed
         if: env.file_changed == 'true'
         run: |
-          curl -X PATCH \
+          cd 1 && curl -X PATCH \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -d '{"state": "closed", "body": "This pull request has been automatically closed because you cannot submit PRs while build.yml is changing."}' \
             "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
