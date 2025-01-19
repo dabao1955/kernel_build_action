@@ -14,6 +14,7 @@ patch_files=(
     fs/stat.c
     fs/namespace.c
     drivers/input/input.c
+    fs/devpts/inode.c
 )
 
 for i in "${patch_files[@]}"; do
@@ -113,6 +114,16 @@ int path_umount(struct path *path, int flags)\n\
     drivers/input/input.c)
         sed -i '/static void input_handle_event/i\#ifdef CONFIG_KSU\nextern bool ksu_input_hook __read_mostly;\nextern int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *value);\n#endif\n' drivers/input/input.c
         sed -i '/int disposition = input_get_disposition(dev, type, code, &value);/a\	#ifdef CONFIG_KSU\n	if (unlikely(ksu_input_hook))\n		ksu_handle_input_handle_event(&type, &code, &value);\n	#endif' drivers/input/input.c
+        ;;
+
+    fs/devpts/inode.c)
+        sed -i '/struct dentry \*devpts_pty_new/,/return dentry;/ {
+    /return dentry;/ {n; a\
+#ifdef CONFIG_KSU\nextern int ksu_handle_devpts(struct inode*);\n#endif
+    }
+}' fs/devpts/inode.c
+        sed -i '/if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)/i\
+	#ifdef CONFIG_KSU\n	ksu_handle_devpts(dentry->d_inode);\n	#endif' fs/devpts/inode.c
         ;;
     esac
 
