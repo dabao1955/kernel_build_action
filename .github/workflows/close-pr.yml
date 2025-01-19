@@ -33,7 +33,7 @@ jobs:
           else
             echo "file_changed=false" >> $GITHUB_ENV
           fi
-      - run: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           path: 1
       - name: Close PR if build.yml changed
