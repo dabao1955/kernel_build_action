@@ -67,7 +67,7 @@ for i in "${patch_files[@]}"; do
 
     fs/namespace.c)
         if grep -q "may_mandlock(void)" fs/namespace.c; then
-            umount='may_mandlock(void)/,/^}/ { /^}/a'
+            umount='may_mandlock(void)/,/^}/ { /^}/ {n;a'
         else
             umount='int ksys_umount(char __user \*name, int flags)/i'
         fi
@@ -107,7 +107,7 @@ int path_umount(struct path *path, int flags)\n\
     return ret;\n\
 }\n\
 #endif
-}" fs/namespace.c
+}}" fs/namespace.c
         ;;
 
     # drivers/input changes
