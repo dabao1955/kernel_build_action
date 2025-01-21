@@ -35,7 +35,7 @@ on:
 jobs:
   build-kernel:
     name: Build Kernel
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Build
         uses: dabao1955/kernel_build_action@main
