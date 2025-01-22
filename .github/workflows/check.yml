@@ -1,6 +1,12 @@
 name: Lint Check
 on:
-  workflow_call:
+  push:
+    branches: main
+    paths:
+      - 'lxc/**'
+      - '.github/workflows/check.yml'
+      - 'kernelsu/**'
+      - 'tests/*.ts'
 
 jobs:
   yaml-check:

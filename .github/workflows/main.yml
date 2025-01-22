@@ -11,9 +11,6 @@ on:
   pull_request:
 
 jobs:
-  lint:
-    uses: ./.github/workflows/check.yml
-
   ci-test:
     needs:
       - lint
