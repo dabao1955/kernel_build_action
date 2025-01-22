@@ -38,7 +38,7 @@ async function checkYAMLFilesSequentially(): Promise<void> {
 
   const checkStart = Date.now();
   console.log('Starting check...');
-  console.log('Android Kernel Build Action YAML Checker v0.0.3\n');
+  console.log('Android Kernel Build Action YAML Checker v0.0.4\n');
   for (const file of files) {
     try {
       await lintYAMLFile(file);
