@@ -4,16 +4,12 @@ on:
     branches: main
     paths:
       - '.github/workflows/main.yml'
-      - '.github/workflows/check.yml'
       - 'action.yml'
-      - 'tests/**'
 
   pull_request:
 
 jobs:
   ci-test:
-    needs:
-      - lint
     name: Build Kernel
     strategy:
       fail-fast: false
