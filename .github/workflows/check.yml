@@ -18,6 +18,10 @@ jobs:
 
       - name: Checkout Repo
         uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+
 
       - name: Setup bun
         uses: oven-sh/setup-bun@v2
