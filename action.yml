@@ -399,6 +399,10 @@ runs:
 
          echo "::group:: Building Kernel with selected cross compiler"
          mkdir out -p -v
+         if [ ${{ inputs.ccache }} = true ]; then
+            export USE_CCACHE=1
+            export PATH="/usr/lib/ccache:$PATH"
+         fi
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
          if [ -d $HOME/clang ]; then
              COMMAND+=" PATH=$HOME/clang/bin:$PATH"
