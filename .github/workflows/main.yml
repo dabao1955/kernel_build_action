@@ -27,7 +27,7 @@ jobs:
     - name: Build Kernel
       uses: ./
       with:
-          kernel-url: https://github.com/LineageOS/android_kernel_google_redbull
+          kernel-url: https://github.com/SekaiMoe/android_kernel_google_redbull
           kernel-dir: msm-4.19
           kernel-branch: lineage-22.1
           config: redbull_defconfig
