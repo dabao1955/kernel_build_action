@@ -354,7 +354,7 @@ runs:
          else
              echo "::group:: Downloading mkdtboimg to /usr/local/bin"
              sudo aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o mkdtboimg
-             chmod +x -v mkdtboimg
+             sudo chmod +x -v mkdtboimg
              sudo mv mkdtboimg -v /usr/local/bin/mkdtboimg
          fi
          echo "::endgroup::"
