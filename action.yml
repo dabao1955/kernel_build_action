@@ -351,6 +351,10 @@ runs:
                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o ufdt/libufdt/utils/src/mkdtboimg.py
             fi
             test -f /usr/bin/python2 || "$SU" ln -s -f -v /usr/bin/python3 /usr/bin/python2
+         else
+             echo "::group:: Downloading mkdtboimg to /usr/local/bin"
+             aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o /usr/local/bin/mkdtboimg
+             chmod +x -v /usr/local/bin/mkdtboimg
          fi
          echo "::endgroup::"
 
