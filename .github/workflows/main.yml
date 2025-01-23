@@ -27,10 +27,10 @@ jobs:
     - name: Build Kernel
       uses: ./
       with:
-          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
+          kernel-url: https://github.com/LineageOS/android_kernel_google_redbull
           kernel-dir: msm-4.19
-          kernel-branch: taffy
-          config: cas_defconfig
+          kernel-branch: lineage-22.1
+          config: redbull_defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
