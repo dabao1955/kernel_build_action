@@ -25,7 +25,7 @@ inputs:
     required: false
     default: vendor
   kernel-branch:
-    description: 'Branch name'
+    description: 'Branch name for kernel source'
     required: false
     default: main
   vendor-branch:
@@ -40,7 +40,7 @@ inputs:
     default: arm64
   android-version:
     description: 'Android version.'
-    required: true
+    required: false
     default: ""
   ksu:
     description: 'KernelSU function support'

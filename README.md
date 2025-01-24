@@ -70,8 +70,8 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | vendor | false | | false |
 | vendor-url | false | url of additional source code for the Android kernel source code. This option may be used for OPLUS source code. | https://github.com/username/project|
 | vendor-dir | false | | vendor |
-| kernel-branch | true | The branch of the source code that needs to be cloned, defaults branch to git clone is main | main |
-| vendor-branch | true | The branch of the vendor source code that needs to be cloned, defaults branch to git clone is main | main |
+| kernel-branch | false | The branch of the source code that needs to be cloned, defaults branch to git clone is main | main |
+| vendor-branch | false | The branch of the vendor source code that needs to be cloned, defaults branch to git clone is main | main |
 | config | true | Compile the selected configuration file for the Android kernel | defconfig |
 | arch | true | The architecture of your mobile phone SOC is arm64 by default | arm64 |
 | android-version | true | The Android version required when downloading aosp-clang. If you want to use the latest aosp-clang or you do not use aosp-clang to compile the kernel, please ignore this option | 12 |
