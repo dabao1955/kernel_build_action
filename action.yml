@@ -487,11 +487,12 @@ runs:
             test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp -v out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
 
             rm -rf -v AnyKernel3/.git* AnyKernel3/README.md
+            mkdir -p -v ../../build
             if [ ${{ inputs.release }} = false ]; then
                 cp AnyKernel3 ../../build -r -v
             else
                 zip Anykernel3-flasher.zip AnyKernel3/*
-                mv Anykernel3-flasher.zip ../../build -v
+                mv -v Anykernel3-flasher.zip ../../build/
             fi
             echo "::endgroup::"
          fi
