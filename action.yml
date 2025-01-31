@@ -404,38 +404,58 @@ runs:
 
          echo "::group:: Building Kernel with selected cross compiler"
          mkdir out -p -v
-         if [ ${{ inputs.ccache }} = true ]; then
-            export USE_CCACHE=1
-            export PATH="/usr/lib/ccache:$PATH"
-         fi
          COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all ${{ inputs.extra-cmd }} O=out"
-         if [ -d $HOME/clang ]; then
-             COMMAND+=" PATH=$HOME/clang/bin:$PATH"
-             if [ -d $HOME/gcc-64/bin ] || [ -d $HOME/gcc-32/bin ]; then
-                 COMMAND+=" CROSS_COMPILE=$HOME/gcc-64/bin/${GCC64}- CROSS_COMPILE_ARM32=$HOME/gcc-32/bin/${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
-             fi
-         elif [ -d $HOME/gcc-64/bin ] || [ -d $HOME/gcc-32/bin ]; then
-             COMMAND+=" PATH=$HOME/gcc-64/bin:$HOME/gcc-32/bin:$PATH"
-             COMMAND+=" CROSS_COMPILE=${GCC64}- CROSS_COMPILE_ARM32=${GCC32}- CLANG_TRIPLE=aarch64-linux-gnu-"
+         
+         if [ -d "$HOME/clang" ]; then
+              CMD_PATH="$HOME/clang/bin"
+              CMD_CC="clang"
+              if [ -d "$HOME/gcc-64/bin" ] || [ -d "$HOME/gcc-32/bin" ]; then
+                  CMD_CROSS_COMPILE="$HOME/gcc-64/bin/${GCC64}-"
+                  CMD_CROSS_COMPILE_ARM32="$HOME/gcc-32/bin/${GCC32}-"
+                  CMD_CLANG_TRIPLE="aarch64-linux-gnu-"
+              fi
+         elif [ -d "$HOME/gcc-64/bin" ] || [ -d "$HOME/gcc-32/bin" ]; then
+              CMD_PATH="$HOME/gcc-64/bin:$HOME/gcc-32/bin"
+              if [ -n "${GCC64}" ]; then
+                  CMD_CC="$HOME/gcc-64/bin/${GCC64}-gcc"
+              else
+                  CMD_CC="$HOME/gcc-32/bin/${GCC32}-gcc"
+              fi
+              CMD_CROSS_COMPILE="${GCC64}-"
+              CMD_CROSS_COMPILE_ARM32="${GCC32}-" 
+              CMD_CLANG_TRIPLE="aarch64-linux-gnu-"
          fi
-         if [ -d $HOME/clang ]; then
-             if [ ${{ inputs.ccache }} = true ]; then
-                 COMMAND+=" CC='ccache clang'"
-             else
-                 COMMAND+=" CC=clang"
-             fi
-         fi
+         
          if [ ${{ inputs.ccache }} = true ]; then
-             if [ -n "${GCC64}" ]; then
-                 COMMAND+=" CC='ccache $HOME/gcc-64/bin/${GCC64}-gcc'"
-             else
-                 COMMAND+=" CC='ccache $HOME/gcc-32/bin/${GCC32}-gcc'"
-             fi
+              # enable ccache
+              export USE_CCACHE=1
+              
+              # ensure /usr/lib/ccache is first inside CMD_PATH
+              CMD_PATH="/usr/lib/ccache:${CMD_PATH}"
+              
+              # verify compiler exist in /usr/lib/ccache
+              if [ -d "${HOME}/clang" ]; then
+                  [ ! -e /usr/lib/clang ] && \
+                      ln -s /usr/lib/clang /usr/bin/ccache
+              else
+                  if [ -n "${GCC64}" ]; then
+                      [ ! -e "/usr/lib/${GCC64}-gcc" ] && \
+                          ln -s "/usr/lib/${GCC64}-gcc" /usr/bin/ccache
+                  else
+                      [ ! -e "/usr/lib/${GCC32}-gcc" ] && \
+                          ln -s "/usr/lib/${GCC32}-gcc" /usr/bin/ccache
+                  fi
+              fi
          fi
+
+         # setup additional commands
+         COMMAND+=" PATH=${CMD_PATH}:${PATH} CROSS_COMPILE=${CMD_CROSS_COMPILE} CROSS_COMPILE_ARM32=${CMD_CROSS_COMPILE_ARM32} CLANG_TRIPLE=${CMD_CLANG_TRIPLE} CC=${CMD_CC}"
+         
+         # run the command
          ${COMMAND}
          echo "::endgroup::"
 
-         unset USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32 NEED_GCC
+         unset CMD_PATH CMD_CC CMD_CLANG_TRIPLE CMD_CROSS_COMPILE CMD_CROSS_COMPILE_ARM32 USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32 NEED_GCC
 
          if [ ${{ inputs.anykernel3 }} = false ]; then
             echo "::group:: Preparing to Upload boot.img"
