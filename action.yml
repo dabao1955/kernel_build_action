@@ -152,6 +152,7 @@ runs:
       with:
         key: ${{ inputs.config }}-0cb68f9cbcbb3de9c966cf66ed51471fbe51419e
         max-size: 4G
+        create-symlink: true
 
     - name: Build Kernel
       shell: bash
