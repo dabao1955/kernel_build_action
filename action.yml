@@ -510,7 +510,7 @@ runs:
             rm -rf -v AnyKernel3/.git* AnyKernel3/README.md
             mkdir -p -v ../../build
             if [ ${{ inputs.release }} = false ]; then
-                cp AnyKernel3 ../../build -r -v
+                cp -r -v AnyKernel3/* ../../build
             else
                 zip Anykernel3-flasher.zip AnyKernel3/*
                 mv -v Anykernel3-flasher.zip ../../build/
