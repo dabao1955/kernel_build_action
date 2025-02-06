@@ -2,6 +2,7 @@
 node_modules
 yarn.lock
 
+bun
 # Rest pulled from https://github.com/github/gitignore/blob/master/Node.gitignore
 # Logs
 logs
