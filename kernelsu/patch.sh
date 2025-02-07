@@ -66,11 +66,12 @@ for i in "${patch_files[@]}"; do
         ;;
 
     fs/namespace.c)
-        if grep -q "may_mandlock(void)" fs/namespace.c; then
-            umount='may_mandlock(void)/,/^}/ { /^}/ {n;a'
-        else
-            umount='int ksys_umount(char __user \*name, int flags)/i'
-        fi
+        if [[ $(grep -c "static int can_umount(const struct" fs/namespace.c) == 0 ]]; then
+            if grep -q "may_mandlock(void)" fs/namespace.c; then
+                umount='may_mandlock(void)/,/^}/ { /^}/ {n;a'
+            else
+                umount='int ksys_umount(char __user \*name, int flags)/i'
+            fi
         sed -i "/${umount} \
 #ifdef CONFIG_KSU\n\
 static int can_umount(const struct path *path, int flags)\n\
@@ -108,6 +109,7 @@ int path_umount(struct path *path, int flags)\n\
 }\n\
 #endif
 }}" fs/namespace.c
+        fi
         ;;
 
     # drivers/input changes
