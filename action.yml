@@ -510,6 +510,7 @@ runs:
             fi
 
             test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp -v out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
+            test -f out/arch/${{ inputs.arch }}/boot/dtb && cp -v out/arch/${{ inputs.arch }}/boot/dtb AnyKernel3/
 
             rm -rf -v AnyKernel3/.git* AnyKernel3/README.md
             mkdir -p -v ../../build
