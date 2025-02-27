@@ -327,13 +327,13 @@ runs:
                     else
                         export KVER=${{ inputs.ksu-version }}
                     fi
-                        curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$KVER"
-                    fi
+                    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s "$KVER"
                 fi
-                if [ ${{ inputs.ksu-lkm }} = true ]; then
-                    if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
-                        sed -i 's/CONFIG_KSU=y/CONFIG_KSU=m/g' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
-                     else
+            fi
+            if [ ${{ inputs.ksu-lkm }} = true ]; then
+                if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
+                    sed -i 's/CONFIG_KSU=y/CONFIG_KSU=m/g' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
+                else
                     #echo "CONFIG_KSU=m" | tee -a arch/${{ inputs.arch }}/configs/${{ inputs.config }}
                     sed -i '/config KSU/,/help/{s/default y/default m/}' drivers/kernelsu/Kconfig
                 fi
@@ -402,7 +402,7 @@ runs:
              if [ ${{ inputs.lxc-patch }} = true ]; then
                  curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/lxc/patch.sh | bash
              else
-                 echo skip lxc patching
+                 echo "Skip LXC patching..... "
              fi
              echo "::endgroup::"
          fi
