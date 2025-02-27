@@ -126,10 +126,6 @@ inputs:
     description: '3rdparty anykernrl3 url path'
     required: false
     default: ""
-  debug:
-    description: 'Enable debugging to debug for finding errors'
-    required: false
-    default: false
   bootimg-url:
     description: 'boot.img path'
     required: false
@@ -165,9 +161,6 @@ runs:
          if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" || ! -f /bin/apt ]]; then
              printf "This Action Is Intended For Debian-based Runner.\n"
              exit 127
-         fi
-         if [ ${{ inputs.debug }} = true ]; then 
-             set -x
          fi
          if [ "$(id -u)" -eq 0 ]; then
              export SU=
@@ -480,6 +473,8 @@ runs:
             esac
             aria2c ${{ inputs.bootimg-url }} -o boot.img 
             ./magiskboot unpack boot.img > nohup.out 2>&1 & # nohup is not working in github ci!
+            magiskboot_pid=$!
+            wait $magiskboot_pid
             export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
             if [ "$FMT" = "raw" ] ; then
                 cp -v ../out/arch/${{ inputs.arch }}/boot/Image kernel
