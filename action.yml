@@ -54,11 +54,11 @@ inputs:
     required: false
     default: false
   ksu-url:
-    description: "Use 3rd KernelSU"
+    description: 'Using third party KernelSU instead of official KernelSU'
     required: false
     default: ""
   ksu-lkm:
-    description: "Build KernelSU as a loadable kernel module"
+    description: 'Build KernelSU as a loadable kernel module'
     required: false
     default: false
   disable-lto:
@@ -126,8 +126,12 @@ inputs:
     description: '3rdparty anykernrl3 url path'
     required: false
     default: ""
+  debug:
+    description: 'Enable debugging to debug for finding errors'
+    required: false
+    default: false
   bootimg-url:
-    description: "boot.img path"
+    description: 'boot.img path'
     required: false
     default: ""
   release:
@@ -162,7 +166,9 @@ runs:
              printf "This Action Is Intended For Debian-based Runner.\n"
              exit 127
          fi
-
+         if [ ${{ inputs.debug }} = true ]; then 
+             set -x
+         fi
          if [ "$(id -u)" -eq 0 ]; then
              export SU=
          else
