@@ -472,9 +472,7 @@ runs:
                 *) echo "Unknown cpu architecture for this device !" && exit 1 ;;
             esac
             aria2c ${{ inputs.bootimg-url }} -o boot.img 
-            ./magiskboot unpack boot.img > nohup.out 2>&1 & # nohup is not working in github ci!
-            magiskboot_pid=$!
-            wait $magiskboot_pid
+            ./magiskboot unpack boot.img > nohup.out 2>&1 # nohup is not working in github ci!
             export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
             if [ "$FMT" = "raw" ] ; then
                 cp -v ../out/arch/${{ inputs.arch }}/boot/Image kernel
