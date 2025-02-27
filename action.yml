@@ -472,9 +472,8 @@ runs:
                 i*86 | x86 | amd64 | x86_64) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_x86 -o magiskboot && chmod 755 magiskboot  ;;
                 *) echo "Unknown cpu architecture for this device !" && exit 1 ;;
             esac
-            aria2c ${{ inputs.bootimg-url }} -o boot.img
-            #nohup ./magiskboot unpack boot.img // It's not work on ubuntu-24.04 ci
-            ./magiskboot unpack boot.img > nohup.out 2>&1 &
+            aria2c ${{ inputs.bootimg-url }} -o boot.img 
+            ./magiskboot unpack boot.img > nohup.out 2>&1 & # nohup is not working in github ci!
             export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
             if [ "$FMT" = "raw" ] ; then
                 cp -v ../out/arch/${{ inputs.arch }}/boot/Image kernel
