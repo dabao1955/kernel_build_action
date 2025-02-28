@@ -223,7 +223,6 @@ runs:
          if [ ${{ inputs.aosp-clang }} = true ]; then
              echo "::group:: Downloading AOSP clang"
              if [ ${{ inputs.aosp-gcc }} = true ]; then
-                 mkdir $HOME/clang -p -v
                  if [ ! -z ${{ inputs.android-version }} ]; then
                      export AOSP_CLANG_URL="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${{ inputs.android-version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz"
                  else
@@ -368,7 +367,7 @@ runs:
              aria2c https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/config.sh -o nconfig.sh &&  bash nconfig.sh arch/${{ inputs.arch }}/configs/${{ inputs.config }} -w
              if [ ${{ inputs.nethunter-patch }} = true ]; then
                  aria2c https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/add-wifi-injection.patch && git apply add-wifi-injection.patch
-                 aria2c apply https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/fix-ath9k-naming-conflict.patch && git apply fix-ath9k-naming-confict.patch
+                 aria2c apply https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/fix-ath9k-naming-conflict.patch && git apply fix-ath9k-naming-conflict.patch
                  if [ "$PATCHLEVEL" -lt "19" ]; then
                      aria2c https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/add-wifi-injection-4.14.patch && git apply add-wifi-injection-4.14.patch
                  fi
@@ -471,7 +470,7 @@ runs:
                 i*86 | x86 | amd64 | x86_64) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_x86 -o magiskboot && chmod 755 magiskboot  ;;
                 *) echo "Unknown cpu architecture for this device !" && exit 1 ;;
             esac
-            aria2c ${{ inputs.bootimg-url }} -o boot.img 
+            aria2c ${{ inputs.bootimg-url }} -o boot.img
             ./magiskboot unpack boot.img > nohup.out 2>&1 # nohup is not working in github ci!
             export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
             if [ "$FMT" = "raw" ] ; then
