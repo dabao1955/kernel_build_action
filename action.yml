@@ -27,10 +27,9 @@ inputs:
   kernel-branch:
     description: 'Branch name for kernel source'
     required: false
-    default: main
   vendor-branch:
+    description: 'Branch name for vendor kernel source'
     required: false
-    default: main
   config:
     description: 'configuration for building android kernel'
     required: true
@@ -51,12 +50,12 @@ inputs:
     required: false
     default: "main"
   ksu-other:
+    description: 'Using third party kernelsu'
     required: false
     default: false
   ksu-url:
     description: 'Using third party KernelSU instead of official KernelSU'
     required: false
-    default: ""
   ksu-lkm:
     description: 'Build KernelSU as a loadable kernel module'
     required: false
@@ -95,16 +94,12 @@ inputs:
     default: false
   other-gcc32-url:
     required: false
-    default: ''
   other-gcc32-branch:
     required: false
-    default: main
   other-gcc64-url:
     required: false
-    default: ''
   other-gcc64-branch:
     required: false
-    default: main
   aosp-clang:
     description: 'Use clang from aosp project.'
     required: false
@@ -114,7 +109,6 @@ inputs:
     default: "r383902"
   other-clang-url:
     required: false
-    default: ''
   other-clang-branch:
     required: false
     default: main
@@ -125,11 +119,9 @@ inputs:
   anykernel3-url:
     description: '3rdparty anykernrl3 url path'
     required: false
-    default: ""
   bootimg-url:
     description: 'boot.img path'
     required: false
-    default: ""
   release:
     description: "After the kernel compilation is completed, it will be automatically published to the releases page"
     required: false
@@ -140,7 +132,6 @@ inputs:
   extra-cmd:
     description: 'Extra options of building kernel.'
     required: false
-    default: ""
 
 runs:
   using: 'composite'
