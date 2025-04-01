@@ -189,21 +189,13 @@ runs:
              local branch=${4:-main}
              mkdir -p -v "$extract_dir"
              case "$url" in
-                 *.tar.gz)
-                     aria2c -o "${output_name}.tar.gz" "$url"
-                     tar -C "$extract_dir" -zxf "${output_name}.tar.gz"
-                     ;;
                  *.zip)
                      aria2c -o "${output_name}.zip" "$url"
                      unzip -q "${output_name}.zip" -d "$extract_dir"
                      ;;
-                 *.tar.xz)
-                     aria2c -o "${output_name}.tar.xz" "$url"
-                     tar -C "$extract_dir" -xf "${output_name}.tar.xz"
-                     ;;
-                 *.xz)
-                     aria2c -o "${output_name}.xz" "$url"
-                     tar -C "$extract_dir" -xf "${output_name}.xz"
+                 *.tar.*|*.gz|*.xz|*.bz2)
+                     aria2c -o "${output_name}.${url##*.}" "$url" #${url##*.} only suitable for bash
+                     tar -C "$extract_dir" -xf "${output_name}.${url##*.}"
                      ;;
                  *)
                      git clone "$url" "$extract_dir" --depth=${{ inputs.depth }} -b "$branch"
