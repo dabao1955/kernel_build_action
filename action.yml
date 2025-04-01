@@ -195,7 +195,7 @@ runs:
                      ;;
                  *.tar.*|*.gz|*.xz|*.bz2)
                      aria2c -o "${output_name}.${url##*.}" "$url" #${url##*.} only suitable for bash
-                     tar -C "$extract_dir" -xf "${output_name}.tar.${url##*.}"
+                     tar -C "$extract_dir" -xf "${output_name}.${url##*.}"
                      ;;
                  *)
                      git clone "$url" "$extract_dir" --depth=${{ inputs.depth }} -b "$branch"
