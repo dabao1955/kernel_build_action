@@ -250,8 +250,10 @@ runs:
                  download_and_extract "$OTHER_GCC64_URL" "gcc-aarch64" "$HOME/gcc-64" "${{ inputs.other-gcc64-branch }}"
                  download_and_extract "$OTHER_GCC32_URL" "gcc-arm" "$HOME/gcc-32" "${{ inputs.other-gcc32-branch }}"
          fi
-         [ ! -d $HOME/gcc-64/bin/ ] && mv $HOME/gcc-64/*/* $HOME/gcc-64/
-         [ ! -d $HOME/gcc-32/bin/ ] && mv $HOME/gcc-32/*/* $HOME/gcc-32/
+         if [ -d $HOME/gcc-64 ] || [ -d $HOME/gcc-32 ]; then
+             [ ! -d $HOME/gcc-64/bin/ ] && mv $HOME/gcc-64/*/* $HOME/gcc-64/
+             [ ! -d $HOME/gcc-32/bin/ ] && mv $HOME/gcc-32/*/* $HOME/gcc-32/
+         fi
          echo "::endgroup::"
 
          echo "::group:: Pulling Kernel Source"
