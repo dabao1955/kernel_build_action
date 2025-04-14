@@ -87,7 +87,7 @@ inputs:
   ccache:
     description: 'Enable Ccache for compiling kernel'
     required: false
-    default: false
+    default: true
   aosp-gcc:
     description: 'Use gcc from aosp project.'
     required: false
@@ -226,6 +226,8 @@ runs:
                  echo "Binutils not found in clang directory. Downloading AOSP GCC"
                  export NEED_GCC=1
              fi
+         else
+             "$SU" apt install clang lld binutils-aarch64-linux-gnu binutils-arm-linux-gnuabeihf -y
          fi
          echo "::endgroup::"
 
