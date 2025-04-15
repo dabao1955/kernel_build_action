@@ -417,6 +417,7 @@ runs:
          if [ ${{ inputs.ccache }} = true ]; then
               # enable ccache
               export USE_CCACHE=1
+              export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
               
               # ensure /usr/lib/ccache is first inside CMD_PATH
               CMD_PATH="/usr/lib/ccache:${CMD_PATH}"
