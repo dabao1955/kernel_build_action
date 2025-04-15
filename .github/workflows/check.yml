@@ -7,7 +7,7 @@ on:
       - 'lxc/**'
       - '.github/workflows/check.yml'
       - 'kernelsu/**'
-      - 'tests/*.ts'
+      - 'tests/**'
 
 jobs:
   yaml-check:
