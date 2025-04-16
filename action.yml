@@ -87,7 +87,7 @@ inputs:
   ccache:
     description: 'Enable Ccache for compiling kernel'
     required: false
-    default: true
+    default: false
   aosp-gcc:
     description: 'Use gcc from aosp project.'
     required: false
