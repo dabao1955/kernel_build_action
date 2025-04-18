@@ -15,6 +15,7 @@ patch_files=(
     fs/namespace.c
     drivers/input/input.c
     fs/devpts/inode.c
+    security/selinux/hooks.c
 )
 
 for i in "${patch_files[@]}"; do
@@ -126,6 +127,15 @@ int path_umount(struct path *path, int flags)\n\
 }
         /if (dentry->d_sb->s_magic != DEVPTS_SUPER_MAGIC)/i\
 	#ifdef CONFIG_KSU\n	ksu_handle_devpts(dentry->d_inode);\n	#endif' fs/devpts/inode.c
+        ;;
+
+    # security/selinux/hooks.c
+    security/selinux/hooks.c)
+        if grep -q "^VERSION = [1-4]" Makefile; then
+        sed -i '/int nnp = (bprm->unsafe & LSM_UNSAFE_NO_NEW_PRIVS);/i\    static u32 ksu_sid;\n    char *secdata;' security/selinux/hooks.c
+        sed -i '/if (!nnp && !nosuid)/i\    int error;\n    u32 seclen;\n' security/selinux/hooks.c
+        sed -i '/return 0; \/\* No change in credentials \*\//a\\n    if (!ksu_sid)\n        security_secctx_to_secid("u:r:su:s0", strlen("u:r:su:s0"), &ksu_sid);\n\n    error = security_secid_to_secctx(old_tsec->sid, &secdata, &seclen);\n    if (!error) {\n        rc = strcmp("u:r:init:s0", secdata);\n        security_release_secctx(secdata, seclen);\n        if (rc == 0 && new_tsec->sid == ksu_sid)\n            return 0;\n    }' security/selinux/hooks.c
+        fi
         ;;
     esac
 
