@@ -412,6 +412,11 @@ runs:
               CMD_CROSS_COMPILE="${GCC64}-"
               CMD_CROSS_COMPILE_ARM32="${GCC32}-" 
               CMD_CLANG_TRIPLE="aarch64-linux-gnu-"
+         else
+              CMD_CC="/usr/bin/clang" 
+              CMD_CROSS_COMPILE="/usr/bin/aarch64-linux-gnu-"
+              CMD_CROSS_COMPILE_ARM32="arm-linux-gnuabeihf-"
+              CMD_CLANG_TRIPLE="aarch64-linux-gnu-"
          fi
          
          if [ ${{ inputs.ccache }} = true ]; then
