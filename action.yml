@@ -465,12 +465,12 @@ runs:
             ./magiskboot unpack boot.img > nohup.out 2>&1 # nohup is not working in github ci!
             export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
             if [ "$FMT" = "raw" ] ; then
-                cp -v ../out/arch/${{ inputs.arch }}/boot/Image kernel
+                cp -v ../out/arch/${{ inputs.arch }}/boot/*mage kernel
             else
                 if ls dtb >/dev/null ; then
-                    cp -v ../out/arch/${{ inputs.arch }}/boot/Image.*-dtb kernel
+                    cp -v ../out/arch/${{ inputs.arch }}/boot/*mage.*-dtb kernel
                 else
-                    cp -v ../out/arch/${{ inputs.arch }}/boot/Image.* kernel
+                    cp -v ../out/arch/${{ inputs.arch }}/boot/*mage.* kernel
                 fi
             fi
             ./magiskboot repack boot.img
