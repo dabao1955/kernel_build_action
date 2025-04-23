@@ -463,6 +463,7 @@ runs:
             esac
             aria2c ${{ inputs.bootimg-url }} -o boot.img
             ./magiskboot unpack boot.img > nohup.out 2>&1 # nohup is not working in github ci!
+            rm -rf -v kernel
             export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
             if [ "$FMT" = "raw" ] ; then
                 cp -v ../out/arch/${{ inputs.arch }}/boot/*mage kernel
