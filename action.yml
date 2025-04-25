@@ -209,7 +209,7 @@ runs:
                  if [ ! -z ${{ inputs.android-version }} ]; then
                      export AOSP_CLANG_URL="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android${{ inputs.android-version }}-release/clang-${{ inputs.aosp-clang-version }}.tar.gz"
                  else
-                     export AOSP_CLANG_URL="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-${{ inputs.aosp-clang-version }}.tar.gz"
+                     export AOSP_CLANG_URL="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/mirror-goog-main-llvm-toolchain-source/clang-${{ inputs.aosp-clang-version }}.tar.gz"
                  fi
                  download_and_extract "$AOSP_CLANG_URL" "aosp-clang" "$HOME/clang"
              else
