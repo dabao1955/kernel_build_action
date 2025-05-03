@@ -528,7 +528,7 @@ runs:
       if: ${{ inputs.release == 'false' && inputs.anykernel3 == 'true' }}
       uses: actions/upload-artifact@v4
       with:
-        name: Anykernel3-flasher
+        name: AnyKernel3
         path: build/*
         if-no-files-found: error
         overwrite: true
