@@ -504,13 +504,13 @@ runs:
             test -f out/arch/${{ inputs.arch }}/boot/dtbo.img && cp -v out/arch/${{ inputs.arch }}/boot/dtbo.img AnyKernel3/
             test -f out/arch/${{ inputs.arch }}/boot/dtb && cp -v out/arch/${{ inputs.arch }}/boot/dtb AnyKernel3/
 
-            rm -rf -v AnyKernel3/.git* AnyKernel3/README.md
+            rm -rf -v AnyKernel3/.github AnyKernel3/README.md
             mkdir -p -v ../../build
             if [ ${{ inputs.release }} = false ]; then
                 cp -r -v AnyKernel3/* ../../build
             else
                 cd AnyKernel3 && zip AnyKernel3.zip ./* && cd ..
-                mv -v Anykernel3/Anykernel3-flasher.zip ../../build/
+                mv -v Anykernel3/AnyKernel3.zip ../../build/
             fi
             echo "::endgroup::"
          fi
