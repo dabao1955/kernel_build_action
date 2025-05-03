@@ -509,7 +509,7 @@ runs:
             if [ ${{ inputs.release }} = false ]; then
                 cp -r -v AnyKernel3/* ../../build
             else
-                zip Anykernel3-flasher.zip AnyKernel3/*
+                cd AnyKernel3 && zip Anykernel3-flasher.zip ./* && cd ..
                 mv -v Anykernel3-flasher.zip ../../build/
             fi
             echo "::endgroup::"
