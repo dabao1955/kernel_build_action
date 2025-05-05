@@ -52,7 +52,7 @@ jobs:
         run: cd tests && yarn install
 
       - name: Check js
-        run: cd tests && npm run lint
+        run: cd tests && yarn lint
 
   sh-check:
     runs-on: ubuntu-latest
@@ -74,10 +74,10 @@ jobs:
         run: |
             export HOST_ARCH=$(dpkg --print-architecture)
             case ${HOST_ARCH} in
-                armv7* | armv8l | armhf | arm) aria2c https://github.com/mvdan/sh/releases/download/v3.9.0/shfmt_v3.9.0_linux_arm -o shfmt ;;
-                i*86 | x86) aria2c https://github.com/mvdan/sh/releases/download/v3.9.0/shfmt_v3.9.0_linux_x86 -o shfmt ;;
-                amd64 | x86_64) aria2c https://github.com/mvdan/sh/releases/download/v3.9.0/shfmt_v3.9.0_linux_amd64 -o shfmt ;;
-                aarch64 | arm64) aria2c https://github.com/mvdan/sh/releases/download/v3.9.0/shfmt_v3.9.0_linux_arm64 -o shfmt ;;
+                armv7* | armv8l | armhf | arm) aria2c https://github.com/mvdan/sh/releases/download/v3.9.0/shfmt_v3.11.0_linux_arm -o shfmt ;;
+                i*86 | x86) aria2c https://github.com/mvdan/sh/releases/download/v3.9.0/shfmt_v3.14.0_linux_x86 -o shfmt ;;
+                amd64 | x86_64) aria2c https://github.com/mvdan/sh/releases/download/v3.9.0/shfmt_v3.11.0_linux_amd64 -o shfmt ;;
+                aarch64 | arm64) aria2c https://github.com/mvdan/sh/releases/download/v3.9.0/shfmt_v3.11.0_linux_arm64 -o shfmt ;;
 
                 *) echo "Unknow cpu architecture for this device !" && exit 1 ;;
             esac
