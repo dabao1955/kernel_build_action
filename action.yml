@@ -327,7 +327,7 @@ runs:
                     echo "CONFIG_KPROBES is enabled, skip patch."
                 else
                     aria2c -q https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/patch.sh
-                    grep -qs "may_mandlock(void)" fs/namespace.c || sed -i '110s|}}||' patch.sh; bash patch.sh
+                    grep -qs "may_mandlock(void)" fs/namespace.c || sed -i '112s|}}||' patch.sh; bash patch.sh
                 fi
             fi
             echo "::endgroup::"
