@@ -14,6 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        lint: [python, js]
     steps:
 
       - name: Checkout Repo
@@ -23,39 +27,27 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
 
 
-      - name: Setup
+      - name: Setup (Python)
+        if: matrix.lint == 'python'
         run: |
-          sudo npm install -g yaml-lint
           sudo apt install yamllint
 
-      - name: Check yaml
+      - name: Setup (JS)
+        if: matrix.lint == 'js'
+        run: |
+          sudo npm install -g yaml-lint
+
+      - name: Check yaml(Python)
+        if: matrix.lint == 'python'
         run: |
           A=$(find . | grep .yml)
           /usr/bin/yamllint action.yml
+
+      - name: Check yaml(JS)
+        if: matrix.lint == 'js'
+        run: |
+          A=$(find . | grep .yml)
           /usr/local/bin/yamllint $A
-
-      - name: Clean Workspace
-        run: bun run tests/clean.ts
-
-  js-check:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-         node-version: 20
-
-      - name: Install dependence
-        run: cd tests && yarn install
-
-      - name: Check js
-        run: cd tests && yarn lint
 
   sh-check:
     runs-on: ubuntu-latest
