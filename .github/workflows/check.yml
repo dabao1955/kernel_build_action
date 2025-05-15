@@ -23,13 +23,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
 
 
-      - name: Setup bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+      - name: Setup
+        run: |
+          sudo npm install -g yaml-lint
+          sudo apt install yamllint
 
       - name: Check yaml
-        run: cd tests && bun run index.ts
+        run: |
+          A=$(find . | grep .yml)
+          /usr/bin/yamllint action.yml
+          /usr/local/bin/yamllint $A
 
       - name: Clean Workspace
         run: bun run tests/clean.ts

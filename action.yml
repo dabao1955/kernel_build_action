@@ -412,23 +412,23 @@ runs:
                   CMD_CC="$HOME/gcc-32/bin/${GCC32}-gcc"
               fi
               CMD_CROSS_COMPILE="${GCC64}-"
-              CMD_CROSS_COMPILE_ARM32="${GCC32}-" 
+              CMD_CROSS_COMPILE_ARM32="${GCC32}-"
               CMD_CLANG_TRIPLE="aarch64-linux-gnu-"
          else
-              CMD_CC="/usr/bin/clang" 
+              CMD_CC="/usr/bin/clang"
               CMD_CROSS_COMPILE="/usr/bin/aarch64-linux-gnu-"
               CMD_CROSS_COMPILE_ARM32="arm-linux-gnuabeihf-"
               CMD_CLANG_TRIPLE="aarch64-linux-gnu-"
          fi
-         
+
          if [ ${{ inputs.ccache }} = true ]; then
               # enable ccache
               export USE_CCACHE=1
               export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-              
+
               # ensure /usr/lib/ccache is first inside CMD_PATH
               CMD_PATH="/usr/lib/ccache:${CMD_PATH}"
-              
+
               # verify compiler exist in /usr/lib/ccache
               if [ -d "${HOME}/clang/bin" ]; then
                   [ ! -e /usr/lib/clang ] && \
@@ -446,7 +446,7 @@ runs:
 
          # setup additional commands
          COMMAND+=" PATH=${CMD_PATH}:${PATH} CROSS_COMPILE=${CMD_CROSS_COMPILE} CROSS_COMPILE_ARM32=${CMD_CROSS_COMPILE_ARM32} CLANG_TRIPLE=${CMD_CLANG_TRIPLE} CC=${CMD_CC}"
-         
+
          # run the command
          ${COMMAND}
          echo "::endgroup::"

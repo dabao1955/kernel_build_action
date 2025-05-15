@@ -1,0 +1,9 @@
+---
+extends: default
+
+rules:
+  line-length:
+    max: 512
+    level: warning
+  trailing-spaces: enable
+  document-start: enable
