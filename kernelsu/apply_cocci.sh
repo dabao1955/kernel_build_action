@@ -6,7 +6,6 @@ IFS=$'\n\t'
 
 # Configuration
 readonly REPO_URL="https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/patches"
-readonly AUTHOR="dabao1955"
 
 # Define patches array
 declare -ra PATCHES=(
@@ -73,23 +72,23 @@ apply_patch() {
 
 # Main execution
 main() {
-    local kernel_src="${1:-.}"
-    readonly KERNEL_SRC="$kernel_src"
-    
+    src="$(pwd)"
+    readonly KERNEL_SRC="$src"
+
     # Check dependencies
     check_dependencies
-    
+
     # Create temporary directory for downloads
     local temp_dir
     temp_dir="$(mktemp -d)"
     cd "$temp_dir" || exit 1
-    
+
     # Extract patch names for parallel download
     local patch_names=()
     for patch_entry in "${PATCHES[@]}"; do
         patch_names+=("${patch_entry%%:*}")
     done
-    
+
     # Download patches in parallel
     echo "Downloading patches..."
     printf '%s\n' "${patch_names[@]}" | parallel --will-cite -j0 download_patch {} || {
@@ -97,20 +96,20 @@ main() {
         rm -rf "$temp_dir"
         exit 1
     }
-    
+
     # Apply patches
     echo "Applying patches..."
     for patch_entry in "${PATCHES[@]}"; do
         patch_file="${patch_entry%%:*}"
         target_file="${patch_entry#*:}"
-        
+
         if ! apply_patch "$patch_file" "$target_file"; then
             echo "Error: Failed to process $patch_file" >&2
             rm -rf "$temp_dir"
             exit 1
         fi
     done
-    
+
     # Cleanup
     rm -rf "$temp_dir"
     echo "All patches processed successfully"
