@@ -1,4 +1,4 @@
-ernelSU scripts
+KernelSU scripts
 =====
 ## Overview
 This repository contains scripts designed to assist in patching non-GKI (Generic Kernel Image) kernels for KernelSU integration. These scripts automate the process of modifying kernel source code, ensuring compatibility with KernelSU while maintaining reliability and cleanliness.
@@ -36,8 +36,8 @@ sudo dnf install sed coccinelle parallel curl
 ### General Setup
 1. Clone the repository containing the scripts and navigate to the directory:
    ```bash
-   git clone https://github.com/your-repo/kernel-su-scripts.git
-   cd kernel-su-scripts
+   git clone https://github.com/dabao1955/kernel_build_action.git
+   cd kernel_build_action/kernelsu
    ```
 
 2. Ensure you have the kernel source code available. Navigate to the root directory of the kernel source where you intend to apply the patches.
