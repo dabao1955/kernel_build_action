@@ -4,12 +4,16 @@ identifier nnp, nosuid;
 @@
 
   int nnp = (bprm->unsafe & LSM_UNSAFE_NO_NEW_PRIVS);
++ #ifdef CONFIG_KSU
 + static u32 ksu_sid;
 + char *secdata;
++ #endif
 
   if (!nnp && !nosuid) {
++   #ifdef CONFIG_KSU
 +   int error;
 +   u32 seclen;
++   #endif
     ...
   }
 
@@ -18,6 +22,7 @@ identifier nnp, nosuid;
 
   return 0; /* No change in credentials */
 + 
++ #ifdef CONFIG_KSU
 + if (!ksu_sid)
 +     security_secctx_to_secid("u:r:su:s0", strlen("u:r:su:s0"), &ksu_sid);
 + 
@@ -28,3 +33,4 @@ identifier nnp, nosuid;
 +     if (rc == 0 && new_tsec->sid == ksu_sid)
 +         return 0;
 + }
++ #endif
