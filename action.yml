@@ -158,12 +158,6 @@ runs:
          else
              export SU=sudo
          fi
-         if [ -f /usr/bin/docker ]; then
-             echo "::group:: Cleaning necessary disk space"
-             echo "id: ${{ github.sha }}"
-             "$SU" docker image prune --all --force
-         fi
-         echo "::endgroup::"
 
          echo "::group:: Installing Building Depend Packages"
          "$SU" apt-get update
@@ -426,6 +420,7 @@ runs:
               export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
 
               # ensure /usr/lib/ccache is first inside CMD_PATH
+              test -f /usr/bin/ccache && $SU rm -v /usr/bin/ccache
               CMD_PATH="/usr/lib/ccache:${CMD_PATH}"
 
               # verify compiler exist in /usr/lib/ccache
