@@ -153,29 +153,20 @@ runs:
              printf "This Action Is Intended For Debian-based Runner.\n"
              exit 127
          fi
-         if [ "$(id -u)" -eq 0 ]; then
-             export SU=
-         else
-             export SU=sudo
-         fi
+
+         SU() {
+             if [ "$(id -u)" -eq 0 ]; then
+                 "$@"
+             else
+                 sudo "$@"
+             fi
+         }
 
          echo "::group:: Installing Building Depend Packages"
-         "$SU" apt-get update
-         "$SU" apt-get install --no-install-recommends -y binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates python3 xz-utils libc6-dev aria2 build-essential ccache pigz coccinelle parallel
-         aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
+         "SU" apt-get update
+         "SU" apt-get install --no-install-recommends -y binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates python3 xz-utils libc6-dev aria2 build-essential ccache pigz coccinelle parallel
          echo "::endgroup::"
-         export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
-         if [ -f /bin/swapon ]; then
-             echo "::group:: Setting Up Swap"
-             "$SU" swapoff $SWAP_FILE
-             "$SU" rm -v $SWAP_FILE
-             "$SU" fallocate -l 16G $SWAP_FILE
-             "$SU" chmod 600 -v $SWAP_FILE
-             "$SU" mkswap $SWAP_FILE
-             "$SU" swapon $SWAP_FILE
-             echo "::endgroup::"
-         fi
-
+ 
          download_and_extract() {
              local url=$1
              local output_name=$2
@@ -221,7 +212,7 @@ runs:
                  export NEED_GCC=1
              fi
          else
-             "$SU" apt install clang lld binutils-aarch64-linux-gnu binutils-arm-linux-gnuabeihf -y
+             "SU" apt install clang lld binutils-aarch64-linux-gnu binutils-arm-linux-gnuabeihf -y
          fi
          echo "::endgroup::"
 
@@ -333,12 +324,12 @@ runs:
             elif grep scripts/ufdt && test ! -d scripts/ufdt >/dev/null; then
                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o ufdt/libufdt/utils/src/mkdtboimg.py
             fi
-            test -f /usr/bin/python2 || "$SU" ln -s -f -v /usr/bin/python3 /usr/bin/python2
+            test -f /usr/bin/python2 || "SU" ln -s -f -v /usr/bin/python3 /usr/bin/python2
          else
              echo "::group:: Downloading mkdtboimg to /usr/local/bin"
-             sudo aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o mkdtboimg
-             sudo chmod +x -v mkdtboimg
-             sudo mv mkdtboimg -v /usr/local/bin/mkdtboimg
+             SU aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o mkdtboimg
+             SU chmod +x -v mkdtboimg
+             SU mv mkdtboimg -v /usr/local/bin/mkdtboimg
          fi
          echo "::endgroup::"
 
