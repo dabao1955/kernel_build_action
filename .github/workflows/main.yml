@@ -15,7 +15,6 @@ jobs:
     strategy:
       fail-fast: false
     runs-on: ubuntu-latest
-    container: debian:sid
     permissions:
       contents: write
 
