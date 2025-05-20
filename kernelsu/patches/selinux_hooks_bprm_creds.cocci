@@ -19,7 +19,7 @@ identifier nnp, nosuid;
 
 @ selinux_hooks_return @
 @@
-
+if (new_tsec->sid == old_tsec->sid)
   return 0; /* No change in credentials */
 + 
 + #ifdef CONFIG_KSU
