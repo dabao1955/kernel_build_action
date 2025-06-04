@@ -8,18 +8,3 @@ updates:
       actions:
         patterns:
           - "*"
-  - package-ecosystem: npm
-    directory: tests
-    schedule:
-      interval: daily
-    groups:
-      dependencies:
-        dependency-type: production
-        update-types:
-          - minor
-          - patch
-      dev-dependencies:
-        dependency-type: development
-        update-types:
-          - minor
-          - patch
