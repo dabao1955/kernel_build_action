@@ -1,0 +1,7 @@
+menu "ReKernel"
+
+config REKERNEL
+	tristate "ReKernel function support"
+	default y
+	help
+	  Enable ReKernel

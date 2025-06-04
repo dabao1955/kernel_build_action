@@ -45,6 +45,9 @@ inputs:
     description: 'KernelSU function support'
     required: false
     default: false
+  rekernel:
+    required: false
+    default: false
   ksu-version:
     description: 'KernelSU default branch'
     required: false
