@@ -15,4 +15,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: build
-        run: make -C rekernel -j4
+        run: cd build && make -C rekernel -j4
