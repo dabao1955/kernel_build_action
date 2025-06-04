@@ -1,6 +1,7 @@
 name: Build lkm
 on:
   workflow_dispatch:
+  push:
 
 jobs:
   Build-Kernel:
