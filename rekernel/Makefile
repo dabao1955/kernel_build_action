@@ -1,7 +1,10 @@
 obj-$(CONFIG_REKERNEL) += rekernel.o
 
+KDIR ?= /lib/modules/$(shell uname -r)/build
+PWD := $(shell pwd)
+
 all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	make -C $(KDIR) M=$(PWD) modules $(if $(V),V=$(V))
 
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	make -C $(KDIR) M=$(PWD) clean $(if $(V),V=$(V))
