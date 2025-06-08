@@ -531,6 +531,20 @@ runs:
         files: build/*
         make_latest: true
         body: |
-            config: ${{ inputs.config }}
-            branch: ${{ inputs.kernel-branch }}
-            source: ${{ inputs.kernel-url }}
+          Build Information:
+          - Config: ${{ inputs.config }}
+          - Branch: ${{ inputs.kernel-branch }}
+          - Source: ${{ inputs.kernel-url }}
+          - Architecture: ${{ inputs.arch }}
+          
+          Features:
+          - KernelSU: ${{ inputs.ksu }}
+          - NetHunter: ${{ inputs.nethunter }}
+          - LXC: ${{ inputs.lxc }}
+          - KVM: ${{ inputs.kvm }}
+          
+          Build Details:
+          - Timestamp: ${{ github.event.repository.updated_at }}
+          - Workflow: ${{ github.workflow }}
+          - Run ID: ${{ github.run_id }}
+          - Commit: ${{ github.sha }}
