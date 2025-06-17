@@ -80,11 +80,12 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | ksu-lkm(may not build successfully for non-GKI devices) | false | Build KernelSU as a linux kernel module | true |
 | ksu-other | false | | false |
 | ksu-url | false | Ude 3rd KernelSU | https://github.com/xxx/KernelSU/ |
-| disable-lto | false | | false |
+| rekernel | false | Enable Re-Kernel support | true |
+| disable-lto | false | Disable [Link Time Optimization](https://llvm.org/docs/LinkTimeOptimization.html) | false |
 | lxc | false | Enable LXC and docker to config | false | 
- | lxc-patch | false | Add patch avoid not booting after enable lxc | false | 
- | nethunter | false | Enable Kali nethunter | false | 
- | nethunter-patch | false | | false |
+| lxc-patch | false | Add patch avoid not booting after enable lxc | false | 
+| nethunter | false | Enable Kali nethunter | false | 
+| nethunter-patch | false | | false |
 | kvm | false | | false |
 | ccache | false | Enable ccache(Only valid when compiled with clang) | false |
 | aosp-gcc | false | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |

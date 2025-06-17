@@ -320,6 +320,12 @@ runs:
             echo "::endgroup::"
          fi
 
+         if [ ${{ inputs.rekernel }} = true ]; then
+             echo "::group:: Initalizing Re-Kernel"
+             curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/rekernel/patch.sh | bash
+             echo "::endgroup::"
+         fi
+
          if [ -f scripts/dtc/libfdt/mkdtboimg.py ]; then
             if grep python2 scripts/Makefile.lib >/dev/null; then
                 echo "::group:: Using mkdtboimg Python3 version instead of Python2 version"
