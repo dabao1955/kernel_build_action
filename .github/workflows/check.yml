@@ -4,10 +4,10 @@ on:
   push:
     branches: main
     paths:
-      - 'lxc/**'
+      - 'lxc/*.sh'
       - '.github/workflows/check.yml'
-      - 'kernelsu/**'
-      - 'tests/**'
+      - 'kernelsu/*.sh'
+      - 'rekernel/*.sh'
 
 jobs:
   yaml-check:

@@ -2,6 +2,9 @@ name: Build lkm
 on:
   workflow_dispatch:
   push:
+    paths:
+      - 'rekernel/**'
+      - '.github/workflows/lkm.yml'
 
 jobs:
   Build-lkm:
