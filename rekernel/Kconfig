@@ -8,6 +8,7 @@ config REKERNEL
 
 config REKERNEL_NETWORK
 	tristate "Re:Kernel NetReceive unfreeze support"
+        depends on REKERNEL
 	default n
 	help
 	  Make tombstone users get a better experience.
