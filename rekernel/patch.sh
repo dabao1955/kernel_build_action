@@ -1,5 +1,4 @@
 #!/bin/bash
-# shellcheck disable=SC2016,SC2194
 
 set -eu
 

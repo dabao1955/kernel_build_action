@@ -542,13 +542,15 @@ runs:
           - Branch: ${{ inputs.kernel-branch }}
           - Source: ${{ inputs.kernel-url }}
           - Architecture: ${{ inputs.arch }}
-          
+
           Features:
           - KernelSU: ${{ inputs.ksu }}
           - NetHunter: ${{ inputs.nethunter }}
           - LXC: ${{ inputs.lxc }}
+          - Docker: ${{ inputs.docker }}
           - KVM: ${{ inputs.kvm }}
-          
+          - Rekernel: ${{ inputs.rekernel }}
+
           Build Details:
           - Timestamp: ${{ github.event.repository.updated_at }}
           - Workflow: ${{ github.workflow }}
