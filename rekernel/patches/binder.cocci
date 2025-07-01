@@ -46,11 +46,11 @@ identifier proc, tsk;
 @transaction_flags@
 expression t1, t2;
 @@
-- if ((t1->flags & t2->flags & (TF_ONE_WAY | TF_UPDATE_TXN)) != 
+- if ((t1->flags & t2->flags & (TF_ONE_WAY | TF_UPDATE_TXN)) != TF_ONE_WAY)
 + #ifdef CONFIG_REKERNEL
 + if ((t1->flags & t2->flags & TF_ONE_WAY) != TF_ONE_WAY || !t1->to_proc || !t2->to_proc)
 + #else
-+ if ((t1->flags & t2->flags & (TF_ONE_WAY | TF_UPDATE_TXN)) != 
++ if ((t1->flags & t2->flags & (TF_ONE_WAY | TF_UPDATE_TXN)) != TF_ONE_WAY)
 + #endif /* CONFIG_REKERNEL */
 
 // Add rekernel transaction call
