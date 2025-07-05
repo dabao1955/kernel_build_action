@@ -3,7 +3,7 @@
   <h3><i>Powered By GitHub Actions</i></h3>
 </div>
 
-A Workflow to build Android Kernel automatically
+A workflow to automatically build an Android kernel
 
 [![](https://img.shields.io/github/actions/workflow/status/dabao1955/kernel_build_action/main.yml?style=for-the-badge&color=fee4d0&logo=githubactions&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/actions/workflows/main.yml)
 [![](https://img.shields.io/github/issues/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=files&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/issues)
@@ -16,7 +16,7 @@ A Workflow to build Android Kernel automatically
 
 
 > [!IMPORTANT]
-> This workflow is universal. You need to have a certain foundation in writing github workflows and a little knowledge of the Android kernel to use this.
+> This workflow is universal. You need to have a certain understanding in writing github workflows and a little knowledge of the Android kernel to use this.
 
 ## Security Policy
 See [Security.md](./SECURITY.md) for more details.
@@ -79,7 +79,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | ksu-version | false | KernelSU version | v0.9.5 |
 | ksu-lkm(may not build successfully for non-GKI devices) | false | Build KernelSU as a linux kernel module | true |
 | ksu-other | false | | false |
-| ksu-url | false | Ude 3rd KernelSU | https://github.com/xxx/KernelSU/ |
+| ksu-url | false | Use 3rd KernelSU | https://github.com/xxx/KernelSU/ |
 | rekernel | false | Enable Re-Kernel support | true |
 | disable-lto | false | Disable [Link Time Optimization](https://llvm.org/docs/LinkTimeOptimization.html) | false |
 | lxc | false | Enable LXC and docker to config | false | 
@@ -99,7 +99,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | other-clang-branch | false | | 10.0|
 | anykernel3 | false | Package the compiled kernel using AnyKernel3. If this option is disabled, You need to fill `bootimg-url`. | false |
 | anykernel3-url | false | 3rdparty AnyKernel3 url | https://github.com/username/AnyKernel3 |
-| release | flase | After the kernel compilation is completed, it will be automatically published to the releases page | true |
+| release | false | After the kernel compilation is completed, it will be automatically published to the releases page | true |
 | access-token | false | Please fill it if you want to release kernel | ghp_xxxxxx |
 | bootimg-url | false | A URL that can download the local boot.img | https://127.0.0.1/boot.img |
 | extra-cmd | false | Compile the kernel with extra options, such as LD=ld.lld | AS=llvm-as |
@@ -115,12 +115,12 @@ You should disable aosp-clang and android-ndk options to use it.
 See [KernelSU 's release note](https://github.com/tiann/KernelSU/releases/tag/v1.0.0) for more details.
 
 ### How to submit issue about features requests?
-In principle, it only accept Bug Reports and do not accept external Feature Requests; if you want new features, you are welcome to submit a Pull Request. We will still develop new features that we think are useful.
+In principle, it only accepts Bug Reports and does not accept external Feature Requests; if you want new features, you are welcome to submit a Pull Request. We will still develop new features that we think are useful.
 
-### Why the workflow exits with a code with an error value of some nubmer？
+### Why the workflow exits with a code with an error value of some number？
 - If you get an error while downloading the toolchain or pulling the source code, please check whether your option or source code address is legitimate.
 - If you encounter problems during compilation, consider replacing the source code or replacing the compiler.
-- If action has some typo problem,PR welcome！
+- If the action has a typo problem, PR welcome!
 
 ### Build failed while using third-party GCC ?
 Try add LLVM=1 option with clang.
