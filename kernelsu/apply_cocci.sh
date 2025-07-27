@@ -70,7 +70,7 @@ apply_patch() {
     fi
 }
 
-# Main execution
+# main orchestrates the download and application of Coccinelle patches to the Linux kernel source tree, ensuring dependencies are met and handling errors with cleanup.
 main() {
     src="$(pwd)"
     readonly KERNEL_SRC="$src"
