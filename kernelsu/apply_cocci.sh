@@ -27,10 +27,6 @@ check_dependencies() {
         missing_deps+=("curl")
     fi
     
-    if ! command -v parallel > /dev/null 2>&1; then
-        missing_deps+=("parallel")
-    fi
-    
     if ! command -v spatch > /dev/null 2>&1; then
         missing_deps+=("coccinelle")
     fi
