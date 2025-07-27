@@ -89,13 +89,15 @@ main() {
         patch_names+=("${patch_entry%%:*}")
     done
 
-    # Download patches in parallel
+    # Download patches sequentially instead of using parallel
     echo "Downloading patches..."
-    printf '%s\n' "${patch_names[@]}" | parallel --will-cite -j0 download_patch {} || {
-        echo "Error: Failed to download patches" >&2
-        rm -rf "$temp_dir"
-        exit 1
-    }
+    for patch_name in "${patch_names[@]}"; do
+        if ! download_patch "$patch_name"; then
+            echo "Error: Failed to download patches" >&2
+            rm -rf "$temp_dir"
+            exit 1
+        fi
+    done
 
     # Apply patches
     echo "Applying patches..."
