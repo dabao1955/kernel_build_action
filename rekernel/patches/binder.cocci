@@ -3,19 +3,19 @@
 @@
 #include <uapi/linux/android/binder.h>
 + #ifdef CONFIG_REKERNEL
-+ #include <../rekernel/rekernel.h>
++ #include "../rekernel/rekernel.h"
 + #endif /* CONFIG_REKERNEL */
 
-// Add rekernel transaction function
-@add_rekernel_transaction@
-identifier proc, tsk;
+// Add rekernel transaction function before existing function
+@add_rekernel_function@
 @@
 + #ifdef CONFIG_REKERNEL
-+ void rekernel_binder_transaction(bool reply, struct binder_transaction *t,
-+                               struct binder_node *target_node,
-+                               struct binder_transaction_data *tr) {
++ static void rekernel_binder_transaction(bool reply, struct binder_transaction *t,
++                                       struct binder_node *target_node,
++                                       struct binder_transaction_data *tr) {
 +   struct binder_proc *to_proc;
 +   struct binder_alloc *target_alloc;
++   
 +   if (!t->to_proc)
 +     return;
 +   to_proc = t->to_proc;
@@ -42,7 +42,7 @@ identifier proc, tsk;
 + }
 + #endif /* CONFIG_REKERNEL */
 
-// Add transaction flag check
+// Modify transaction flag check
 @transaction_flags@
 expression t1, t2;
 @@
@@ -53,7 +53,7 @@ expression t1, t2;
 + if ((t1->flags & t2->flags & (TF_ONE_WAY | TF_UPDATE_TXN)) != TF_ONE_WAY)
 + #endif /* CONFIG_REKERNEL */
 
-// Add rekernel transaction call
+// Add rekernel transaction call after trace_binder_transaction
 @add_transaction_call@
 expression reply, t, target_node, tr;
 @@

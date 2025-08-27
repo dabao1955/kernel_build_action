@@ -167,7 +167,7 @@ runs:
 
          echo "::group:: Installing Building Depend Packages"
          "SU" apt-get update
-         "SU" apt-get install --no-install-recommends -y binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates python3 xz-utils libc6-dev aria2 build-essential ccache pigz coccinelle parallel
+         "SU" apt-get install --no-install-recommends -y binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates python3 xz-utils aria2 build-essential ccache pigz coccinelle parallel
          echo "::endgroup::"
 
          download_and_extract() {
@@ -314,7 +314,7 @@ runs:
                 if grep -q "CONFIG_KPROBES=y" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" ; then
                     echo "CONFIG_KPROBES is enabled, skip patch."
                 else
-                    curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/apply_cocci.sh | bash
+                    curl -SsL ${{ github.action_path }}/kernelsu/apply_cocci.sh | bash
                 fi
             fi
             echo "::endgroup::"
@@ -322,21 +322,21 @@ runs:
 
          if [ ${{ inputs.rekernel }} = true ]; then
              echo "::group:: Initalizing Re-Kernel"
-             curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/rekernel/patch.sh | bash
+             curl -SsL ${{ github.action_path }}/rekernel/patch.sh | bash
              echo "::endgroup::"
          fi
 
          if [ -f scripts/dtc/libfdt/mkdtboimg.py ]; then
             if grep python2 scripts/Makefile.lib >/dev/null; then
                 echo "::group:: Using mkdtboimg Python3 version instead of Python2 version"
-                rm -rf -v scripts/dtc/libfdt/mkdtboimg.py && aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o scripts/dtc/libfdt/mkdtboimg.py
+                rm -rf -v scripts/dtc/libfdt/mkdtboimg.py && cp -v ${{ github.action_path }}/mkdtboimg.py scripts/dtc/libfdt/mkdtboimg.py
             elif grep scripts/ufdt && test ! -d scripts/ufdt >/dev/null; then
-                aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o ufdt/libufdt/utils/src/mkdtboimg.py
+                cp -v ${{ github.action_path }}/mkdtboimg.py ufdt/libufdt/utils/src/mkdtboimg.py
             fi
             test -f /usr/bin/python2 || "SU" ln -s -f -v /usr/bin/python3 /usr/bin/python2
          else
              echo "::group:: Downloading mkdtboimg to /usr/local/bin"
-             SU aria2c https://github.com/dabao1955/kernel_build_action/raw/main/mkdtboimg.py -o mkdtboimg
+             SU cp -v ${{ github.action_path }}/mkdtboimg.py mkdtboimg
              SU chmod +x -v mkdtboimg
              SU mv mkdtboimg -v /usr/local/bin/mkdtboimg
          fi
@@ -344,12 +344,12 @@ runs:
 
          if [ ${{ inputs.nethunter }} = true ]; then
              echo "::group:: Initializing Kali nethunter"
-             aria2c https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/config.sh -o nconfig.sh &&  bash nconfig.sh arch/${{ inputs.arch }}/configs/${{ inputs.config }} -w
+             cp -v ${{ github.action_path }}/nethunter/config.sh nconfig.sh &&  bash nconfig.sh arch/${{ inputs.arch }}/configs/${{ inputs.config }} -w
              if [ ${{ inputs.nethunter-patch }} = true ]; then
-                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/add-wifi-injection.patch && git apply add-wifi-injection.patch
-                 aria2c https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/fix-ath9k-naming-conflict.patch && git apply fix-ath9k-naming-conflict.patch
+                 git apply ${{ github.action_path }}/nethunter/add-wifi-injection.patch
+                 git apply ${{ github.action_path }}/nethunter/fix-ath9k-naming-conflict.patch
                  if [ "$PATCHLEVEL" -lt "19" ]; then
-                     aria2c https://github.com/dabao1955/kernel_build_action/raw/main/nethunter/add-wifi-injection-4.14.patch && git apply add-wifi-injection-4.14.patch
+                     git apply ${{ github.action_path }}/nethunter/add-wifi-injection-4.14.patch
                  fi
              else
                   echo "skip patch"
@@ -376,9 +376,9 @@ runs:
 
          if [ ${{ inputs.lxc }} = true ]; then
              echo "::group:: Enabling LXC"
-             aria2c https://github.com/dabao1955/kernel_build_action/raw/main/lxc/config.sh && bash config.sh arch/${{ inputs.arch }}/configs/${{ inputs.config }} -w
+             cp -v ${{ github.action_path }}/lxc/config.sh config.sh && bash config.sh arch/${{ inputs.arch }}/configs/${{ inputs.config }} -w
              if [ ${{ inputs.lxc-patch }} = true ]; then
-                 curl -SsL https://github.com/dabao1955/kernel_build_action/raw/main/lxc/patch.sh | bash
+                 curl -SsL ${{ github.action_path }}/lxc/patch.sh | bash
              else
                  echo "Skip LXC patching..... "
              fi
