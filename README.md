@@ -64,45 +64,45 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 
 | input               | required | description | example value |
 |---------------------|----------|-------------|---------|
-| kernel-url | true | URL of Android kernel source code for your phone | https://github.com/username/project |
-| kernel-dir | false | The directory name of the Android kernel source code. This option may be used for OPLUS Kernel source code. | kernel |
-| depth | false | | 1 |
-| vendor | false | | false |
-| vendor-url | false | url of additional source code for the Android kernel source code. This option may be used for OPLUS source code. | https://github.com/username/project|
-| vendor-dir | false | | vendor |
-| kernel-branch | false | The branch of the source code that needs to be cloned, defaults branch to git clone is main | main |
-| vendor-branch | false | The branch of the vendor source code that needs to be cloned, defaults branch to git clone is main | main |
-| config | true | Compile the selected configuration file for the Android kernel | defconfig |
-| arch | true | The architecture of your mobile phone SOC is arm64 by default | arm64 |
-| android-version | true | The Android version required when downloading aosp-clang. If you want to use the latest aosp-clang or you do not use aosp-clang to compile the kernel, please ignore this option | 12 |
-| ksu | false | Enable KernelSU | true |
-| ksu-version | false | KernelSU version | v0.9.5 |
-| ksu-lkm(may not build successfully for non-GKI devices) | false | Build KernelSU as a linux kernel module | true |
-| ksu-other | false | | false |
-| ksu-url | false | Use 3rd KernelSU | https://github.com/xxx/KernelSU/ |
+| kernel-url | true | URL of the Android kernel source code | https://github.com/username/project |
+| kernel-dir | false | Directory name for kernel source. Useful for OnePlus kernel sources | kernel |
+| depth | false | Use git clone depth to save time and storage space | 1 |
+| vendor | false | Enable vendor kernel source code | false |
+| vendor-url | false | URL of vendor kernel source code (used on OnePlus kernel) | https://github.com/username/project|
+| vendor-dir | false | Directory name for vendor kernel source | vendor |
+| kernel-branch | false | Branch name of kernel source code (default = main) | main |
+| vendor-branch | false | Branch name of vendor kernel source code (default = main) | main |
+| config | true | Specific kernel config file to compile (default = defconfig) | defconfig |
+| arch | true | CPU architecture (default = arm64) | arm64 |
+| android-version | true | Android vendor for AOSP toolchain (Ignore if you want to use latest AOSP clang or use other clang) | 12 |
+| ksu | false | Integrate KernelSU on kernel build | true |
+| ksu-version | false | KernelSU version (default = v0.9.5) | v0.9.5 |
+| ksu-lkm | false | Build KernelSU as kernel module (may fail on non-GKI devices) | true |
+| ksu-other | false | Use third-party KernelSU fork | false |
+| ksu-url | false | URL of third-party KernelSU fork (if you enable `ksu-other` flag) | https://github.com/username/KernelSU/ |
 | rekernel | false | Enable Re-Kernel support | true |
-| disable-lto | false | Disable [Link Time Optimization](https://llvm.org/docs/LinkTimeOptimization.html) | false |
-| lxc | false | Enable LXC and docker to config | false | 
-| lxc-patch | false | Add patch avoid not booting after enable lxc | false | 
-| nethunter | false | Enable Kali nethunter | false | 
-| nethunter-patch | false | | false |
-| kvm | false | | false |
-| ccache | false | Enable ccache(Only valid when compiled with clang) | false |
-| aosp-gcc | false | Use aosp-gcc to compile the kernel or assist in compiling the kernel (when aosp-clang is enabled) | false |
-| other-gcc32-url | false | Please fill in the download link of other gcc32 in this option. Supports .xz, .zip, .tar and .git formats | https://github.com/username/gcc |
-| other-gcc32-branch | false | | main |
-| other-gcc64-url | false | Please fill in the download link of other gcc64 in this option. Supports .xz, .zip, .tar and .git formats | https://github.com/username/gcc |
-| other-gcc64-branch | false | | main |
-| aosp-clang | false | Compile the kernel using aosp-clang | false |
-| aosp-clang-version | false | please search for them according to your own needs at [official website](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86) and choose the appropriate clang according to the Android system version instead of blindly choosing `r383902` | r383902 |
-| other-clang-url | false | Please fill in the download link of other clang in this option. Supports .xz, .zip, .tar and .git formats | https://github.com/kdrag0n/proton-clang |
-| other-clang-branch | false | | 10.0|
-| anykernel3 | false | Package the compiled kernel using AnyKernel3. If this option is disabled, You need to fill `bootimg-url`. | false |
-| anykernel3-url | false | 3rdparty AnyKernel3 url | https://github.com/username/AnyKernel3 |
-| release | false | After the kernel compilation is completed, it will be automatically published to the releases page | true |
-| access-token | false | Please fill it if you want to release kernel | ghp_xxxxxx |
-| bootimg-url | false | A URL that can download the local boot.img | https://127.0.0.1/boot.img |
-| extra-cmd | false | Compile the kernel with extra options, such as LD=ld.lld | AS=llvm-as |
+| disable-lto | false | Disable [Link Time Optimization](https://llvm.org/docs/LinkTimeOptimization.html) support | false |
+| lxc | false | Enable LXC/Docker support | false | 
+| lxc-patch | false | Apply patch to avoid boot issues with LXC | false | 
+| nethunter | false | Enable Kali NetHunter support | false | 
+| nethunter-patch | false | Apply patch for Kali NetHunter support | false |
+| kvm | false | Enable [KVM (Kernel Virtual Machine)](https://linux-kvm.org/page/Main_Page) support | false |
+| ccache | false | Enable ccache (clang only) to speed up kernel compilation | false |
+| aosp-gcc | false | Use AOSP GCC toolchain to compile the kernel (Enable when using AOSP clang toolchain) | false |
+| other-gcc32-url | false | URL of custom GCC arm32 toolchain (Supports .xz, .zip, .tar and .git formats) | https://github.com/username/gcc |
+| other-gcc32-branch | false | Branch name of GCC arm32 toolchain | main |
+| other-gcc64-url | false | URL of custom GCC arm64 toolchain (Supports .xz, .zip, .tar and .git formats) | https://github.com/username/gcc |
+| other-gcc64-branch | false | Branch name of GCC arm64 toolchain | main |
+| aosp-clang | false | Use AOSP clang toolchain to compile the kernel | false |
+| aosp-clang-version | false | AOSP clang version. [See all AOSP clang versions](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/mirror-goog-main-llvm-toolchain-source/README.md). (default = r383902) | r383902 |
+| other-clang-url | false | URL of custom clang toolchain (Supports .xz, .zip, .tar and .git formats) | https://github.com/username/clang |
+| other-clang-branch | false | Branch name of clang toolchain | main |
+| anykernel3 | false | Use AnyKernel3 to package the compiled kernel. (if false, must provide bootimg-url) | false |
+| anykernel3-url | false | URL for third-party AnyKernel3 | https://github.com/username/AnyKernel3 |
+| release | false | Auto-publish kernel release after build | true |
+| access-token | false | GitHub access token (needed for auto release) | ghp_xxxxxx |
+| bootimg-url | false | URL to download local boot.img (required if anykernel3 = false) | https://127.0.0.1/boot.img |
+| extra-cmd | false | Compile the kernel with extra build options | LD=ld.lld |
 
 ## FAQ
 > [!CAUTION]
