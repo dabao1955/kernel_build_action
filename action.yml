@@ -7,150 +7,111 @@ branding:
 
 inputs:
   kernel-url:
-    description: 'The URL of the kernel source git repository.'
     required: true
   depth:
-    description: 'The depth of the git clone for the kernel source. Set to 0 for a full clone.'
     required: false
     default: 1
   vendor:
-    description: 'Whether to clone a vendor kernel source repository.'
     required: false
     default: false
   vendor-url:
-    description: 'The URL of the vendor kernel source git repository.'
     required: false
   kernel-dir:
-    description: 'The directory to clone the kernel source into.'
     required: false
     default: kernel
   vendor-dir:
-    description: 'The directory to clone the vendor kernel source into.'
     required: false
     default: vendor
   kernel-branch:
-    description: 'The branch of the kernel source to checkout.'
     required: false
     default: main
   vendor-branch:
-    description: 'The branch of the vendor kernel source to checkout.'
     required: false
     default: main
   config:
-    description: 'The configuration file for building the kernel (e.g., vendor/your-device_defconfig).'
     required: true
     default: defconfig
   arch:
-    description: 'The architecture to build the kernel for (e.g., arm64, arm, x86_64, x86).'
     required: true
     default: arm64
   android-version:
-    description: 'The Android version to use for the AOSP toolchain. This is used to select the correct toolchain URLs.'
     required: false
     default: ""
   ksu:
-    description: 'Enable KernelSU support.'
     required: false
     default: false
   rekernel:
-    description: 'Enable Re-Kernel support.'
     required: false
     default: false
   ksu-version:
-    description: 'The version of KernelSU to use.'
     required: false
     default: "main"
   ksu-other:
-    description: 'Use a third-party KernelSU fork. Requires `ksu-url` to be set.'
     required: false
     default: false
   ksu-url:
-    description: 'The URL of the third-party KernelSU fork.'
     required: false
   ksu-lkm:
-    description: 'Build KernelSU as a loadable kernel module.'
     required: false
     default: false
   disable-lto:
-    description: 'Disable LTO (Link Time Optimization) in the kernel configuration.'
     required: false
     default: false
   lxc:
-    description: 'Enable LXC (Linux Containers) and Docker support in the kernel configuration.'
     required: false
     default: false
   lxc-patch:
-    description: 'Apply a patch to avoid boot issues when using LXC.'
     required: false
     default: false
   nethunter:
-    description: 'Enable Kali NetHunter support.'
     required: false
     default: false
   nethunter-patch:
-    description: 'Apply patches for NetHunter WiFi injection.'
     required: false
     default: false
   kvm:
-    description: 'Enable KVM (Kernel-based Virtual Machine) support in the kernel configuration.'
     required: false
     default: false
   ccache:
-    description: 'Enable ccache to speed up kernel compilation.'
     required: false
     default: false
   aosp-gcc:
-    description: 'Use the AOSP GCC toolchain.'
     required: false
     default: false
   other-gcc32-url:
-    description: 'The URL of a third-party 32-bit GCC toolchain.'
     required: false
   other-gcc32-branch:
-    description: 'The branch of the third-party 32-bit GCC toolchain.'
     required: false
     default: main
   other-gcc64-url:
-    description: 'The URL of a third-party 64-bit GCC toolchain.'
     required: false
   other-gcc64-branch:
-    description: 'The branch of the third-party 64-bit GCC toolchain.'
     required: false
     default: main
   aosp-clang:
-    description: 'Use the AOSP Clang toolchain.'
     required: false
     default: false
   aosp-clang-version:
-    description: 'The version of the AOSP Clang toolchain to use.'
     required: false
     default: "r383902"
   other-clang-url:
-    description: 'The URL of a third-party Clang toolchain.'
     required: false
   other-clang-branch:
-    description: 'The branch of the third-party Clang toolchain.'
     required: false
     default: main
   anykernel3:
-    description: 'Package the kernel using AnyKernel3.'
     required: false
     default: false
   anykernel3-url:
-    description: 'The URL of a third-party AnyKernel3 repository.'
     required: false
   bootimg-url:
-    description: 'The URL of a boot.img to use for packaging. This is only used if `anykernel3` is false.'
     required: false
   release:
-    description: "Create a GitHub release with the compiled kernel."
     required: false
     default: false
   access-token:
-    description: 'A GitHub personal access token with `repo` scope. This is required for creating a release.'
     required: false
   extra-cmd:
-    description: 'Extra commands to pass to the `make` command during the kernel build.'
     required: false
 
 runs:
