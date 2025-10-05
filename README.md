@@ -74,7 +74,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | vendor-branch | false | Branch name of vendor kernel source code (default = main) | main |
 | config | true | Specific kernel config file to compile (default = defconfig) | defconfig |
 | arch | true | CPU architecture (default = arm64) | arm64 |
-| android-version | true | Android vendor for AOSP toolchain (Ignore if you want to use latest AOSP clang or use other clang) | 12 |
+| android-version | true | Android version for AOSP toolchain (Ignore if you want to use latest AOSP clang or use other clang) | 12 |
 | ksu | false | Integrate KernelSU on kernel build | true |
 | ksu-version | false | KernelSU version (default = v0.9.5) | v0.9.5 |
 | ksu-lkm | false | Build KernelSU as kernel module (may fail on non-GKI devices) | true |
