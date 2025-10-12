@@ -564,18 +564,18 @@ runs:
         # Package the kernel output
         if [ "${{ inputs.anykernel3 }}" == "false" ]; then
             echo "::group::Packaging boot.img"
-            
+
             # Validate bootimg-url is provided
             if [ -z "${{ inputs.bootimg-url }}" ]; then
                 error "bootimg-url is required when anykernel3 is false"
             fi
-            
+
             mkdir split
             cd split
             HOST_ARCH=$(dpkg --print-architecture)
             case "${HOST_ARCH}" in
-                armv7*|armv8l|arm64|armhf|arm) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_arm -o magiskboot && chmod +x magiskboot ;; 
-                i*86|x86|amd64|x86_64) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_x86 -o magiskboot && chmod +x magiskboot ;; 
+                armv7*|armv8l|arm64|armhf|arm) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_arm -o magiskboot && chmod +x magiskboot ;;
+                i*86|x86|amd64|x86_64) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_x86 -o magiskboot && chmod +x magiskboot ;;
                 *) error "Unknown CPU architecture for this device!" ;;
             esac
             aria2c "${{ inputs.bootimg-url }}" -o boot.img || error "Failed to download boot.img"
