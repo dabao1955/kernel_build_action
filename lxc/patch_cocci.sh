@@ -5,18 +5,18 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # Configuration
-readonly REPO_URL="https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/patches"
+readonly REPO_URL="https://github.com/dabao1955/kernel_build_action/raw/main/lxc"
+
+if grep -q "int cgroup_add_file" kernel/cgroup.c >/dev/null 2>&1; then
+    cgroup='kernel/cgroup.c'
+else
+    cgroup='kernel/cgroup/cgroup.c'
+fi
 
 # Define patches array
 declare -ra PATCHES=(
-    "selinux_hooks_bprm_creds.cocci:security/selinux/hooks.c"
-    "execveat.cocci:fs/exec.c"
-    "faccessat.cocci:fs/open.c"
-    "vfs_read.cocci:fs/read_write.c"
-    "vfs_statx.cocci:fs/stat.c"
-    "path_umount.cocci:fs/namespace.c"
-    "input_handle_event.cocci:drivers/input/input.c"
-    "devpts_get_priv.cocci:fs/devpts/inode.c"
+    "cgroup.cocci:$cgroup"
+    "xt_qtaguid.cocci:net/netfilter/xt_qtaguid.c"
 )
 
 # Check dependencies
