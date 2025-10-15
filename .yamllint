@@ -3,7 +3,7 @@ extends: default
 
 rules:
   line-length:
-    max: 512
+    max: 768
     level: warning
   trailing-spaces: enable
   document-start: enable
