@@ -347,7 +347,7 @@ runs:
                 # Determine the KernelSU version to use
                 echo "Kernel version: $VERSION.$PATCHLEVEL.$SUBLEVEL"
                 KVER="${{ inputs.ksu-version }}"
-                if [ "$NONGKI" == "true" ]; then
+                if [ "$NONGKI" == "true" ] && [ "${{ inputs.ksu-other }}" == "false" ]; then
                     echo "Warning: The KernelSU version you selected was detected to be ${{ inputs.ksu-version }}, but KernelSU has dropped support for the non-gki kernel since 0.9.5."
                     echo "This will force switch to v0.9.5."
                     KVER=v0.9.5
