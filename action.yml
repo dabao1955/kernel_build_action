@@ -472,6 +472,20 @@ runs:
             EXTRA_ARGS=()
         fi
 
+        SAFE_EXTRA_ARGS=()
+        for arg in "${EXTRA_ARGS[@]}"; do
+            case "$arg" in
+                CC=*|CXX=*|LD=*|AS=*|AR=*|NM=*|STRIP=*|OBJCOPY=*|OBJDUMP=*|\
+                HOSTCC=*|KBUILD_HOSTCC=*|SHELL=*|MAKEFLAGS=*|MAKE=*|\
+                CROSS_COMPILE=*|CLANG_TRIPLE=*|LLVM=*|CLVM=*|O=*|ARCH=*)
+                    echo "::warning::Ignoring override of critical variable: $arg"
+                    ;;
+                *)
+                    SAFE_EXTRA_ARGS+=("$arg")
+                    ;;
+            esac
+        done
+
         mkdir -p -v out
 
         if [[ -d "$HOME/clang/bin" ]]; then
@@ -509,7 +523,7 @@ runs:
             "ARCH=${{ inputs.arch }}"
             "O=out"
             all
-            "${EXTRA_ARGS[@]}"
+            "${SAFE_EXTRA_ARGS[@]}"
         )
 
         # Set CLANG_TRIPLE based on the architecture
@@ -529,7 +543,7 @@ runs:
 
         echo "::endgroup::"
 
-        unset CMD_PATH CMD_CC CMD_CLANG_TRIPLE CMD_CROSS_COMPILE CMD_CROSS_COMPILE_ARM32 USE_CCACHE CLANG_PATH HOMES KVER SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32 NEED_GCC AOSP_CLANG_URL OTHER_CLANG_URL AOSP_GCC64_URL AOSP_GCC32_URL AOSP_GCC_BRANCH OTHER_GCC64_URL OTHER_GCC32_URL EXTRA_CMD EXTRA_ARGS make_args
+        unset CMD_PATH CMD_CC CMD_CLANG_TRIPLE CMD_CROSS_COMPILE CMD_CROSS_COMPILE_ARM32 USE_CCACHE CLANG_PATH HOMES KVER SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32 NEED_GCC AOSP_CLANG_URL OTHER_CLANG_URL AOSP_GCC64_URL AOSP_GCC32_URL AOSP_GCC_BRANCH OTHER_GCC64_URL OTHER_GCC32_URL EXTRA_CMD EXTRA_ARGS SAFE_EXTRA_ARGS make_args
 
         # Package the kernel output
         if [ "${{ inputs.anykernel3 }}" == "false" ]; then
