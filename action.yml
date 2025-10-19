@@ -460,76 +460,76 @@ runs:
         fi
 
         # Build the kernel
-         echo "::group:: Building Kernel with selected cross compiler"
-         EXTRA_CMD="${{ inputs.extra-cmd }}"
-         if [[ -n "$EXTRA_CMD" && ! "$EXTRA_CMD" =~ ^[a-zA-Z0-9_=+./,\ -]*$ ]]; then
-             echo "::error::extra-cmd contains invalid characters. Only letters, digits, _=+./,- and spaces are allowed." >&2
-             exit 1
-         fi
-         read -r -a EXTRA_ARGS <<< "$EXTRA_CMD"
-         EXTRA_ARG="${EXTRA_ARGS[@]}"
-         mkdir out -p -v
+        echo "::group:: Building Kernel with selected cross compiler"
 
-         COMMAND="make -j$(nproc --all) ${{ inputs.config }} ARCH=${{ inputs.arch }} all $EXTRA_ARG O=out"
+        EXTRA_CMD="${{ inputs.extra-cmd }}"
+        if [[ -n "$EXTRA_CMD" ]]; then
+            if ! [[ "$EXTRA_CMD" =~ ^[a-zA-Z0-9_=+./,\ -]*$ ]]; then
+                error "extra-cmd contains invalid characters. Only letters, digits, _=+./,- and spaces are allowed."
+            fi
+            read -r -a EXTRA_ARGS <<< "$EXTRA_CMD"
+        else
+            EXTRA_ARGS=()
+        fi
 
-         if [ -d "$HOME/clang/bin" ]; then
-              CMD_PATH="$HOME/clang/bin"
-              CMD_CC="clang"
-              if [ -d "$HOME/gcc-64/bin" ] || [ -d "$HOME/gcc-32/bin" ]; then
-                  CMD_CROSS_COMPILE="$HOME/gcc-64/bin/${GCC64}-"
-                  CMD_CROSS_COMPILE_ARM32="$HOME/gcc-32/bin/${GCC32}-"
-                  CMD_CLANG_TRIPLE="aarch64-linux-gnu-"
-              fi
-         elif [ -d "$HOME/gcc-64/bin" ] || [ -d "$HOME/gcc-32/bin" ]; then
-              CMD_PATH="$HOME/gcc-64/bin:$HOME/gcc-32/bin"
-              if [ -n "${GCC64}" ]; then
-                  CMD_CC="$HOME/gcc-64/bin/${GCC64}-gcc"
-              else
-                  CMD_CC="$HOME/gcc-32/bin/${GCC32}-gcc"
-              fi
-              CMD_CROSS_COMPILE="${GCC64}-"
-              CMD_CROSS_COMPILE_ARM32="${GCC32}-"
-              CMD_CLANG_TRIPLE="aarch64-linux-gnu-"
-         else
-              CMD_CC="/usr/bin/clang"
-              CMD_CROSS_COMPILE="/usr/bin/aarch64-linux-gnu-"
-              CMD_CROSS_COMPILE_ARM32="arm-linux-gnuabeihf-"
-              CMD_CLANG_TRIPLE="aarch64-linux-gnu-"
-         fi
+        mkdir -p -v out
 
-         if [ ${{ inputs.ccache }} = true ]; then
-              # enable ccache
-              export USE_CCACHE=1
-              export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+        if [[ -d "$HOME/clang/bin" ]]; then
+            CMD_PATH="$HOME/clang/bin"
+            CMD_CC="clang"
+            if [[ -d "$HOME/gcc-64/bin" ]] || [[ -d "$HOME/gcc-32/bin" ]]; then
+                CMD_CROSS_COMPILE="$HOME/gcc-64/bin/${GCC64}-"
+                CMD_CROSS_COMPILE_ARM32="$HOME/gcc-32/bin/${GCC32}-"
+            fi
+        elif [[ -d "$HOME/gcc-64/bin" ]] || [[ -d "$HOME/gcc-32/bin" ]]; then
+            CMD_PATH="$HOME/gcc-64/bin:$HOME/gcc-32/bin"
+            if [[ -n "${GCC64:-}" ]]; then
+                CMD_CC="$HOME/gcc-64/bin/${GCC64}-gcc"
+                CMD_CROSS_COMPILE="${GCC64}-"
+            else
+                CMD_CC="$HOME/gcc-32/bin/${GCC32}-gcc"
+                CMD_CROSS_COMPILE="${GCC32}-"
+            fi
+            CMD_CROSS_COMPILE_ARM32="${GCC32}-"
+        else
+            CMD_CC="/usr/bin/clang"
+            CMD_CROSS_COMPILE="/usr/bin/aarch64-linux-gnu-"
+            CMD_CROSS_COMPILE_ARM32="arm-linux-gnueabihf-"  # 修正拼写
+        fi
 
-              # ensure /usr/lib/ccache is first inside CMD_PATH
-              test -f /usr/bin/ccache && $SU rm -v /usr/bin/ccache
-              CMD_PATH="/usr/lib/ccache:${CMD_PATH}"
+        if [[ "${{ inputs.ccache }}" == "true" ]]; then
+            export USE_CCACHE=1
+            export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+            CMD_PATH="/usr/lib/ccache:$CMD_PATH"
+        fi
 
-              # verify compiler exist in /usr/lib/ccache
-              if [ -d "${HOME}/clang/bin" ]; then
-                  [ ! -e /usr/lib/clang ] && \
-                      ln -s /usr/lib/clang /usr/bin/ccache
-              else
-                  if [ -n "${GCC64}" ]; then
-                      [ ! -e "/usr/lib/${GCC64}-gcc" ] && \
-                          ln -s "/usr/lib/${GCC64}-gcc" /usr/bin/ccache
-                  else
-                      [ ! -e "/usr/lib/${GCC32}-gcc" ] && \
-                          ln -s "/usr/lib/${GCC32}-gcc" /usr/bin/ccache
-                  fi
-              fi
-         fi
+        make_args=(
+            -j"$(nproc --all)"
+            "${{ inputs.config }}"
+            "ARCH=${{ inputs.arch }}"
+            "O=out"
+            all
+            "${EXTRA_ARGS[@]}"
+        )
 
-         # setup additional commands
-         COMMAND+=" PATH=${CMD_PATH}:${PATH} CROSS_COMPILE=${CMD_CROSS_COMPILE} CROSS_COMPILE_ARM32=${CMD_CROSS_COMPILE_ARM32} CLANG_TRIPLE=${CMD_CLANG_TRIPLE} CC=${CMD_CC}"
+        # Set CLANG_TRIPLE based on the architecture
+        if [[ "${{ inputs.arch }}" == "arm" ]]; then
+            CMD_CLANG_TRIPLE="${CMD_CROSS_COMPILE_ARM32}"
+        else
+            CMD_CLANG_TRIPLE="aarch64-linux-gnu-"
+        fi
 
-         # run the command
-         ${COMMAND}
+        export PATH="$CMD_PATH:$PATH"
+        make \
+            CC="$CMD_CC" \
+            CROSS_COMPILE="$CMD_CROSS_COMPILE" \
+            CROSS_COMPILE_ARM32="$CMD_CROSS_COMPILE_ARM32" \
+            CLANG_TRIPLE="$CMD_CLANG_TRIPLE" \
+           "${make_args[@]}"
 
-         echo "::endgroup::"
+        echo "::endgroup::"
 
-         unset CMD_PATH CMD_CC CMD_CLANG_TRIPLE CMD_CROSS_COMPILE CMD_CROSS_COMPILE_ARM32 USE_CCACHE CLANG_TRIPLE CROSS_COMPILE_ARM32 CROSS_COMPILE CLANG_PATH HOMES KVER COMMAND SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32 NEED_GCC AOSP_CLANG_URL OTHER_CLANG_URL AOSP_GCC64_URL AOSP_GCC32_URL AOSP_GCC_BRANCH OTHER_GCC64_URL OTHER_GCC32_URL EXTRA_CMD
+        unset CMD_PATH CMD_CC CMD_CLANG_TRIPLE CMD_CROSS_COMPILE CMD_CROSS_COMPILE_ARM32 USE_CCACHE CLANG_PATH HOMES KVER SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32 NEED_GCC AOSP_CLANG_URL OTHER_CLANG_URL AOSP_GCC64_URL AOSP_GCC32_URL AOSP_GCC_BRANCH OTHER_GCC64_URL OTHER_GCC32_URL EXTRA_CMD EXTRA_ARGS make_args
 
         # Package the kernel output
         if [ "${{ inputs.anykernel3 }}" == "false" ]; then
