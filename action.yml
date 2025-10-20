@@ -111,8 +111,6 @@ inputs:
     default: false
   access-token:
     required: false
-  extra-cmd:
-    required: false
   extra-make-args:
     required: false
     default: '[]'
@@ -465,40 +463,25 @@ runs:
         # Build the kernel
         echo "::group:: Building Kernel with selected cross compiler"
 
-        EXTRA_CMD="${{ inputs.extra-cmd }}"
-        if [[ -n "$EXTRA_CMD" ]]; then
-            if ! [[ "$EXTRA_CMD" =~ ^[a-zA-Z0-9_=+./,\ -]*$ ]]; then
-                error "extra-cmd contains invalid characters. Only letters, digits, _=+./,- and spaces are allowed."
-            fi
-            read -r -a EXTRA_ARGS <<< "$EXTRA_CMD"
-        elif [[ "${{ inputs.extra-make-args }}" != "[]" ]]; then
+        if [[ "${{ inputs.extra-make-args }}" != "[]" ]]; then
             readarray -t EXTRA_ARGS < <(jq -r '.[]' <<< "${{ inputs.extra-make-args }}")
-            elif [[ -n "${{ inputs.extra-cmd }}" ]]; then
-                echo "::warning::'extra-cmd' is deprecated. Use 'extra-make-args' (JSON array) to support spaces."
-            if [[ "${{ inputs.extra-cmd }}" == *" "* ]]; then
-                echo "::error::'extra-cmd' does not support spaces. Migrate to 'extra-make-args'."
-                exit 1
-            fi
-            read -r -a EXTRA_ARGS <<< "${{ inputs.extra-cmd }}"
         else
             EXTRA_ARGS=()
         fi
 
-        if [[ -n "$EXTRA_CMD" ]]; then
-            SAFE_EXTRA_ARGS=()
-            for arg in "${EXTRA_ARGS[@]}"; do
-                case "$arg" in
-                    CC=*|CXX=*|LD=*|AS=*|AR=*|NM=*|STRIP=*|OBJCOPY=*|OBJDUMP=*|\
-                    HOSTCC=*|KBUILD_HOSTCC=*|SHELL=*|MAKEFLAGS=*|MAKE=*|\
-                    CROSS_COMPILE=*|CLANG_TRIPLE=*|LLVM=*|CLVM=*|O=*|ARCH=*)
-                        echo "::warning::Ignoring override of critical variable: $arg"
-                        ;;
-                    *)
-                        SAFE_EXTRA_ARGS+=("$arg")
-                        ;;
-                esac
-            done
-        fi
+        SAFE_EXTRA_ARGS=()
+        for arg in "${EXTRA_ARGS[@]}"; do
+            case "$arg" in
+                CC=*|CXX=*|LD=*|AS=*|AR=*|NM=*|STRIP=*|OBJCOPY=*|OBJDUMP=*|\
+                HOSTCC=*|KBUILD_HOSTCC=*|SHELL=*|MAKEFLAGS=*|MAKE=*|\
+                CROSS_COMPILE=*|CLANG_TRIPLE=*|LLVM=*|CLVM=*|O=*|ARCH=*)
+                    echo "::warning::Ignoring override of critical variable: $arg"
+                    ;;
+                *)
+                    SAFE_EXTRA_ARGS+=("$arg")
+                    ;;
+            esac
+        done
 
         mkdir -p -v out
 
@@ -557,7 +540,7 @@ runs:
 
         echo "::endgroup::"
 
-        unset CMD_PATH CMD_CC CMD_CLANG_TRIPLE CMD_CROSS_COMPILE CMD_CROSS_COMPILE_ARM32 USE_CCACHE CLANG_PATH HOMES KVER SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32 NEED_GCC AOSP_CLANG_URL OTHER_CLANG_URL AOSP_GCC64_URL AOSP_GCC32_URL AOSP_GCC_BRANCH OTHER_GCC64_URL OTHER_GCC32_URL EXTRA_CMD EXTRA_ARGS SAFE_EXTRA_ARGS make_args
+        unset CMD_PATH CMD_CC CMD_CLANG_TRIPLE CMD_CROSS_COMPILE CMD_CROSS_COMPILE_ARM32 USE_CCACHE CLANG_PATH HOMES KVER SWAP_FILE SUBLEVEL PATCHLEVEL VERSION GCC_DIR FILE FILE_NAME MATCHED_DIR FOLDER FOLDER_NAME GCC64 GCC32 NEED_GCC AOSP_CLANG_URL OTHER_CLANG_URL AOSP_GCC64_URL AOSP_GCC32_URL AOSP_GCC_BRANCH OTHER_GCC64_URL OTHER_GCC32_URL EXTRA_ARGS make_args SAFE_EXTRA_ARGS EXTRA_CMD
 
         # Package the kernel output
         if [ "${{ inputs.anykernel3 }}" == "false" ]; then

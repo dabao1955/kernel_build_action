@@ -16,7 +16,7 @@ A workflow to automatically build an Android kernel
 
 
 > [!IMPORTANT]
-> `extra-cmd` is deprecated. `extra-cmd` will be replaced with `extra-make-args` in v1.10.0.
+> `extra-cmd` is deprecated. `extra-cmd` will be replaced with `extra-make-args` in v1.9.0.
 
 ## Security Policy
 See [Security.md](./SECURITY.md) for more details.
@@ -98,7 +98,6 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | release | false | Auto-publish kernel release after build | true |
 | access-token | false | GitHub access token (needed for auto release) | ghp_xxxxxx |
 | bootimg-url | false | URL to download local boot.img (required if anykernel3 = false) | https://127.0.0.1/boot.img |
-| extra-cmd | false | Compile the kernel with extra build options | LD=ld.lld |
 | extra-make-args | false | Extra arguments for `make`, as a JSON array of strings support spaces and special characters | ["LOCALVERSION= (CI)", "AS=llvm-as"] |
 
 ## FAQ
