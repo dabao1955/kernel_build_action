@@ -16,7 +16,7 @@ A workflow to automatically build an Android kernel
 
 
 > [!IMPORTANT]
-> This workflow is universal. You need to have a certain understanding in writing github workflows and a little knowledge of the Android kernel to use this.
+> `extra-cmd` is deprecated. `extra-cmd` will be replaced with `extra-make-args` in v1.10.0.
 
 ## Security Policy
 See [Security.md](./SECURITY.md) for more details.
@@ -58,10 +58,6 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 
 - Finally, run the workflow you just wrote.
 ## Inputs
-> [!WARNING]
->
-> enable lxc or nethunter input options may cause kernel compilation failed!
-
 | input               | required | description | example value |
 |---------------------|----------|-------------|---------|
 | kernel-url | true | URL of the Android kernel source code | https://github.com/username/project |
@@ -103,6 +99,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | access-token | false | GitHub access token (needed for auto release) | ghp_xxxxxx |
 | bootimg-url | false | URL to download local boot.img (required if anykernel3 = false) | https://127.0.0.1/boot.img |
 | extra-cmd | false | Compile the kernel with extra build options | LD=ld.lld |
+| extra-make-args | false | Extra arguments for `make`, as a JSON array of strings support spaces and special characters | ["LOCALVERSION= (CI)", "AS=llvm-as"] |
 
 ## FAQ
 > [!CAUTION]

@@ -113,6 +113,9 @@ inputs:
     required: false
   extra-cmd:
     required: false
+  extra-make-args:
+    required: false
+    default: '[]'
 
 runs:
   using: 'composite'
@@ -181,7 +184,7 @@ runs:
         SU apt-get install --no-install-recommends -y \
             binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev \
             libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates \
-            python3 xz-utils aria2 build-essential ccache pigz coccinelle parallel
+            python3 xz-utils aria2 build-essential ccache pigz coccinelle parallel jq
         echo "::endgroup::"
 
         # Download and set up the toolchain
@@ -468,23 +471,34 @@ runs:
                 error "extra-cmd contains invalid characters. Only letters, digits, _=+./,- and spaces are allowed."
             fi
             read -r -a EXTRA_ARGS <<< "$EXTRA_CMD"
+        elif [[ "${{ inputs.extra-make-args }}" != "[]" ]]; then
+            readarray -t EXTRA_ARGS < <(jq -r '.[]' <<< "${{ inputs.extra-make-args }}")
+            elif [[ -n "${{ inputs.extra-cmd }}" ]]; then
+                echo "::warning::'extra-cmd' is deprecated. Use 'extra-make-args' (JSON array) to support spaces."
+            if [[ "${{ inputs.extra-cmd }}" == *" "* ]]; then
+                echo "::error::'extra-cmd' does not support spaces. Migrate to 'extra-make-args'."
+                exit 1
+            fi
+            read -r -a EXTRA_ARGS <<< "${{ inputs.extra-cmd }}"
         else
             EXTRA_ARGS=()
         fi
 
-        SAFE_EXTRA_ARGS=()
-        for arg in "${EXTRA_ARGS[@]}"; do
-            case "$arg" in
-                CC=*|CXX=*|LD=*|AS=*|AR=*|NM=*|STRIP=*|OBJCOPY=*|OBJDUMP=*|\
-                HOSTCC=*|KBUILD_HOSTCC=*|SHELL=*|MAKEFLAGS=*|MAKE=*|\
-                CROSS_COMPILE=*|CLANG_TRIPLE=*|LLVM=*|CLVM=*|O=*|ARCH=*)
-                    echo "::warning::Ignoring override of critical variable: $arg"
-                    ;;
-                *)
-                    SAFE_EXTRA_ARGS+=("$arg")
-                    ;;
-            esac
-        done
+        if [[ -n "$EXTRA_CMD" ]]; then
+            SAFE_EXTRA_ARGS=()
+            for arg in "${EXTRA_ARGS[@]}"; do
+                case "$arg" in
+                    CC=*|CXX=*|LD=*|AS=*|AR=*|NM=*|STRIP=*|OBJCOPY=*|OBJDUMP=*|\
+                    HOSTCC=*|KBUILD_HOSTCC=*|SHELL=*|MAKEFLAGS=*|MAKE=*|\
+                    CROSS_COMPILE=*|CLANG_TRIPLE=*|LLVM=*|CLVM=*|O=*|ARCH=*)
+                        echo "::warning::Ignoring override of critical variable: $arg"
+                        ;;
+                    *)
+                        SAFE_EXTRA_ARGS+=("$arg")
+                        ;;
+                esac
+            done
+        fi
 
         mkdir -p -v out
 
