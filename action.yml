@@ -560,9 +560,9 @@ runs:
                 *) error "Unknown CPU architecture for this device!" ;;
             esac
             aria2c "${{ inputs.bootimg-url }}" -o boot.img || error "Failed to download boot.img"
-            ./magiskboot unpack boot.img >/dev/null 2>&1 || error "Failed to unpack boot.img"
-            rm -f kernel
-            FMT=$(./magiskboot decompress < ../out/arch/${{ inputs.arch }}/boot/Image 2>/dev/null | head -n 1 | cut -d ' ' -f 2)
+            ./magiskboot unpack boot.img > nohup.out 2>&1 # nohup is not working in github ci!
+            export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
+            rm -rf kernel
             if [ "$FMT" == "raw" ]; then
                 if ! find ../out/arch/${{ inputs.arch }}/boot -name "Image" ! -name "*-*" -exec cp -v {} kernel \; 2>/dev/null; then
                     error "Failed to find kernel Image"
@@ -578,7 +578,7 @@ runs:
                     fi
                 fi
             fi
-            ./magiskboot repack boot.img || error "Failed to repack boot.img"
+            ./magiskboot repack boot.img
             rm -f boot.img
             mkdir -p ../../../build
             find . -name "*.img" -exec mv -v {} ../../../build/boot.img \;
