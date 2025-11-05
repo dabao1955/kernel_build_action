@@ -13,11 +13,6 @@ A workflow to automatically build an Android kernel
 [![](https://img.shields.io/github/v/release/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=github&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/releases/latest)
 [![](https://img.shields.io/github/last-commit/dabao1955/kernel_build_action?style=for-the-badge&color=fee4d0&logo=codeigniter&logoColor=fee4d0)](https://github.com/dabao1955/kernel_build_action/commits/main/)
 
-
-
-> [!IMPORTANT]
-> `extra-cmd` is deprecated. `extra-cmd` will be replaced with `extra-make-args` in v1.9.0.
-
 ## Security Policy
 See [Security.md](./SECURITY.md) for more details.
 
