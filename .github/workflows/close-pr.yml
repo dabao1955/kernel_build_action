@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Check out PR code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.ref }}
@@ -36,7 +36,7 @@ jobs:
           else
             echo "file_changed=false" >> $GITHUB_ENV
           fi
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: 1
       - name: Close PR if build.yml changed
