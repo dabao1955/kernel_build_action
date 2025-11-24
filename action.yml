@@ -389,7 +389,7 @@ runs:
         # Initialize Re-Kernel if enabled
         if [ "${{ inputs.rekernel }}" == "true" ]; then
             echo "::group::Initializing Re-Kernel"
-            if curl -sSLf "${{ github.action_path }}/rekernel/patch.sh" -o /tmp/rekernel_patch.sh; then
+            if curl -sSLf https://github.com/dabao1955/kernel_build_action/raw/main/kernelsu/apply_cocci.sh -o /tmp/rekernel_patch.sh; then
                 bash /tmp/rekernel_patch.sh || error "Failed to apply Re-Kernel patches"
                 rm -f /tmp/rekernel_patch.sh
             else
