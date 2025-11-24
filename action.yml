@@ -184,7 +184,9 @@ runs:
             binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev \
             libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates \
             python3 xz-utils aria2 build-essential ccache pigz parallel jq opam
-        opam install coccinelle
+        opam init --disable-sandboxing --yes
+        eval $(opam env)
+        opam install --yes coccinelle
         echo "::endgroup::"
 
         # Download and set up the toolchain
