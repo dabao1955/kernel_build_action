@@ -178,15 +178,11 @@ runs:
 
         # Install dependencies
         echo "::group::Installing Building Depend Packages"
-        export HOST_ARCH=$(dpkg --print-architecture)
         SU apt-get update
         SU apt-get install --no-install-recommends -y \
             binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev \
             libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates \
             python3 xz-utils aria2 build-essential ccache pigz parallel jq opam
-        opam init --disable-sandboxing --yes
-        eval $(opam env)
-        opam install --yes coccinelle
         echo "::endgroup::"
 
         # Download and set up the toolchain
@@ -376,6 +372,9 @@ runs:
                 if grep -q "CONFIG_KPROBES=y" "$CONFIG_FILE" 2>/dev/null; then
                     echo "CONFIG_KPROBES is enabled, skip patch."
                 else
+                    opam init --disable-sandboxing --yes
+                    eval $(opam env)
+                    opam install --yes coccinelle
                     if curl -sSLf "${{ github.action_path }}/kernelsu/apply_cocci.sh" -o /tmp/apply_cocci.sh; then
                         bash /tmp/apply_cocci.sh || echo "Warning: Failed to apply KernelSU patches"
                         rm -f /tmp/apply_cocci.sh
@@ -557,11 +556,13 @@ runs:
 
             mkdir split
             cd split
+            HOST_ARCH=$(dpkg --print-architecture)
             case "${HOST_ARCH}" in
                 armv7*|armv8l|arm64|armhf|arm) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_arm -o magiskboot && chmod +x magiskboot ;;
                 i*86|x86|amd64|x86_64) aria2c https://github.com/Shubhamvis98/AIK/raw/4ac321dfd48e16344e6146c505708aa720ff0bb3/bin/magiskboot_x86 -o magiskboot && chmod +x magiskboot ;;
                 *) error "Unknown CPU architecture for this device!" ;;
             esac
+            unset HOST_ARCH
             aria2c "${{ inputs.bootimg-url }}" -o boot.img || error "Failed to download boot.img"
             ./magiskboot unpack boot.img > nohup.out 2>&1 # nohup is not working in github ci!
             export FMT=$(cat nohup.out | grep "KERNEL_FMT" | awk '{gsub("\\[", "", $2); gsub("\\]", "", $2); print $2}')
