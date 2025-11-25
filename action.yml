@@ -217,7 +217,7 @@ runs:
             fi
             echo "::endgroup::"
         else
-            SU apt-get install -y clang lld binutils-aarch64-linux-gnu binutils-arm-linux-gnuabeihf
+            SU apt-get install -y clang lld binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf
         fi
 
         if [ "${{ inputs.aosp-gcc }}" == "true" ] || [ -n "${NEED_GCC:-}" ]; then
