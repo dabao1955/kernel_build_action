@@ -1,5 +1,6 @@
 name: 'Android Kernel Build Action'
 description: "An action to build android kernel."
+# Updated description for pull request demo
 
 branding:
   icon: 'activity'
