@@ -78,6 +78,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | nethunter | false | Enable Kali NetHunter support | false | 
 | nethunter-patch | false | Apply patch for Kali NetHunter support | false |
 | kvm | false | Enable [KVM (Kernel Virtual Machine)](https://linux-kvm.org/page/Main_Page) support | false |
+| bbg | false | Enable [BaseBandGuard](https://github.com/vc-teahouse/Baseband-guard) support | false |
 | ccache | false | Enable ccache (clang only) to speed up kernel compilation | false |
 | aosp-gcc | false | Use AOSP GCC toolchain to compile the kernel (Enable when using AOSP clang toolchain) | false |
 | other-gcc32-url | false | URL of custom GCC arm32 toolchain (Supports .xz, .zip, .tar and .git formats) | https://github.com/username/gcc |
