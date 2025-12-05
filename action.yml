@@ -73,6 +73,9 @@ inputs:
   kvm:
     required: false
     default: false
+  bbg:
+    required: false
+    default: false
   ccache:
     required: false
     default: false
@@ -331,6 +334,7 @@ runs:
         fi
 
         # Initialize KernelSU if enabled
+        CONFIG_FILE="arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
         if [ "${{ inputs.ksu }}" == "true" ]; then
             echo "::group::Initializing KernelSU"
             if [ -f KernelSU/kernel/Kconfig ]; then
@@ -360,7 +364,6 @@ runs:
             fi
 
             # Configure KernelSU
-            CONFIG_FILE="arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
             if [ "${{ inputs.ksu-lkm }}" == "true" ]; then
                 # Build KernelSU as a loadable kernel module
                 if grep -q "CONFIG_KPROBES=y" "$CONFIG_FILE"; then
@@ -386,6 +389,12 @@ runs:
             fi
             echo "::endgroup::"
         fi
+
+        if [ "${{ inputs.bbg }}" == "true" ]; then
+            echo "::group::Initializing BBG"
+            curl -Ss https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
+            sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/lockdown/lockdown,baseband_guard/ } }' security/Kconfig
+            echo "CONFIG_BBG=y" >> "$CONFIG_FILE"
 
         # Initialize Re-Kernel if enabled
         if [ "${{ inputs.rekernel }}" == "true" ]; then
@@ -424,7 +433,7 @@ runs:
         if [ "${{ inputs.nethunter }}" == "true" ]; then
             echo "::group::Initializing Kali NetHunter"
             cp -v "${{ github.action_path }}/nethunter/config.sh" nconfig.sh
-            bash nconfig.sh "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" -w
+            bash nconfig.sh "$CONFIG_FILE" -w
             if [ "${{ inputs.nethunter-patch }}" == "true" ]; then
                 git apply "${{ github.action_path }}/nethunter/add-wifi-injection.patch"
                 git apply "${{ github.action_path }}/nethunter/fix-ath9k-naming-conflict.patch"
@@ -437,27 +446,27 @@ runs:
 
         # Disable LTO if specified
         if [ "${{ inputs.disable-lto }}" == "true" ]; then
-            if grep -q "LTO" "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"; then
-                sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
-                sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
-                sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
-                echo "CONFIG_LTO_NONE=y" >> "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
+            if grep -q "LTO" "$CONFIG_FILE"; then
+                sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' "$CONFIG_FILE"
+                sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' "$CONFIG_FILE"
+                sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' "$CONFIG_FILE"
+                echo "CONFIG_LTO_NONE=y" >> "$CONFIG_FILE"
             fi
         fi
 
         # Enable KVM if specified
         if [ "${{ inputs.kvm }}" == "true" ]; then
-            echo "CONFIG_VIRTUALIZATION=y" >> "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
-            echo "CONFIG_KVM=y" >> "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
-            echo "CONFIG_KVM_MMIO=y" >> "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
-            echo "CONFIG_KVM_ARM_HOST=y" >> "arch/${{ inputs.arch }}/configs/${{ inputs.config }}"
+            echo "CONFIG_VIRTUALIZATION=y" >> "$CONFIG_FILE"
+            echo "CONFIG_KVM=y" >> "$CONFIG_FILE"
+            echo "CONFIG_KVM_MMIO=y" >> "$CONFIG_FILE"
+            echo "CONFIG_KVM_ARM_HOST=y" >> "$CONFIG_FILE"
         fi
 
         # Enable LXC if specified
         if [ "${{ inputs.lxc }}" == "true" ]; then
             echo "::group::Enabling LXC"
             cp -v "${{ github.action_path }}/lxc/config.sh" config.sh
-            bash config.sh "arch/${{ inputs.arch }}/configs/${{ inputs.config }}" -w
+            bash config.sh "$CONFIG_FILE" -w
             if [ "${{ inputs.lxc-patch }}" == "true" ]; then
                 curl -sSL "${{ github.action_path }}/lxc/patch.sh" | bash
             fi
