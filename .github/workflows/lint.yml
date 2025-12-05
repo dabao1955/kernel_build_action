@@ -25,6 +25,8 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.ref }}
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
 
       - name: Setup (Python)
         if: matrix.lint == 'python'
@@ -34,7 +36,7 @@ jobs:
       - name: Setup (JS)
         if: matrix.lint == 'js'
         run: |
-          sudo npm install -g yaml-lint
+          yarn global add yaml-lint
 
       - name: Check yaml(Python)
         if: matrix.lint == 'python'
