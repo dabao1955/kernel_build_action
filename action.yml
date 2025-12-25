@@ -108,6 +108,9 @@ inputs:
     default: false
   anykernel3-url:
     required: false
+  anykernel3-branch:
+    required: false
+    default: master
   bootimg-url:
     required: false
   release:
@@ -603,7 +606,7 @@ runs:
         else
             echo "::group:: Packaging Anykernel3 flasher"
             if [ -n "${{ inputs.anykernel3-url }}" ]; then
-                git clone "${{ inputs.anykernel3-url }}" AnyKernel3
+                git clone "${{ inputs.anykernel3-url }}" -b "${{ inputs.anykernel3-branch }}" AnyKernel3
             else
                 git clone https://github.com/osm0sis/AnyKernel3
                 sed -i 's!BLOCK=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!BLOCK=auto;!g' AnyKernel3/anykernel.sh
