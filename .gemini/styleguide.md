@@ -9,7 +9,7 @@
 
 - Mirror existing history style: 
 ```
-component: <type>[optional scope]: <description>
+component: <type>[optional scope]: <Description>
 
 [optional body]
 
