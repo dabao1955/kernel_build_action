@@ -30,7 +30,7 @@ fix #123
 
 Signed-off-by: dabao1955 <dabao1955@163.com>
 ```
-Keep the summary concise, sentence case, and avoid trailing period.
+Keep the summary concise, start with a capital letter, and avoid trailing period.
 - Prefer one scope; if multiple areas change, pick the primary one or spilt to a couple of scopes rather than chaining scopes. 
 - Keep subject lines brief (target ≤72 chars), no body unless necessary. If referencing a PR/issue, append `(fix #123)` at the end as seen in history.
 - Before committing, glance at recent `git log --oneline` to stay consistent with current prefixes and capitalization used in this repo.
