@@ -1,0 +1,24 @@
+have_fun: false
+ignore_patterns:
+  - "QWEN.md"
+  - "AGENTS.md"
+  - ".github/**"
+  - "LICENSE"
+  - ".yamlint"
+  - ".gemini/**"
+  - "mkdtboimg.py"
+  - "rekernel/*.c"
+  - "rekernel/*.h"
+  - "rekernel/*.zip"
+  - "nethunter/*.patch"
+memory_config:
+  disabled: false
+code_review:
+  disable: false
+  comment_severity_threshold: MEDIUM
+  max_review_comments: 10
+  pull_request_opened:
+    help: false
+    summary: false
+    code_review: true
+    include_drafts: false
