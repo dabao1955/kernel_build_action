@@ -175,7 +175,7 @@ runs:
             esac
         }
 
-        if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" || ! -f /bin/apt || ! -f /bin/pacman ]]; then
+        if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" || ( ! -f /bin/apt && ! -f /bin/pacman ) ]]; then
             error "This action is intended for Debian-based or ArchLinux-based runners."
         fi
 
