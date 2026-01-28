@@ -175,18 +175,21 @@ runs:
             esac
         }
 
-        # Check if the action is running on a Debian-based runner
-        if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" || ! -f /bin/apt ]]; then
-            error "This action is intended for Debian-based runners."
+        if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" || ! -f /bin/apt || ! -f /bin/pacman ]]; then
+            error "This action is intended for Debian-based or ArchLinux-based runners."
         fi
 
         # Install dependencies
-        echo "::group::Installing Building Depend Packages"
-        SU apt-get update
-        SU apt-get install --no-install-recommends -y \
-            binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev \
-            libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates \
-            python3 xz-utils aria2 build-essential ccache pigz parallel jq opam libpcre3-dev
+        echo "::group::Installing dependicy Packages"
+        if [ -f /bin/apt ]; then
+            SU apt-get update
+            SU apt-get install --no-install-recommends -y \
+                binutils git make bc bison openssl curl zip kmod cpio flex libelf-dev \
+                libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates \
+                python3 xz-utils aria2 build-essential ccache pigz parallel jq opam libpcre3-dev
+        else
+            pacman -S git base-devel opam aria2 python3 aria2
+        fi
         echo "::endgroup::"
 
         # Download and set up the toolchain
