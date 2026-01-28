@@ -188,7 +188,7 @@ runs:
                 libssl-dev libtfm-dev libc6-dev device-tree-compiler ca-certificates \
                 python3 xz-utils aria2 build-essential ccache pigz parallel jq opam libpcre3-dev
         else
-            pacman -S git base-devel opam aria2 python3 aria2
+            pacman -Syyu --no-confirm git base-devel opam aria2 python3 aria2
         fi
         echo "::endgroup::"
 
