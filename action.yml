@@ -441,11 +441,8 @@ runs:
             cp -v "${{ github.action_path }}/nethunter/config.sh" nconfig.sh
             bash nconfig.sh "$CONFIG_FILE" -w
             if [ "${{ inputs.nethunter-patch }}" == "true" ]; then
-                git apply "${{ github.action_path }}/nethunter/add-wifi-injection.patch"
-                git apply "${{ github.action_path }}/nethunter/fix-ath9k-naming-conflict.patch"
-                if [ "$PATCHLEVEL" -lt 19 ]; then
-                    git apply "${{ github.action_path }}/nethunter/add-wifi-injection-4.14.patch"
-                fi
+                cp -v "${{ github.action_path }}/nethunter/patch.py" .
+                bash patch.py
             fi
             echo "::endgroup::"
         fi
