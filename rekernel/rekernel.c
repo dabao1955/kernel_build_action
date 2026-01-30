@@ -6,6 +6,7 @@
 #if IS_ENABLED(CONFIG_IPV6)
 #include <net/ipv6.h>
 #endif /* IS_ENABLED(CONFIG_IPV6) */
+#include <linux/tcp.h>
 #include <linux/netlink.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
@@ -40,10 +41,12 @@ static const char* rpc_type[] = {
 	"SYNC_BINDER",
 	"FREE_BUFFER_FULL",
 };
-static int netlink_count = 0;
 static struct sock* netlink_socket;
 extern struct net init_net;
 static unsigned long netlink_unit = 0;
+#ifdef CONFIG_PROC_FS
+static struct proc_dir_entry* rekernel_dir, * rekernel_unit_entry;
+#endif /* CONFIG_PROC_FS */
 
 static int sendMessage(char* packet_buffer, uint16_t len) {
 	struct sk_buff* socket_buffer;
@@ -65,22 +68,21 @@ static int sendMessage(char* packet_buffer, uint16_t len) {
 	memcpy(nlmsg_data(netlink_hdr), packet_buffer, len);
 	return netlink_unicast(netlink_socket, socket_buffer, USER_PORT, MSG_DONTWAIT);
 }
-// Test code, Useless
 static void netlink_rcv_msg(struct sk_buff* socket_buffer) {
 	struct nlmsghdr* nlhdr = NULL;
 	char* umsg = NULL;
-	char* kmsg;
-	char netlink_kmsg[PACKET_SIZE];
 
 	if (socket_buffer->len >= nlmsg_total_size(0)) {
-		netlink_count++;
-		snprintf(netlink_kmsg, sizeof(netlink_kmsg), "Successfully received data packet! %d", netlink_count);
-		kmsg = netlink_kmsg;
 		nlhdr = nlmsg_hdr(socket_buffer);
-		umsg = NLMSG_DATA(nlhdr);
+		umsg = nlmsg_data(nlhdr);
 		if (umsg) {
-			printk("kernel recv packet from user: %s\n", umsg);
-			sendMessage(kmsg, strlen(kmsg));
+#ifdef CONFIG_PROC_FS
+			if (!memcmp(umsg, "#proc_remove", nlmsg_len(nlhdr))) {
+				if (rekernel_dir) {
+					proc_remove(rekernel_dir);
+				}
+			}
+#endif /* CONFIG_PROC_FS */
 		}
 	}
 }
@@ -93,6 +95,8 @@ static unsigned int rekernel_pkg_ipv4_ipv6_in(void* priv, struct sk_buff* socket
 	uid_t uid;
 	uint hook;
 	struct net_device* dev = NULL;
+	struct tcphdr *th;
+	int data_len = 0;
 
 	if (!socket_buffer || !socket_buffer->len || !state)
 		return NF_ACCEPT;
@@ -105,12 +109,22 @@ static unsigned int rekernel_pkg_ipv4_ipv6_in(void* priv, struct sk_buff* socket
 		return NF_ACCEPT;
 
 	if (ip_hdr(socket_buffer)->version == 4) {
-		if (ip_hdr(socket_buffer)->protocol != IPPROTO_TCP)
+		struct iphdr *iph4 = ip_hdr(socket_buffer);
+		if (iph4->protocol != IPPROTO_TCP)
 			return NF_ACCEPT;
+		if (!pskb_may_pull(socket_buffer, (iph4->ihl << 2) + sizeof(struct tcphdr)))
+			return NF_ACCEPT;
+		th = (struct tcphdr *)((unsigned char *)iph4 + (iph4->ihl << 2));
+		data_len = ntohs(iph4->tot_len) - (iph4->ihl << 2) - (th->doff << 2);
 #if IS_ENABLED(CONFIG_IPV6)
 	} else if (ip_hdr(socket_buffer)->version == 6) {
+		struct ipv6hdr *iph6 = ipv6_hdr(socket_buffer);
 		if (ipv6_find_hdr(socket_buffer, &thoff, -1, &frag_off, NULL) != IPPROTO_TCP)
 			return NF_ACCEPT;
+		if (!pskb_may_pull(socket_buffer, thoff + sizeof(struct tcphdr)))
+			return NF_ACCEPT;
+		th = (struct tcphdr *)(skb_network_header(socket_buffer) + thoff);
+		data_len = ntohs(iph6->payload_len) - (thoff - sizeof(struct ipv6hdr)) - (th->doff << 2);
 #endif
 	} else {
 		return NF_ACCEPT;
@@ -124,7 +138,10 @@ static unsigned int rekernel_pkg_ipv4_ipv6_in(void* priv, struct sk_buff* socket
 	if (uid < MIN_USERAPP_UID)
 		return NF_ACCEPT;
 
-	rekernel_report(NETWORK, 0, ip_hdr(socket_buffer)->version, NULL, uid, NULL, true, NULL);
+	if (data_len <= 0 && !th->syn && !th->fin && !th->rst)
+		return NF_ACCEPT;
+
+	rekernel_report(NETWORK, ip_hdr(socket_buffer)->version, data_len, NULL, uid, NULL, true, NULL);
 	return NF_ACCEPT;
 }
 /* Only monitor input network packages */
@@ -169,7 +186,6 @@ struct netlink_kernel_cfg cfg = {
 	.input = netlink_rcv_msg, // set recv callback
 };
 #ifdef CONFIG_PROC_FS
-static struct proc_dir_entry* rekernel_dir, * rekernel_unit_entry;
 static int rekernel_unit_show(struct seq_file* m, void* v) {
 	seq_printf(m, "%d\n", netlink_unit);
 	return LINE_SUCCESS;
@@ -193,7 +209,7 @@ static int start_rekernel(void) {
 #ifdef CONFIG_REKERNEL_NETWORK
 	pr_info("NetFilter is enabled!\n");
 #endif
-	pr_info("Re:Kernel v8.0 | DEVELOPER: Sakion Team | Timeline | USER PORT: %d\n", USER_PORT);
+	pr_info("Re:Kernel v8.5 | DEVELOPER: Sakion Team | Timeline | USER PORT: %d\n", USER_PORT);
 	pr_info("Trying to create Re:Kernel Server......\n");
 
 	for (netlink_unit = NETLINK_REKERNEL_MIN; netlink_unit < NETLINK_REKERNEL_MAX; netlink_unit++) {
@@ -206,7 +222,7 @@ static int start_rekernel(void) {
 		pr_err("Failed to create Re:Kernel server!\n");
 		return -LINE_ERROR;
 	}
-	printk("Created Re:Kernel server! NETLINK UNIT: %d\n", netlink_unit);
+	pr_info("Created Re:Kernel server! NETLINK UNIT: %d\n", netlink_unit);
 
 #ifdef CONFIG_PROC_FS
 	rekernel_dir = proc_mkdir("rekernel", NULL);
@@ -245,7 +261,7 @@ void rekernel_report(int reporttype, int type, pid_t src_pid, struct task_struct
 #ifdef CONFIG_REKERNEL_NETWORK
 	if (reporttype == NETWORK) {
 		char binder_kmsg[PACKET_SIZE];
-		snprintf(binder_kmsg, sizeof(binder_kmsg), "type=Network,target=%d,proto=ipv%d;", dst_pid, src_pid);
+		snprintf(binder_kmsg, sizeof(binder_kmsg), "type=Network,target=%d,proto=ipv%d,data_len=%d;", dst_pid, type, src_pid);
 		sendMessage(binder_kmsg, strlen(binder_kmsg));
 		return;
 	}
