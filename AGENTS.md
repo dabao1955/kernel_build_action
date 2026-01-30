@@ -17,7 +17,9 @@ This is the **Android Kernel Build Action** - a comprehensive GitHub Action that
 - **Bash scripting** (main build logic)
 - **Python 3** (mkdtboimg.py tool for DTB/DTBO image handling)
 - **Android NDK/AOSP toolchains** (GCC and Clang)
-- **Various kernel modification frameworks** (KernelSU, NetHunter, LXC, Re-Kernel)
+- **Various kernel modification frameworks** (KernelSU, NetHunter, LXC, Re-Kernel, BBG)
+- **Multi-architecture support** (AMD64, ARM64)
+- **Coccinelle** (semantic patching for kernel modifications)
 
 ## Project Structure
 
@@ -29,14 +31,59 @@ This is the **Android Kernel Build Action** - a comprehensive GitHub Action that
 ├── .yamllint               # YAML linting configuration
 ├── LICENSE                 # Apache License 2.0
 ├── SECURITY.md             # Security policy documentation
+├── AGENTS.md               # Project context and developer guide
+├── IFLOW.md                # iFlow CLI configuration
+├── .gemini/                # AI assistant configuration
+│   ├── config.yaml         # Gemini configuration
+│   └── styleguide.md       # Code style guidelines
+├── .github/                # GitHub configuration
+│   ├── dependabot.yml      # Automated dependency updates
+│   ├── pull_request_template.md  # PR template
+│   ├── ISSUE_TEMPLATE/     # Issue templates
+│   │   ├── bug-report.yml
+│   │   ├── common.yml
+│   │   └── config.yml
+│   └── workflows/          # CI/CD workflows
+│       ├── main.yml        # Main CI test workflow
+│       ├── build.yml       # Kernel build example
+│       ├── lint.yml        # YAML linting
+│       ├── check.yml       # Shell script linting (shellcheck/shfmt)
+│       ├── lkm.yml         # ReKernel LKM build test
+│       └── close-pr.yml    # Auto-close PR on build.yml changes
 ├── kernelsu/               # KernelSU integration scripts
 │   ├── apply_cocci.sh      # Coccinelle patch application
 │   ├── classic.cocci       # Classic kernel patches
 │   ├── minimal.cocci       # Minimal kernel patches
-│   └── patch.sh            # Main KernelSU patch script
+│   ├── patch.sh            # Main KernelSU patch script
+│   └── README.md
 ├── lxc/                    # LXC/Docker support
+│   ├── cgroup.cocci        # Cgroup patches
+│   ├── config.sh           # LXC configuration
+│   ├── patch_cocci.sh      # Coccinelle patch application
+│   ├── patch.sh            # LXC patches
+│   ├── xt_qtaguid.cocci    # Network tagging patches
+│   └── README.md
 ├── nethunter/              # Kali NetHunter integration
+│   ├── add-rtl88xxau-5.6.4.2-drivers.patch
+│   ├── add-wifi-injection-4.14.patch
+│   ├── add-wifi-injection.patch
+│   ├── config.sh           # NetHunter configuration
+│   ├── fix-ath9k-naming-conflict.patch
+│   └── README.md
 └── rekernel/               # Re-Kernel support patches
+    ├── patches/            # ReKernel patches
+    │   ├── binder.cocci
+    │   ├── PATCH_ANALYSIS.md
+    │   ├── proc_ops.cocci
+    │   └── signal.cocci
+    ├── cocci.zip
+    ├── Kconfig
+    ├── Makefile
+    ├── patch.sh            # ReKernel patch script
+    ├── README.md
+    ├── rekernel.c
+    ├── rekernel.h
+    └── src.zip
 ```
 
 ## Building and Running
@@ -62,14 +109,30 @@ This is a GitHub Action that runs in CI/CD pipelines. Users typically:
 - **No local build process** - this project is specifically designed for GitHub Actions
 - **Testing**: Run workflows manually via `workflow_dispatch` trigger
 - **Validation**: Check YAML syntax with `yamllint` tool
+- **Multi-architecture support**: Workflows run on both AMD64 and ARM64 runners
 
 ### Key Build Commands
 The action automatically handles the entire build pipeline:
-- Installing system dependencies (`apt-get install`)
+- Installing system dependencies (`apt-get install` or `pacman -S` on Arch Linux)
 - Downloading and configuring toolchains (AOSP GCC/Clang)
 - Cloning and patching kernel source code
 - Compiling the kernel using `make`
 - Packaging the output (AnyKernel3 or boot.img)
+
+### CI/CD Workflows
+The project includes multiple workflows for different purposes:
+
+- **main.yml**: Main CI test workflow that builds a test kernel on every push/PR
+- **build.yml**: Example workflow demonstrating action usage
+- **lint.yml**: YAML syntax validation using yamllint
+- **check.yml**: Shell script quality checks (shellcheck and shfmt)
+- **lkm.yml**: ReKernel LKM build tests on both AMD64 and ARM64
+- **close-pr.yml**: Automatically closes PRs that modify build.yml for security
+
+### Platform Support
+- **Debian-based systems**: Primary support (Ubuntu, etc.)
+- **Arch Linux**: Added support with pacman package manager
+- **Multi-architecture**: CI tests run on both `ubuntu-latest` (AMD64) and `ubuntu-24.04-arm` (ARM64)
 
 ## Action.yml Detailed Analysis
 
@@ -653,6 +716,33 @@ Security is integrated throughout the development process:
 - **Token management**: GitHub access tokens are handled with strict security protocols and minimal exposure
 - **URL validation**: All input URLs undergo thorough validation before download to prevent malicious sources
 - **File permissions**: Proper chmod operations ensure executable scripts have appropriate permissions
+- **Automated security updates**: Dependabot configured for automatic dependency updates
+- **PR security**: Auto-close PRs that attempt to modify critical workflow files
+
+## Code Quality and Testing
+
+### Automated Quality Checks
+The project implements comprehensive code quality measures:
+
+- **YAML Linting**: All YAML files validated with `yamllint` in CI
+- **Shell Script Analysis**: 
+  - **shellcheck**: Static analysis for shell scripts
+  - **shfmt**: Automatic shell script formatting with 2-space indentation
+- **Multi-architecture Testing**: CI runs on both AMD64 and ARM64 platforms
+- **Integration Testing**: Main workflow builds a test kernel to verify functionality
+
+### Quality Assurance Workflow
+```yaml
+# Example quality checks performed on every PR:
+1. YAML syntax validation (Python yamllint + JS yaml-lint)
+2. Shell script static analysis (shellcheck)
+3. Shell script formatting check (shfmt)
+4. Integration test - full kernel build
+5. ReKernel LKM build test (both AMD64 and ARM64)
+```
+
+### Security Policy
+See [SECURITY.md](./SECURITY.md) for detailed security guidelines, vulnerability reporting procedures, and supported versions.
 
 ## Core Features
 
@@ -678,8 +768,9 @@ Built-in support for popular kernel enhancement frameworks:
 - **KernelSU**: Integrated root access framework with optional Loadable Kernel Module (LKM) support
 - **NetHunter**: Complete Kali Linux penetration testing and security assessment tool integration
 - **LXC/Docker**: Full containerization support with optional compatibility patches
-- **Re-Kernel**: Additional kernel enhancements and performance optimizations
+- **Re-Kernel**: Additional kernel enhancements and performance optimizations, including LKM build support
 - **KVM**: Kernel Virtual Machine support for hardware virtualization capabilities
+- **BBG**: BaseBandGuard support for enhanced baseband security
 
 ### Build Optimization
 Advanced optimization features for efficient compilation:
@@ -711,9 +802,9 @@ The action supports numerous optional parameters organized by functionality:
 
 - **Source control**: `kernel-dir`, `kernel-branch`, `depth`, `vendor`, `vendor-url`, `vendor-dir`, `vendor-branch`
 - **Android version**: `android-version` for AOSP toolchain selection
-- **Kernel modifications**: `ksu`, `ksu-version`, `ksu-lkm`, `ksu-other`, `ksu-url`, `rekernel`, `nethunter`, `nethunter-patch`, `lxc`, `lxc-patch`
+- **Kernel modifications**: `ksu`, `ksu-version`, `ksu-lkm`, `ksu-other`, `ksu-url`, `rekernel`, `nethunter`, `nethunter-patch`, `lxc`, `lxc-patch`, `bbg`
 - **Build optimization**: `disable-lto`, `kvm`, `ccache`, `extra-make-args`
-- **Toolchain selection**: `aosp-gcc`, `aosp-clang`, `aosp-clang-version`, `other-gcc32-url`, `other-gcc64-url`, `other-clang-url`
+- **Toolchain selection**: `aosp-gcc`, `aosp-clang`, `aosp-clang-version`, `other-gcc32-url`, `other-gcc32-branch`, `other-gcc64-url`, `other-gcc64-branch`, `other-clang-url`, `other-clang-branch`
 - **Packaging options**: `anykernel3`, `anykernel3-url`, `bootimg-url`, `release`, `access-token`
 
 ## Git Commit
