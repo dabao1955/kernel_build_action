@@ -1,0 +1,19 @@
+# Visual Studio Code
+.vscode/
+
+# JetBrains IDEs (PyCharm, etc)
+.idea
+
+# KDevelop
+.kdev4/
+*.kdev4
+*.kate*
+
+
+# The rest below is more or less from a default Python .gitignore
+.*.swp
+
+# Failed patches
+*.rej
+*.orig
+
