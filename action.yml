@@ -174,7 +174,6 @@ runs:
     - name: Build Kernel
       shell: bash
       run: |
-        #!/bin/bash
         set -euo pipefail
 
         error() {
@@ -226,11 +225,6 @@ runs:
                     ;;
             esac
         }
-
-        readonly DEFAULT_CLANG_VERSION="r383902"
-        readonly DEFAULT_ANDROID_GCC_TAG="android-12.1.0_r27"
-        readonly KERNEL_OUTPUT_DIR="out"
-        readonly BUILD_ARTIFACT_DIR="build"
 
         if [[ ${GITHUB_ACTIONS} != "true" || ${OSTYPE} != "linux-gnu" || ( ! -f /bin/apt && ! -f /bin/pacman ) ]]; then
             error "This action requires GitHub Actions Linux runners (Debian-based or ArchLinux-based). Current: OSTYPE=${OSTYPE}, GITHUB_ACTIONS=${GITHUB_ACTIONS}"
@@ -495,7 +489,7 @@ runs:
             esac
         done
 
-        mkdir -p -v "${KERNEL_OUTPUT_DIR}"
+        mkdir -p -v out
 
         if [[ -d "$HOME/clang/bin" ]]; then
             CMD_PATH="$HOME/clang/bin"
@@ -599,8 +593,8 @@ runs:
             fi
             ./magiskboot repack boot.img
             rm -f boot.img
-            mkdir -p ../../../${BUILD_ARTIFACT_DIR}
-            find . -name "*.img" -exec mv -v {} ../../../${BUILD_ARTIFACT_DIR}/boot.img \;
+            mkdir -p ../../../build
+            find . -name "*.img" -exec mv -v {} ../../../build/boot.img \;
             cd ..
             echo "::endgroup::"
         else
@@ -653,11 +647,11 @@ runs:
             fi
 
             rm -rf -v AnyKernel3/.git* AnyKernel3/README.md
-            mkdir -p -v ../../${BUILD_ARTIFACT_DIR}
+            mkdir -p -v ../../build
             if [ "${{ inputs.release }}" = "false" ]; then
-                cp -r -v AnyKernel3/* ../../${BUILD_ARTIFACT_DIR}
+                cp -r -v AnyKernel3/* ../../build
             else
-                cd AnyKernel3 && zip -r Anykernel3-flasher.zip ./* && mv -v Anykernel3-flasher.zip .. && cd .. && mv -v Anykernel3-flasher.zip ../../${BUILD_ARTIFACT_DIR}/
+                cd AnyKernel3 && zip -r Anykernel3-flasher.zip ./* && mv -v Anykernel3-flasher.zip .. && cd .. && mv -v Anykernel3-flasher.zip ../../build/
             fi
             echo "::endgroup::"
         fi
