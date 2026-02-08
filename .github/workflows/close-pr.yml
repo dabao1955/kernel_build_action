@@ -10,39 +10,26 @@ jobs:
   auto-close:
     permissions:
       pull-requests: write
-      contents: write
-
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out PR code
-        uses: actions/checkout@v6
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
-
       - name: Fetch base branch
         run: |
-          # Fetch the base branch from the upstream repository
-          git remote add upstream https://github.com/dabao1955/kernel_build_action
-          git fetch upstream main
+          git fetch origin ${{ github.event.pull_request.base.ref }}:base_branch
 
-      - name: Check if .github/workflows/main.yml was changed
-        id: check_files
+      - name: Check if build.yml was modified
+        id: check
         run: |
-          # Check for changes in main.yml between PR and base branch
-          if git diff --name-only HEAD upstream/${{ github.event.pull_request.base.ref }} | grep -q "^.github/workflows/build.yml$"; then
-            echo "file_changed=true" >> $GITHUB_ENV
+          if git diff --name-only base_branch HEAD | grep -Fx ".github/workflows/build.yml"; then
+            echo "CHANGED=true" >> "$GITHUB_ENV"
           else
-            echo "file_changed=false" >> $GITHUB_ENV
+            echo "CHANGED=false" >> "$GITHUB_ENV"
           fi
-      - uses: actions/checkout@v6
-        with:
-          path: 1
-      - name: Close PR if build.yml changed
-        if: env.file_changed == 'true'
+
+      - name: Close PR
+        if: env.CHANGED == 'true'
         run: |
-          cd 1 && curl -X PATCH \
+          curl -X PATCH \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -d '{"state": "closed", "body": "This pull request has been automatically closed because you cannot submit PRs while build.yml is changing."}' \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d '{"state":"closed","body":"This PR has been automatically closed because it modifies \`.github/workflows/build.yml\`, which is a usage example, not part of the Action logic. Please do not submit PRs that modify workflow examples."}' \
             "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
