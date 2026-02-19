@@ -16,7 +16,7 @@
     "@actions/exec": "^1.1.1",
     "@actions/github": "^6.0.0",
     "@actions/tool-cache": "^2.0.1",
-    "@octokit/rest": "^20.0.2"
+    "@octokit/rest": "^22.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
