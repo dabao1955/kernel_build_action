@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@actions/artifact": "^5.0.1",
-    "@actions/cache": "^5.0.2",
+    "@actions/cache": "^6.0.0",
     "@actions/core": "^2.0.1",
     "@actions/exec": "^2.0.0",
     "@actions/github": "^8.0.0",
