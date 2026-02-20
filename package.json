@@ -15,7 +15,7 @@
     "@actions/core": "^2.0.1",
     "@actions/exec": "^2.0.0",
     "@actions/github": "^8.0.0",
-    "@actions/tool-cache": "^3.0.0",
+    "@actions/tool-cache": "^4.0.0",
     "@octokit/core": "^7.0.6",
     "@octokit/graphql": "^9.0.3",
     "@octokit/request": "^10.0.7",
