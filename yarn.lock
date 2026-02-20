@@ -65,10 +65,10 @@
     "@octokit/request-error" "^5.1.1"
     undici "^5.28.5"
 
-"@actions/github@^8.0.0":
-  version "8.0.1"
-  resolved "https://registry.npmmirror.com/@actions/github/-/github-8.0.1.tgz#8ac450817edc4c4d7db97bf132193269d87b2fa5"
-  integrity sha512-cue7mS+kx1/2Dnc/094pitRUm+0uPXVXYVaqOdZwD15BsXATWYHW3idJDYOlyBc5gJlzAQ/w5YLU4LR8D7hjVg==
+"@actions/github@^9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@actions/github/-/github-9.0.0.tgz#c86dae4128b2a6987271e2663bee9e766464840a"
+  integrity sha512-yJ0RoswsAaKcvkmpCE4XxBRiy/whH2SdTBHWzs0gi4wkqTDhXMChjSdqBz/F4AeiDlP28rQqL33iHb+kjAMX6w==
   dependencies:
     "@actions/http-client" "^3.0.2"
     "@octokit/core" "^7.0.6"

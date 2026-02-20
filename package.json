@@ -14,7 +14,7 @@
     "@actions/cache": "^5.0.2",
     "@actions/core": "^2.0.1",
     "@actions/exec": "^2.0.0",
-    "@actions/github": "^8.0.0",
+    "@actions/github": "^9.0.0",
     "@actions/tool-cache": "^3.0.0",
     "@octokit/rest": "^22.0.1",
     "is-plain-object": "^5.0.0"
