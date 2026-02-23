@@ -672,7 +672,7 @@
     before-after-hook "^4.0.0"
     universal-user-agent "^7.0.0"
 
-"@octokit/endpoint@^11.0.2":
+"@octokit/endpoint@^11.0.3":
   version "11.0.3"
   resolved "https://registry.npmjs.org/@octokit/endpoint/-/endpoint-11.0.3.tgz"
   integrity sha512-FWFlNxghg4HrXkD3ifYbS/IdL/mDHjh9QcsNyhQjN8dplUoZbejsdpmuqdA76nxj2xoWPs7p8uX2SNr9rYu0Ag==
@@ -729,15 +729,16 @@
   dependencies:
     "@octokit/types" "^16.0.0"
 
-"@octokit/request@^10.0.6", "@octokit/request@^10.0.7":
-  version "10.0.7"
-  resolved "https://registry.npmmirror.com/@octokit/request/-/request-10.0.7.tgz"
-  integrity sha512-v93h0i1yu4idj8qFPZwjehoJx4j3Ntn+JhXsdJrG9pYaX6j/XRz2RmasMUHtNgQD39nrv/VwTWSqK0RNXR8upA==
+"@octokit/request@^10.0.6", "@octokit/request@^10.0.7", "@octokit/request@^10.0.8":
+  version "10.0.8"
+  resolved "https://registry.yarnpkg.com/@octokit/request/-/request-10.0.8.tgz#6609a5a38ad6f8ee203d9eb8ac9361d906a4414e"
+  integrity sha512-SJZNwY9pur9Agf7l87ywFi14W+Hd9Jg6Ifivsd33+/bGUQIjNujdFiXII2/qSlN2ybqUHfp5xpekMEjIBTjlSw==
   dependencies:
-    "@octokit/endpoint" "^11.0.2"
+    "@octokit/endpoint" "^11.0.3"
     "@octokit/request-error" "^7.0.2"
     "@octokit/types" "^16.0.0"
     fast-content-type-parse "^3.0.0"
+    json-with-bigint "^3.5.3"
     universal-user-agent "^7.0.2"
 
 "@octokit/rest@^22.0.1":
@@ -1848,6 +1849,11 @@ json-stable-stringify-without-jsonify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmmirror.com/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz"
   integrity sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==
+
+json-with-bigint@^3.5.3:
+  version "3.5.3"
+  resolved "https://registry.yarnpkg.com/json-with-bigint/-/json-with-bigint-3.5.3.tgz#292fe4d3fa941996a02294edf31fa59d8c9054ef"
+  integrity sha512-QObKu6nxy7NsxqR0VK4rkXnsNr5L9ElJaGEg+ucJ6J7/suoKZ0n+p76cu9aCqowytxEbwYNzvrMerfMkXneF5A==
 
 jwt-decode@^4.0.0:
   version "4.0.0"
