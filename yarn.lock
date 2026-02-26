@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@actions/artifact@^6.0.0":
-  version "6.1.0"
-  resolved "https://registry.npmmirror.com/@actions/artifact/-/artifact-6.1.0.tgz#6d30eb1837b1f047dce2ebe364aa60a7881f202d"
-  integrity sha512-oRn9YhKkboXgIq2TQZ9uj6bhkT5ZUzFtnyTQ0tLGBwImaD0GfWShE5R0tPbN25EJmS3tz5sDd2JnVokAOtNrZQ==
+"@actions/artifact@^6.2.0":
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/@actions/artifact/-/artifact-6.2.0.tgz#27d2068ff3146af7e6df06aeba033817e8ee4bde"
+  integrity sha512-i9kmGy6WfuA6rby4fdD0UMKjT4MicFiKMsB5mUZ+1ggFW7+SzqvFsxLhIXxITkKUhTMVREXQfn/ZAN87EQLQDA==
   dependencies:
     "@actions/core" "^3.0.0"
     "@actions/github" "^9.0.0"
