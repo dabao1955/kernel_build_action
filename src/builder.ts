@@ -194,6 +194,7 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
     exitCode = await exec.exec('make', makeCmdArgs, {
       cwd: config.kernelDir,
       env: { ...process.env, ...envVars } as { [key: string]: string },
+      silent: true,
       listeners: {
         stdout: (data: Buffer) => {
           fs.appendFileSync(logFile, data);

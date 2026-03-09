@@ -64,6 +64,8 @@ Ensure all TypeScript modifications pass these checks before committing.
 
 ## Git Commit
 
+> **Note**: If this repository was cloned with `--depth=1` (shallow clone), run `git fetch --unshallow` or `git fetch --depth=100` to retrieve commit history before referencing existing commit styles.
+
 - Mirror existing history style: 
 ```
 component: <type>[optional scope]: <Description>

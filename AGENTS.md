@@ -320,6 +320,8 @@ Users reference the action in workflows:
 
 ## Git Commit Conventions
 
+> **Note**: If this repository was cloned with `--depth=1` (shallow clone), run `git fetch --unshallow` or `git fetch --depth=100` to retrieve commit history before referencing existing commit styles.
+
 ```
 component: <type>[optional scope]: <description>
 
