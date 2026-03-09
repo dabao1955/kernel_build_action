@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import * as fs from 'fs';
 import * as path from 'path';
+import { TOOLCHAIN_DIRS } from './toolchain';
 import { dirExists, fileExists, removeDir, detectPackageManager } from './utils';
 
 // Environment variables to clean
@@ -67,11 +68,16 @@ export function cleanBuildArtifacts(buildDir: string): void {
  * Clean downloaded toolchains
  */
 export function cleanToolchains(): void {
-  const home = process.env.HOME || '/home/runner';
+  const home = process.env.HOME;
+  if (!home) {
+    core.warning('HOME environment variable not set, skipping toolchain cleanup');
+    return;
+  }
+
   const toolchains = [
-    path.join(home, 'clang'),
-    path.join(home, 'gcc-64'),
-    path.join(home, 'gcc-32'),
+    path.join(home, TOOLCHAIN_DIRS.clang),
+    path.join(home, TOOLCHAIN_DIRS.gcc64),
+    path.join(home, TOOLCHAIN_DIRS.gcc32),
   ];
 
   for (const toolchain of toolchains) {

@@ -7,6 +7,16 @@ import { dirExists } from './utils';
 
 const HOME = process.env.HOME || '/home/runner';
 
+/**
+ * Toolchain directory names
+ * These are used consistently across download and cleanup operations
+ */
+export const TOOLCHAIN_DIRS = {
+  clang: 'clang',
+  gcc64: 'gcc-64',
+  gcc32: 'gcc-32',
+} as const;
+
 export interface ToolchainConfig {
   aospClang: boolean;
   aospClangVersion: string;
@@ -114,7 +124,7 @@ export function normalizeToolchainDir(dirPath: string, dirName: string): void {
 async function downloadAospClang(version: string, androidVersion: string): Promise<string> {
   core.startGroup('Downloading AOSP Clang');
 
-  const clangDir = path.join(HOME, 'clang');
+  const clangDir = path.join(HOME, TOOLCHAIN_DIRS.clang);
 
   let url: string;
   if (androidVersion) {
@@ -135,7 +145,7 @@ async function downloadAospClang(version: string, androidVersion: string): Promi
 async function downloadOtherClang(url: string, branch: string): Promise<string> {
   core.startGroup('Downloading Third-party Clang');
 
-  const clangDir = path.join(HOME, 'clang');
+  const clangDir = path.join(HOME, TOOLCHAIN_DIRS.clang);
   await downloadAndExtract(url, 'clang', clangDir, branch);
   normalizeToolchainDir(clangDir, 'Clang');
 
@@ -156,8 +166,8 @@ async function downloadOtherClang(url: string, branch: string): Promise<string> 
 async function downloadAospGcc(androidVersion: string): Promise<{ gcc64: string; gcc32: string }> {
   core.startGroup('Downloading AOSP GCC');
 
-  const gcc64Dir = path.join(HOME, 'gcc-64');
-  const gcc32Dir = path.join(HOME, 'gcc-32');
+  const gcc64Dir = path.join(HOME, TOOLCHAIN_DIRS.gcc64);
+  const gcc32Dir = path.join(HOME, TOOLCHAIN_DIRS.gcc32);
 
   let gcc64Url: string;
   let gcc32Url: string;
@@ -195,12 +205,12 @@ async function downloadOtherGcc(
   const result: { gcc64?: string; gcc32?: string } = {};
 
   if (gcc64Url) {
-    result.gcc64 = path.join(HOME, 'gcc-64');
+    result.gcc64 = path.join(HOME, TOOLCHAIN_DIRS.gcc64);
     await downloadAndExtract(gcc64Url, 'gcc-aarch64', result.gcc64, gcc64Branch);
   }
 
   if (gcc32Url) {
-    result.gcc32 = path.join(HOME, 'gcc-32');
+    result.gcc32 = path.join(HOME, TOOLCHAIN_DIRS.gcc32);
     await downloadAndExtract(gcc32Url, 'gcc-arm', result.gcc32, gcc32Branch);
   }
 
@@ -212,8 +222,8 @@ async function downloadOtherGcc(
  * Normalize GCC directory structure and detect prefix
  */
 export function normalizeGccDirs(): { gcc64Prefix?: string; gcc32Prefix?: string } {
-  const gcc64Dir = path.join(HOME, 'gcc-64');
-  const gcc32Dir = path.join(HOME, 'gcc-32');
+  const gcc64Dir = path.join(HOME, TOOLCHAIN_DIRS.gcc64);
+  const gcc32Dir = path.join(HOME, TOOLCHAIN_DIRS.gcc32);
 
   normalizeToolchainDir(gcc64Dir, 'GCC64');
   normalizeToolchainDir(gcc32Dir, 'GCC32');
