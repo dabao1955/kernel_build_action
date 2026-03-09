@@ -8,11 +8,13 @@ import {
 import * as fs from 'fs';
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
+import * as kernel from '../src/kernel';
 
 // Mock dependencies
 vi.mock('fs');
 vi.mock('@actions/core');
 vi.mock('@actions/exec');
+vi.mock('../src/kernel');
 
 // Helper to create mock dirent
 const createMockDirent = (name: string, isDir: boolean) => ({
@@ -23,6 +25,10 @@ const createMockDirent = (name: string, isDir: boolean) => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Reset kernel module mocks to default behavior (return undefined)
+  vi.mocked(kernel.findKernelImage).mockReturnValue(undefined);
+  vi.mocked(kernel.findDtboFile).mockReturnValue(undefined);
+  vi.mocked(kernel.findDtbFile).mockReturnValue(undefined);
 });
 
 describe('packageBootimg', () => {
@@ -51,18 +57,12 @@ describe('packageBootimg', () => {
   });
 
   it('packages boot.img successfully', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz-dtb');
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.chmodSync).mockImplementation(() => undefined);
     vi.mocked(fs.readFileSync).mockReturnValue('KERNEL_FMT [raw]');
     vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
       const p = String(path);
-      if (p.includes('boot')) {
-        // Return dirent objects for findKernelImage to work
-        if (options && typeof options === 'object' && 'withFileTypes' in options) {
-          return [createMockDirent('Image.gz-dtb', false)] as any;
-        }
-        return ['Image.gz-dtb'] as any;
-      }
       if (p.includes('split')) return ['new.img'] as any;
       return [] as any;
     });
@@ -70,6 +70,7 @@ describe('packageBootimg', () => {
     vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.rmSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
     await packageBootimg(baseConfig);
@@ -85,17 +86,12 @@ describe('packageBootimg', () => {
     const originalArch = process.arch;
     Object.defineProperty(process, 'arch', { value: 'x64' });
 
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz-dtb');
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.chmodSync).mockImplementation(() => undefined);
     vi.mocked(fs.readFileSync).mockReturnValue('KERNEL_FMT [raw]');
     vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
       const p = String(path);
-      if (p.includes('boot')) {
-        if (options && typeof options === 'object' && 'withFileTypes' in options) {
-          return [createMockDirent('Image.gz-dtb', false)] as any;
-        }
-        return ['Image.gz-dtb'] as any;
-      }
       if (p.includes('split')) return ['new.img'] as any;
       return [] as any;
     });
@@ -103,6 +99,7 @@ describe('packageBootimg', () => {
     vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.rmSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
     await packageBootimg(baseConfig);
@@ -119,17 +116,12 @@ describe('packageBootimg', () => {
     const originalArch = process.arch;
     Object.defineProperty(process, 'arch', { value: 'arm64' });
 
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz-dtb');
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.chmodSync).mockImplementation(() => undefined);
     vi.mocked(fs.readFileSync).mockReturnValue('KERNEL_FMT [raw]');
     vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
       const p = String(path);
-      if (p.includes('boot')) {
-        if (options && typeof options === 'object' && 'withFileTypes' in options) {
-          return [createMockDirent('Image.gz-dtb', false)] as any;
-        }
-        return ['Image.gz-dtb'] as any;
-      }
       if (p.includes('split')) return ['new.img'] as any;
       return [] as any;
     });
@@ -137,6 +129,7 @@ describe('packageBootimg', () => {
     vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.rmSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
     await packageBootimg(baseConfig);
@@ -172,17 +165,12 @@ describe('packageBootimg', () => {
   });
 
   it('handles different kernel formats (gzip)', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz-dtb');
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.chmodSync).mockImplementation(() => undefined);
     vi.mocked(fs.readFileSync).mockReturnValue('KERNEL_FMT [gzip]');
     vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
       const p = String(path);
-      if (p.includes('boot')) {
-        if (options && typeof options === 'object' && 'withFileTypes' in options) {
-          return [createMockDirent('Image.gz-dtb', false)] as any;
-        }
-        return ['Image.gz-dtb'] as any;
-      }
       if (p.includes('split')) return ['new.img'] as any;
       return [] as any;
     });
@@ -203,17 +191,12 @@ describe('packageBootimg', () => {
   });
 
   it('handles raw kernel format', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image');
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.chmodSync).mockImplementation(() => undefined);
     vi.mocked(fs.readFileSync).mockReturnValue('Some output without KERNEL_FMT');
     vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
       const p = String(path);
-      if (p.includes('boot')) {
-        if (options && typeof options === 'object' && 'withFileTypes' in options) {
-          return [createMockDirent('Image', false)] as any;
-        }
-        return ['Image'] as any;
-      }
       if (p.includes('split')) return ['new.img'] as any;
       return [] as any;
     });
@@ -230,17 +213,12 @@ describe('packageBootimg', () => {
   });
 
   it('removes old kernel before copying new one', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz-dtb');
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.chmodSync).mockImplementation(() => undefined);
     vi.mocked(fs.readFileSync).mockReturnValue('KERNEL_FMT [raw]');
     vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
       const p = String(path);
-      if (p.includes('boot')) {
-        if (options && typeof options === 'object' && 'withFileTypes' in options) {
-          return [createMockDirent('Image.gz-dtb', false)] as any;
-        }
-        return ['Image.gz-dtb'] as any;
-      }
       if (p.includes('split')) return ['new.img'] as any;
       return [] as any;
     });
@@ -415,6 +393,153 @@ IS_SLOT_DEVICE=0;`;
     expect(core.info).toHaveBeenCalledWith('DTB not found, skipping');
   });
 
+  it('copies kernelImage when found by findKernelImage', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz-dtb');
+    vi.mocked(kernel.findDtboFile).mockReturnValue(undefined);
+    vi.mocked(kernel.findDtbFile).mockReturnValue(undefined);
+
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      if (path.includes('anykernel.sh')) return true;
+      if (path.includes('Image.gz-dtb')) return true;
+      return false;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => false } as fs.Stats);
+    vi.mocked(fs.readFileSync).mockReturnValue('do.devicecheck=1');
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readdirSync).mockReturnValue(['Image.gz-dtb', 'anykernel.sh'] as any);
+    vi.mocked(fs.cpSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await packageAnyKernel3(baseConfig);
+
+    expect(kernel.findKernelImage).toHaveBeenCalledWith('/kernel', 'arm64');
+    expect(fs.copyFileSync).toHaveBeenCalledWith(
+      '/kernel/out/arch/arm64/boot/Image.gz-dtb',
+      expect.stringContaining('Image.gz-dtb')
+    );
+    expect(core.info).toHaveBeenCalledWith(expect.stringContaining('Copied kernel'));
+  });
+
+  it('copies DTBO file when found', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image');
+    vi.mocked(kernel.findDtboFile).mockReturnValue('/kernel/out/arch/arm64/boot/dtbo.img');
+    vi.mocked(kernel.findDtbFile).mockReturnValue(undefined);
+
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      if (path.includes('anykernel.sh')) return true;
+      if (path.includes('Image')) return true;
+      if (path.includes('dtbo.img')) return true;
+      return false;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => false } as fs.Stats);
+    vi.mocked(fs.readFileSync).mockReturnValue('do.devicecheck=1');
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readdirSync).mockReturnValue(['Image', 'anykernel.sh'] as any);
+    vi.mocked(fs.cpSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await packageAnyKernel3(baseConfig);
+
+    expect(kernel.findDtboFile).toHaveBeenCalledWith('/kernel', 'arm64');
+    expect(fs.copyFileSync).toHaveBeenCalledWith(
+      '/kernel/out/arch/arm64/boot/dtbo.img',
+      expect.stringContaining('dtbo.img')
+    );
+    expect(core.info).toHaveBeenCalledWith(expect.stringContaining('Copied dtbo'));
+  });
+
+  it('copies DTB file when found', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image');
+    vi.mocked(kernel.findDtboFile).mockReturnValue(undefined);
+    vi.mocked(kernel.findDtbFile).mockReturnValue('/kernel/out/arch/arm64/boot/dtb');
+
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      if (path.includes('anykernel.sh')) return true;
+      if (path.includes('Image')) return true;
+      if (path.includes('dtb') && !path.includes('.img')) return true;
+      return false;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => false } as fs.Stats);
+    vi.mocked(fs.readFileSync).mockReturnValue('do.devicecheck=1');
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readdirSync).mockReturnValue(['Image', 'anykernel.sh'] as any);
+    vi.mocked(fs.cpSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await packageAnyKernel3(baseConfig);
+
+    expect(kernel.findDtbFile).toHaveBeenCalledWith('/kernel', 'arm64');
+    expect(fs.copyFileSync).toHaveBeenCalledWith(
+      '/kernel/out/arch/arm64/boot/dtb',
+      expect.stringContaining('dtb')
+    );
+    expect(core.info).toHaveBeenCalledWith(expect.stringContaining('Copied dtb'));
+  });
+
+  it('copies DTB img file with correct name when found', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image');
+    vi.mocked(kernel.findDtboFile).mockReturnValue(undefined);
+    vi.mocked(kernel.findDtbFile).mockReturnValue('/kernel/out/arch/arm64/boot/dtb.img');
+
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      if (path.includes('anykernel.sh')) return true;
+      if (path.includes('Image')) return true;
+      if (path.includes('dtb.img')) return true;
+      return false;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => false } as fs.Stats);
+    vi.mocked(fs.readFileSync).mockReturnValue('do.devicecheck=1');
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readdirSync).mockReturnValue(['Image', 'anykernel.sh'] as any);
+    vi.mocked(fs.cpSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await packageAnyKernel3(baseConfig);
+
+    expect(fs.copyFileSync).toHaveBeenCalledWith(
+      '/kernel/out/arch/arm64/boot/dtb.img',
+      expect.stringContaining('dtb.img')
+    );
+  });
+
+  it('copies all files when kernelImage, DTBO, and DTB are all found', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz');
+    vi.mocked(kernel.findDtboFile).mockReturnValue('/kernel/out/arch/arm64/boot/dtbo.img');
+    vi.mocked(kernel.findDtbFile).mockReturnValue('/kernel/out/arch/arm64/boot/dtb');
+
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      if (path.includes('anykernel.sh')) return true;
+      if (path.includes('Image.gz')) return true;
+      if (path.includes('dtbo.img')) return true;
+      if (path.includes('dtb') && !path.includes('.img')) return true;
+      return false;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => false } as fs.Stats);
+    vi.mocked(fs.readFileSync).mockReturnValue('do.devicecheck=1');
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readdirSync).mockReturnValue(['Image.gz', 'anykernel.sh'] as any);
+    vi.mocked(fs.cpSync).mockImplementation(() => undefined);
+    vi.mocked(fs.unlinkSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await packageAnyKernel3(baseConfig);
+
+    expect(fs.copyFileSync).toHaveBeenCalledTimes(5); // kernel + dtbo + dtb + anykernel.sh copy + file removal loop
+    expect(core.info).toHaveBeenCalledWith(expect.stringContaining('Copied kernel'));
+    expect(core.info).toHaveBeenCalledWith(expect.stringContaining('Copied dtbo'));
+    expect(core.info).toHaveBeenCalledWith(expect.stringContaining('Copied dtb'));
+  });
+
 
 
   it('removes unnecessary files from AnyKernel3 directory', async () => {
@@ -449,6 +574,9 @@ IS_SLOT_DEVICE=0;`;
 
   it('handles raw Image fallback when compressed formats not found', async () => {
     const config = { ...baseConfig };
+
+    // Mock findKernelImage to return undefined (no compressed format found)
+    vi.mocked(kernel.findKernelImage).mockReturnValue(undefined);
 
     vi.mocked(fs.existsSync).mockImplementation((p) => {
       const path = String(p);
@@ -488,6 +616,9 @@ IS_SLOT_DEVICE=0;`;
 
   it('throws error when kernel Image is not found in any format', async () => {
     const config = { ...baseConfig };
+
+    // Mock findKernelImage to return undefined
+    vi.mocked(kernel.findKernelImage).mockReturnValue(undefined);
 
     vi.mocked(fs.existsSync).mockImplementation((p) => {
       const path = String(p);
@@ -598,17 +729,12 @@ describe('packageKernel', () => {
       buildDir: '/build',
     };
 
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz-dtb');
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.chmodSync).mockImplementation(() => undefined);
     vi.mocked(fs.readFileSync).mockReturnValue('KERNEL_FMT [raw]');
     vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
       const p = String(path);
-      if (p.includes('boot')) {
-        if (options && typeof options === 'object' && 'withFileTypes' in options) {
-          return [createMockDirent('Image.gz-dtb', false)] as any;
-        }
-        return ['Image.gz-dtb'] as any;
-      }
       if (p.includes('split')) return ['new.img'] as any;
       return [] as any;
     });
@@ -616,6 +742,7 @@ describe('packageKernel', () => {
     vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.rmSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
     await packageKernel(config);

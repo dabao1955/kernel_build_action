@@ -348,6 +348,95 @@ describe('buildKernel', () => {
     expect(result).toBe(false);
     expect(core.debug).toHaveBeenCalledWith(expect.stringContaining('Build command failed'));
   });
+
+  it('warns when clang is not found in PATH', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockImplementation(async (cmd) => {
+      if (cmd === 'which') {
+        throw new Error('Command not found');
+      }
+      return 0;
+    });
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {
+        clangPath: '/clang',
+      },
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    await buildKernel(config);
+
+    expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('NOT found'));
+  });
+
+  it('builds with GCC-only 32-bit toolchain', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm',
+      config: 'defconfig',
+      toolchain: {
+        gcc32Path: '/gcc-32',
+        gcc32Prefix: 'arm-linux-androideabi-4.9',
+      },
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(true);
+    expect(exec.exec).toHaveBeenCalledWith(
+      'make',
+      expect.arrayContaining(['CC=/gcc-32/bin/arm-linux-androideabi-4.9-gcc']),
+      expect.any(Object)
+    );
+  });
+
+  it('builds with GCC 64-bit and 32-bit combination', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {
+        gcc64Path: '/gcc-64',
+        gcc64Prefix: 'aarch64-linux-android-4.9',
+        gcc32Path: '/gcc-32',
+        gcc32Prefix: 'arm-linux-androideabi-4.9',
+      },
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(true);
+    expect(exec.exec).toHaveBeenCalled();
+    // Check that the make command includes the correct CROSS_COMPILE_ARM32
+    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall) {
+      const makeArgs = makeCall[1] as string[];
+      expect(makeArgs).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('CROSS_COMPILE_ARM32=arm-linux-androideabi-4.9-'),
+        ])
+      );
+    }
+  });
 });
 
 describe('isBuildSuccessful', () => {

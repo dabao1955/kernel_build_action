@@ -20,6 +20,8 @@ vi.mock('@actions/exec');
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Clear NEED_GCC to prevent interference between tests
+  delete process.env.NEED_GCC;
 });
 
 describe('getSystemToolchainPaths', () => {
@@ -306,6 +308,163 @@ describe('setupToolchains', () => {
     expect(tc.downloadTool).toHaveBeenCalledTimes(2);
     expect(result.gcc64Path).toBeDefined();
     expect(result.gcc32Path).toBeDefined();
+  });
+
+  it('downloads third-party GCC without AOSP GCC (downloadOtherGcc path)', async () => {
+    // Clear NEED_GCC to ensure we go through downloadOtherGcc path
+    delete process.env.NEED_GCC;
+
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
+      const p = String(path);
+      if (p.includes('gcc-64') && options && typeof options === 'object' && 'withFileTypes' in options) {
+        return [
+          { name: 'bin', isDirectory: () => true, isFile: () => false },
+          { name: 'aarch64-linux-gnu-gcc', isDirectory: () => false, isFile: () => true },
+        ] as any;
+      }
+      if (p.includes('gcc-32') && options && typeof options === 'object' && 'withFileTypes' in options) {
+        return [
+          { name: 'bin', isDirectory: () => true, isFile: () => false },
+          { name: 'arm-linux-gnueabihf-gcc', isDirectory: () => false, isFile: () => true },
+        ] as any;
+      }
+      if (p.includes('bin')) {
+        if (p.includes('gcc-64')) return ['aarch64-linux-gnu-gcc'] as any;
+        if (p.includes('gcc-32')) return ['arm-linux-gnueabihf-gcc'] as any;
+      }
+      return [] as any;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(tc.downloadTool).mockResolvedValue('/tmp/gcc.tar.gz');
+    vi.mocked(tc.extractTar).mockResolvedValue('/home/runner/gcc-64');
+
+    const config: ToolchainConfig = {
+      aospClang: false,
+      aospClangVersion: '',
+      aospGcc: false,
+      androidVersion: '',
+      otherClangUrl: '',
+      otherClangBranch: '',
+      otherGcc64Url: 'https://example.com/gcc64.tar.gz',
+      otherGcc64Branch: 'master',
+      otherGcc32Url: 'https://example.com/gcc32.tar.gz',
+      otherGcc32Branch: 'master',
+    };
+
+    const result = await setupToolchains(config);
+
+    expect(tc.downloadTool).toHaveBeenCalledWith('https://example.com/gcc64.tar.gz', 'gcc-aarch64.tar.gz');
+    expect(tc.downloadTool).toHaveBeenCalledWith('https://example.com/gcc32.tar.gz', 'gcc-arm.tar.gz');
+    expect(tc.extractTar).toHaveBeenCalledTimes(2);
+    expect(result.gcc64Path).toBeDefined();
+    expect(result.gcc32Path).toBeDefined();
+    expect(result.gcc64Path).toContain('gcc-64');
+    expect(result.gcc32Path).toContain('gcc-32');
+
+    // Cleanup
+    delete process.env.NEED_GCC;
+  });
+
+  it('downloads only 64-bit third-party GCC when only gcc64Url is provided', async () => {
+    // Clear NEED_GCC to ensure we go through downloadOtherGcc path
+    delete process.env.NEED_GCC;
+
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
+      const p = String(path);
+      if (p.includes('gcc-64') && options && typeof options === 'object' && 'withFileTypes' in options) {
+        return [
+          { name: 'bin', isDirectory: () => true, isFile: () => false },
+          { name: 'aarch64-linux-gnu-gcc', isDirectory: () => false, isFile: () => true },
+        ] as any;
+      }
+      if (p.includes('bin') && p.includes('gcc-64')) {
+        return ['aarch64-linux-gnu-gcc'] as any;
+      }
+      return [] as any;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      return path.includes('gcc-64');
+    });
+    vi.mocked(tc.downloadTool).mockResolvedValue('/tmp/gcc.tar.gz');
+    vi.mocked(tc.extractTar).mockResolvedValue('/home/runner/gcc-64');
+
+    const config: ToolchainConfig = {
+      aospClang: false,
+      aospClangVersion: '',
+      aospGcc: false,
+      androidVersion: '',
+      otherClangUrl: '',
+      otherClangBranch: '',
+      otherGcc64Url: 'https://example.com/gcc64.tar.gz',
+      otherGcc64Branch: 'main',
+      otherGcc32Url: '',
+      otherGcc32Branch: '',
+    };
+
+    const result = await setupToolchains(config);
+
+    expect(tc.downloadTool).toHaveBeenCalledTimes(1);
+    expect(tc.downloadTool).toHaveBeenCalledWith('https://example.com/gcc64.tar.gz', 'gcc-aarch64.tar.gz');
+    expect(result.gcc64Path).toBeDefined();
+    expect(result.gcc32Path).toBeUndefined();
+
+    // Cleanup
+    delete process.env.NEED_GCC;
+  });
+
+  it('downloads only 32-bit third-party GCC when only gcc32Url is provided', async () => {
+    // Clear NEED_GCC to ensure we go through downloadOtherGcc path
+    delete process.env.NEED_GCC;
+
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
+      const p = String(path);
+      if (p.includes('gcc-32') && options && typeof options === 'object' && 'withFileTypes' in options) {
+        return [
+          { name: 'bin', isDirectory: () => true, isFile: () => false },
+          { name: 'arm-linux-gnueabihf-gcc', isDirectory: () => false, isFile: () => true },
+        ] as any;
+      }
+      if (p.includes('bin') && p.includes('gcc-32')) {
+        return ['arm-linux-gnueabihf-gcc'] as any;
+      }
+      return [] as any;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      return path.includes('gcc-32');
+    });
+    vi.mocked(tc.downloadTool).mockResolvedValue('/tmp/gcc.tar.gz');
+    vi.mocked(tc.extractTar).mockResolvedValue('/home/runner/gcc-32');
+
+    const config: ToolchainConfig = {
+      aospClang: false,
+      aospClangVersion: '',
+      aospGcc: false,
+      androidVersion: '',
+      otherClangUrl: '',
+      otherClangBranch: '',
+      otherGcc64Url: '',
+      otherGcc64Branch: '',
+      otherGcc32Url: 'https://example.com/gcc32.tar.gz',
+      otherGcc32Branch: 'main',
+    };
+
+    const result = await setupToolchains(config);
+
+    expect(tc.downloadTool).toHaveBeenCalledTimes(1);
+    expect(tc.downloadTool).toHaveBeenCalledWith('https://example.com/gcc32.tar.gz', 'gcc-arm.tar.gz');
+    expect(result.gcc64Path).toBeUndefined();
+    expect(result.gcc32Path).toBeDefined();
+
+    // Cleanup
+    delete process.env.NEED_GCC;
   });
 });
 
