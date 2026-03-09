@@ -94,6 +94,11 @@ Keep the summary concise, start with a capital letter, and avoid trailing period
 - Keep subject lines brief (target ≤72 chars), no body unless necessary. If referencing a PR/issue, append `(fix #123)` at the end as seen in history.
 - Before committing, glance at recent `git log --oneline` to stay consistent with current prefixes and capitalization used in this repo.
 
+### Branch Strategy
+
+- **Minor changes**: Commit directly to `main` branch after passing all checks
+- **Major changes**: Create a new feature branch (e.g., `feat/description` or `fix/description`), commit to it, and submit a pull request for review
+
 ### Pre-commit Checks
 
 Run the appropriate checks based on file types modified:

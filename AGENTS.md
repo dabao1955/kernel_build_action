@@ -322,6 +322,11 @@ Users reference the action in workflows:
 
 > **Note**: If this repository was cloned with `--depth=1` (shallow clone), run `git fetch --unshallow` or `git fetch --depth=100` to retrieve commit history before referencing existing commit styles.
 
+### Branch Strategy
+
+- **Minor changes** (simple fixes, docs updates): Commit directly to `main` branch after passing all checks
+- **Major changes** (new features, significant refactors): Create a new branch (e.g., `feat/description`, `fix/description`), commit to it, and submit a pull request for review
+
 ```
 component: <type>[optional scope]: <description>
 
