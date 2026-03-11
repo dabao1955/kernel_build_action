@@ -1,407 +1,317 @@
-# Android Kernel Build Action - Project Context
-
-## Agent Quick Start
-
-- For significant features or refactors, sketch a plan first; keep it updated as you work.
-- Default to `rg` for searching and keep edits ASCII unless the file already uses non-ASCII.
-- Run the component-specific checks below before handing work off; do not skip failing steps.
-- When unsure which path to take, favor minimal risk changes that can run the workflow successfully.
+# AGENTS.md - Android Kernel Build Action
 
 ## Project Overview
 
-This is the **Android Kernel Build Action** - a comprehensive GitHub Action that automates the building of Android kernel source code. The project provides a flexible, configurable workflow for compiling Android kernels with support for various toolchains, architectures, and kernel modifications.
+This is a GitHub Action for automatically building Android kernels. It enables developers to automate kernel compilation through GitHub Actions workflows, supporting various customization options including toolchain selection, KernelSU integration, Kali NetHunter support, and more.
 
-### Key Technologies
-- **GitHub Actions** (YAML-based CI/CD automation)
-- **TypeScript** (main build logic - migrated from bash composite action)
-- **Node.js 20** (runtime environment)
-- **@actions/toolkit** (core, exec, cache, artifact, github, tool-cache)
-- **esbuild** (fast bundler for distribution)
-- **Vitest** (testing framework with coverage support)
-- **Python 3** (kernel patch scripts)
-- **Android NDK/AOSP toolchains** (GCC and Clang)
-- **Various kernel modification frameworks** (KernelSU, NetHunter, LXC, Re-Kernel, BBG)
-- **Multi-architecture support** (AMD64, ARM64)
-- **Coccinelle** (semantic patching for kernel modifications)
+**Tech Stack:**
+- **TypeScript** - Primary development language
+- **Node.js 20** - Runtime environment
+- **GitHub Actions** - Automation platform
+- **esbuild** - Build tool
+- **Vitest** - Testing framework
 
 ## Project Structure
 
 ```
 /home/user/a/
-├── action.yml              # Main GitHub Action definition (node20 runtime)
-├── README.md               # Comprehensive usage documentation
-├── mkdtboimg.py            # Python tool for DTB/DTBO image manipulation
-├── package.json            # Node.js dependencies and scripts
-├── tsconfig.json           # TypeScript compiler configuration
-├── vitest.config.ts        # Vitest testing configuration
-├── yarn.lock               # Yarn dependency lock file
-├── eslint.config.js        # ESLint flat configuration (v9+)
-├── .prettierrc             # Prettier formatting configuration
-├── .yamllint               # YAML linting configuration
-├── .pylintrc               # Python linting configuration
-├── LICENSE                 # Apache License 2.0
-├── SECURITY.md             # Security policy documentation
-├── AGENTS.md               # Project context and developer guide
-├── dist/                   # Compiled JavaScript output (esbuild bundled)
-│   ├── index.js            # Main bundled file for distribution
-│   └── post/
-│       └── index.js        # Post-phase bundled file
 ├── src/                    # TypeScript source code
-│   ├── index.ts            # Main entry point with main phase
-│   ├── post.ts             # Post-phase entry point (cleanup, error analysis)
-│   ├── cache.ts            # @actions/cache integration for ccache
-│   ├── clean.ts            # Cleanup logic (post phase)
-│   ├── error.ts            # Error log analysis (30+ patterns)
-│   ├── toolchain.ts        # Toolchain download and management
-│   ├── kernel.ts           # Kernel source cloning and version detection
-│   ├── config.ts           # Kernel config manipulation (LTO, KVM, etc.)
-│   ├── patches.ts          # Kernel patches (KernelSU, NetHunter, LXC, BBG, ReKernel)
-│   ├── builder.ts          # Kernel compilation with make
-│   ├── packager.ts         # Output packaging (boot.img/AnyKernel3)
-│   ├── artifact.ts         # @actions/artifact integration
-│   ├── release.ts          # GitHub Release creation
-│   └── utils.ts            # Utility functions
-├── __tests__/              # Vitest test files
-│   ├── artifact.test.ts
-│   ├── builder.test.ts
-│   ├── cache.test.ts
-│   ├── clean.test.ts
-│   ├── config.test.ts
-│   ├── error.test.ts
-│   ├── kernel.test.ts
-│   ├── packager.test.ts
-│   ├── patches.test.ts
-│   ├── release.test.ts
-│   ├── toolchain.test.ts
-│   └── utils.test.ts
-├── .gemini/                # AI assistant configuration
-│   ├── config.yaml
-│   └── styleguide.md
-├── .github/                # GitHub configuration
-│   ├── dependabot.yml
-│   ├── pull_request_template.md
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug-report.yml
-│   │   ├── common.yml
-│   │   └── config.yml
-│   └── workflows/
-│       ├── main.yml        # Main CI test workflow
-│       ├── build.yml       # Build verification
-│       ├── lint.yml        # Linting checks
-│       ├── check.yml       # Code quality checks
-│       ├── lkm.yml         # LKM (Loadable Kernel Module) tests
-│       └── close-pr.yml    # PR automation
-├── kernelsu/               # KernelSU integration scripts
-│   ├── apply_cocci.py
-│   ├── classic.cocci
-│   ├── minimal.cocci
-│   └── README.md
-├── lxc/                    # LXC/Docker support
-│   ├── cgroup.cocci
-│   ├── config.py
-│   ├── patch_cocci.py
-│   ├── xt_qtaguid.cocci
-│   └── README.md
-├── nethunter/              # Kali NetHunter integration
-│   ├── config.py
-│   ├── patch.py
-│   └── README.md
-└── rekernel/               # Re-Kernel support patches
-    ├── patches/
-    │   ├── binder.cocci
-    │   ├── PATCH_ANALYSIS.md
-    │   ├── proc_ops.cocci
-    │   └── signal.cocci
-    ├── cocci.zip
-    ├── Kconfig
-    ├── Makefile
-    ├── patch.py
-    ├── README.md
-    ├── rekernel.c
-    ├── rekernel.h
-    └── src.zip
+│   ├── index.ts           # Main entry - orchestrates build workflow
+│   ├── post.ts            # Post-action cleanup script
+│   ├── builder.ts         # Kernel build logic
+│   ├── toolchain.ts       # Toolchain management (GCC/Clang)
+│   ├── kernel.ts          # Kernel source cloning and management
+│   ├── patches.ts         # Patch application (KernelSU, LXC, etc.)
+│   ├── packager.ts        # Output packaging
+│   ├── artifact.ts        # Artifact uploading
+│   ├── release.ts         # GitHub Release creation
+│   ├── cache.ts           # ccache support
+│   ├── config.ts          # Kernel configuration modifications
+│   ├── clean.ts           # Cleanup logic
+│   ├── utils.ts           # Utility functions
+│   └── error.ts           # Error handling
+├── __tests__/             # Test files (Vitest)
+├── dist/                  # Compiled output (committed to repo)
+├── kernelsu/              # KernelSU patch files
+├── lxc/                   # LXC/Docker support patches
+├── nethunter/             # Kali NetHunter patches
+├── rekernel/              # Re-Kernel patches and source
+├── .github/workflows/     # CI/CD workflow definitions
+├── action.yml             # GitHub Action input/output definitions
+├── package.json           # Node.js dependencies and scripts
+└── tsconfig.json          # TypeScript configuration
 ```
 
-## Architecture
+## Build and Run
 
-### TypeScript Action Structure
+### Install Dependencies
+```bash
+yarn install
+```
 
-The action uses a two-phase execution model:
-
-#### Main Phase (`src/index.ts` → `dist/index.js`)
-- Environment validation (GitHub Actions Linux runner)
-- Dependency installation (apt/pacman)
-- Toolchain setup (AOSP/Custom GCC/Clang)
-- Kernel source cloning
-- Patch application (KernelSU, NetHunter, LXC, BBG, ReKernel)
-- Kernel compilation with make
-- Output packaging (boot.img or AnyKernel3)
-- Artifact upload or Release creation
-
-#### Post Phase (`src/post.ts` → `dist/post/index.js`, always runs)
-- Error log analysis (only if build failed)
-- Cleanup (removes toolchains, kernel source, temp files)
-- Environment variable cleanup
-
-### Module Organization
-
-| Module | Responsibility |
-|--------|---------------|
-| `index.ts` | Main entry point, orchestrates the build process |
-| `post.ts` | Post-phase entry point, handles cleanup and error analysis |
-| `cache.ts` | ccache setup with @actions/cache |
-| `clean.ts` | Directory and file cleanup |
-| `error.ts` | Build log analysis with 30+ error patterns |
-| `toolchain.ts` | Toolchain download and path management |
-| `kernel.ts` | Git operations and kernel version detection |
-| `config.ts` | Kernel config modifications |
-| `patches.ts` | Integration with Python patch scripts |
-| `builder.ts` | make execution with proper environment |
-| `packager.ts` | boot.img/AnyKernel3 packaging |
-| `artifact.ts` | @actions/artifact integration |
-| `release.ts` | GitHub Release creation |
-| `utils.ts` | Helper functions |
-
-## Building and Running
-
-### Development Workflow
+### Development Commands
 
 ```bash
-# Install dependencies
-yarn install
-
-# Build (compile TypeScript to dist/ using esbuild)
+# Build project (compile TypeScript to dist/)
 yarn build
 
-# Run tests with coverage
+# Run tests
 yarn test
 
-# Lint
+# Run linting
 yarn lint
 
-# Format
+# Format code
 yarn format
 
 # Check formatting
 yarn format:check
 ```
 
-### Build Process
+### Build Notes
+- Uses `esbuild` to bundle into single files
+- Outputs to `dist/index.js` (main) and `dist/post/index.js` (post-action)
+- `dist/` directory must be committed to Git for the Action to work
 
-1. **TypeScript Compilation**: esbuild bundles TypeScript sources
-   - `src/index.ts` → `dist/index.js` (main entry)
-   - `src/post.ts` → `dist/post/index.js` (post entry, CJS format)
-2. **Target**: Node.js 20, platform: node
-3. **Distribution**: Both bundled files must be committed for GitHub Actions use
+## Core Modules
+
+### 1. Toolchain Management (`toolchain.ts`)
+Supports multiple toolchains:
+- AOSP Clang (version-selectable)
+- AOSP GCC
+- Custom Clang/GCC toolchains (via URL)
+- System default toolchain
+
+### 2. Kernel Source Management (`kernel.ts`)
+- Clone kernel source (supports shallow clone)
+- Clone vendor source (for OnePlus devices, etc.)
+- Manage kernel configuration files
+
+### 3. Patch System (`patches.ts`)
+Supported feature patches:
+- **KernelSU** - Root privilege management (supports LKM mode)
+- **Re-Kernel** - Kernel optimizations
+- **LXC** - Container support
+- **Kali NetHunter** - Penetration testing support
+- **KVM** - Virtualization support
+- **BaseBandGuard** - Baseband protection
+
+### 4. Build System (`builder.ts`)
+- Cross-platform compilation (arm64, arm, x86, etc.)
+- ccache acceleration
+- Extra make arguments support
+
+### 5. Packaging and Release
+- **AnyKernel3** packaging
+- **boot.img** unpack/pack
+- Automatic GitHub Release creation
+- Artifact uploading
+
+## Development Conventions
+
+### Code Style
+- **ESLint** with `@typescript-eslint` configuration
+- **Prettier** for code formatting
+- Strict TypeScript config (`strict: true`)
+
+### Commit Message Convention
+
+This project follows a structured commit message format:
+
+```
+<module>: <type>[(scope)]: <description>
+```
+
+**Modules:**
+- `actions` - Core action code changes
+- `builder` - Build system changes
+- `cache` - Ccache functionality
+- `clean` - Cleanup functionality
+- `config` - Kernel configuration handling
+- `dep` - Dependency management
+- `dist` - Distribution/build output updates
+- `docs` - Documentation changes
+- `kernel` - Kernel source handling
+- `kernelsu` - KernelSU integration
+- `lxc` - LXC/Docker support
+- `nethunter` - Kali NetHunter support
+- `packager` - Packaging logic
+- `patches` - Patch application system
+- `rekernel` - Re-Kernel support
+- `release` - Release creation
+- `scripts` - Python/shell scripts
+- `test` - Test-related changes
+- `toolchain` - Toolchain management
+- `utils` - Utility functions
+- `workflow` - GitHub workflow files
+
+**Types:**
+- `feat` - New feature
+- `fix` - Bug fix
+- `refactor` - Code refactoring
+- `chore` - Maintenance tasks
+- `style` - Code style changes (formatting)
+- `security` - Security fixes
+- `docs` - Documentation updates
+- `test` - Test additions/updates
+- `build` - Build system changes
+
+**Examples:**
+```
+builder: fix: Add silent option to prevent duplicate build logs
+test(builder): Add dangerous command recognition tests
+actions: refactor: Rewritten with TypeScript
+dep: chore(build): Use esbuild
+rekernel: fix(zip): Fix patch extraction
+gwmini: chore(style): Auto update docs
+build(deps-dev): bump eslint from 9.39.2 to 10.0.0
+build(deps): bump @octokit/rest from 20.1.2 to 22.0.1
+```
 
 ### Testing
 
-The project uses **Vitest** for testing with the following features:
-- **Coverage**: V8 provider with lcov, text, and json-summary reporters
-- **Test files**: Located in `__tests__/` directory
-- **Globals**: Enabled for test functions
-- **Environment**: Node.js
+**Framework:** Vitest with v8 coverage provider
 
+**Test Structure:**
+- Tests located in `__tests__/` directory
+- Test files follow naming pattern: `<module>.test.ts`
+- Coverage excludes `src/index.ts` and `src/post.ts`
+
+**Commands:**
 ```bash
-# Run tests once
-yarn test --run
-
-# Run tests in watch mode
+# Run all tests
 yarn test
 
-# Run tests with coverage
+# Run with coverage
 yarn test --coverage
+
+# Run specific test file
+yarn test builder.test.ts
 ```
 
-### Usage
+**Test Files:**
+- `artifact.test.ts` - Artifact upload tests
+- `builder.test.ts` - Build system tests
+- `cache.test.ts` - Ccache functionality tests
+- `clean.test.ts` - Cleanup tests
+- `config.test.ts` - Configuration tests
+- `error.test.ts` - Error handling tests
+- `kernel.test.ts` - Kernel management tests
+- `packager.test.ts` - Packaging tests
+- `patches.test.ts` - Patch system tests
+- `release.test.ts` - Release creation tests
+- `toolchain.test.ts` - Toolchain tests
+- `utils.test.ts` - Utility function tests
 
-Users reference the action in workflows:
+### Git Workflows
+
+**main.yml** - Main CI test (builds real kernel)
+**check.yml** - Code checks and validation
+**lint.yml** - ESLint checks
+**build.yml** - Build verification
+**lkm.yml** - LKM (Loadable Kernel Module) mode tests
+**close-pr.yml** - Auto-close PR workflow
+
+### Pull Request Template
+
+PRs must include:
+- **Title** - Clear summary of changes
+- **Description** - Detailed explanation
+- **Type** - Bug fix / Feature add / Other
+- **Checkbox** - Confirm no breaking changes and normal operation unaffected
+- **Linked issues** - Reference issues with `fixes: #123`
+
+## Action Inputs
+
+| Input | Required | Description |
+|-------|----------|-------------|
+| `kernel-url` | ✅ | Android kernel source repository URL |
+| `config` | ✅ | Kernel configuration file name |
+| `arch` | ✅ | Target architecture (arm64/arm/x86/etc.) |
+| `kernel-branch` | ❌ | Kernel branch (default: main) |
+| `depth` | ❌ | Git clone depth (default: 1) |
+| `vendor` | ❌ | Enable vendor kernel source |
+| `vendor-url` | ❌ | Vendor kernel source URL |
+| `aosp-clang` | ❌ | Use AOSP Clang toolchain |
+| `aosp-gcc` | ❌ | Use AOSP GCC toolchain |
+| `aosp-clang-version` | ❌ | AOSP Clang version (default: r383902) |
+| `android-version` | ❌ | Android version for toolchain |
+| `ksu` | ❌ | Enable KernelSU integration |
+| `ksu-version` | ❌ | KernelSU version (default: main) |
+| `ksu-lkm` | ❌ | Build KernelSU as LKM |
+| `rekernel` | ❌ | Enable Re-Kernel support |
+| `lxc` | ❌ | Enable LXC/Docker support |
+| `nethunter` | ❌ | Enable Kali NetHunter |
+| `kvm` | ❌ | Enable KVM support |
+| `bbg` | ❌ | Enable BaseBandGuard |
+| `disable-lto` | ❌ | Disable Link Time Optimization |
+| `ccache` | ❌ | Enable ccache acceleration |
+| `anykernel3` | ❌ | Use AnyKernel3 packaging |
+| `release` | ❌ | Auto-create GitHub Release |
+| `access-token` | ❌ | GitHub token for releases |
+| `extra-make-args` | ❌ | Extra make arguments (JSON array) |
+
+## Usage Example
 
 ```yaml
-- name: Build Kernel
-  uses: dabao1955/kernel_build_action@main
-  with:
-    kernel-url: https://github.com/username/kernel_repo
-    kernel-branch: main
-    config: defconfig
-    arch: arm64
-    aosp-clang: true
-    android-version: 12
+name: Build Kernel
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dabao1955/kernel_build_action@v1
+        with:
+          kernel-url: https://github.com/username/kernel
+          kernel-branch: main
+          config: defconfig
+          arch: arm64
+          aosp-clang: true
+          aosp-gcc: true
+          ksu: true
+          android-version: 12
+          ccache: true
+          anykernel3: true
+          release: true
+          access-token: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+## Security
+
+**Supported Versions:**
+- `@v1` - ✅ Supported
+- `@latest` - ✅ Supported  
+- `@main` - ⚠️ May have experimental changes
+
+**Vulnerability Reporting:**
+1. GitHub Security Advisories (preferred)
+2. Email: dabao1955@163.com (for sensitive issues)
+
+**Security Guidelines:**
+- Use least privilege principle for tokens
+- Pin to specific versions in production
+- Use `GITHUB_TOKEN` with minimal permissions
+- Store PAT in GitHub Secrets if required
 
 ## Dependencies
 
-### Runtime
-- `@actions/core` ^3.0.0: Input/output, logging, state
-- `@actions/exec` ^3.0.0: Shell command execution
-- `@actions/cache` ^6.0.0: ccache caching
-- `@actions/artifact` ^6.0.0: Build artifact upload
-- `@actions/github` ^9.0.0: GitHub API
-- `@actions/tool-cache` ^4.0.0: Tool downloading
-- `@octokit/rest` ^22.0.1: GitHub REST API
-- `@octokit/core` ^7.0.6: GitHub API core
-- `@octokit/graphql` ^9.0.3: GitHub GraphQL API
-- `@octokit/request` ^10.0.8: GitHub API requests
+**Production:**
+- `@actions/*` - GitHub Actions official SDKs
+- `@octokit/*` - GitHub API clients
 
-### Development
-- `typescript` ^5.4.4: TypeScript compiler
-- `esbuild` ^0.27.3: Fast bundler (replaced @vercel/ncc)
-- `eslint` ^10.0.0: Linting with flat config
-- `@eslint/js` ^10.0.0: ESLint JavaScript rules
-- `@typescript-eslint/eslint-plugin` ^8.5.0: TypeScript ESLint plugin
-- `@typescript-eslint/parser` ^8.5.0: TypeScript ESLint parser
-- `prettier` ^3.2.5: Formatting
-- `@types/node` ^25.3.0: Type definitions
-- `vitest` ^2.0.0: Testing framework
-- `@vitest/coverage-v8` ^2.0.0: Test coverage provider
+**Development:**
+- `typescript` - TypeScript compiler
+- `esbuild` - Fast bundler
+- `vitest` - Test framework with coverage
+- `eslint` - Linting
+- `prettier` - Code formatting
+- `@typescript-eslint/*` - TypeScript ESLint plugins
 
-## Key Features
+## Branch Strategy
 
-### Kernel Modifications
-- **KernelSU**: Root access framework (with LKM support)
-- **NetHunter**: Penetration testing tools
-- **LXC/Docker**: Container support
-- **Re-Kernel**: Performance optimizations
-- **BBG**: BaseBandGuard security
-- **KVM**: Hardware virtualization
+- **main** - Production-ready code
+- **feature/*** - Feature development
+- **fix/*** - Bug fixes
 
-### Toolchain Support
-- AOSP GCC/Clang (configurable versions)
-- Custom toolchains via URL
-- System toolchain fallback
-
-### Build Features
-- ccache via @actions/cache
-- LTO control (enable/disable)
-- Parallel builds
-- Cross-compilation (arm64, x86_64, etc.)
-- Vendor kernel support
-
-### Output Options
-- boot.img (direct kernel image)
-- AnyKernel3 ZIP (flashable package)
-- GitHub Release (automated)
-
-## Configuration Files
-
-### ESLint Configuration (eslint.config.js)
-- Uses flat config format (ESLint v9+)
-- TypeScript support via @typescript-eslint
-- Configured for Node.js globals
-- Rules:
-  - `@typescript-eslint/no-explicit-any`: off
-  - `@typescript-eslint/explicit-function-return-type`: off
-  - `@typescript-eslint/no-unused-vars`: warn (with ignore patterns for `_`)
-  - `no-console`: off
-
-### Prettier Configuration (.prettierrc)
-- semi: true
-- trailingComma: es5
-- singleQuote: true
-- printWidth: 100
-- tabWidth: 2
-
-### TypeScript Configuration (tsconfig.json)
-- Target: ES2022
-- Module: commonjs
-- Strict mode enabled
-- Inline source maps and sources
-- Experimental decorators enabled
-- ESModule interop enabled
-
-### Vitest Configuration (vitest.config.ts)
-- Environment: node
-- Coverage provider: v8
-- Coverage reporters: text, lcov, json-summary
-- Coverage includes: src/**/*.ts
-- Coverage excludes: src/index.ts, src/post.ts (entry points)
-- Test files: __tests__/**/*.ts
-- Globals: true
-
-## Git Commit Conventions
-
-> **Note**: If this repository was cloned with `--depth=1` (shallow clone), run `git fetch --unshallow` or `git fetch --depth=100` to retrieve commit history before referencing existing commit styles.
-
-### Branch Strategy
-
-- **Minor changes** (simple fixes, docs updates): Commit directly to `main` branch after passing all checks
-- **Major changes** (new features, significant refactors): Create a new branch (e.g., `feat/description`, `fix/description`), commit to it, and submit a pull request for review
-
-```
-component: <type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-Types:
-- `feat`: New feature
-- `fix`: Bug fix
-- `dep`: Dependency update
-- `build`: Build system changes
-- `docs`: Documentation changes
-- `refactor`: Code refactoring
-- `test`: Testing related changes
-
-Example:
-```
-action: feat(cache): Add @actions/cache for ccache
-
-Replace external ccache-action with native @actions/cache.
-Improves reliability and reduces external dependencies.
-
-Signed-off-by: user <user@example.com>
-```
-
-## Code Quality
-
-Before committing, always run:
-
-```bash
-# Run tests
-yarn test --run
-
-# Lint TypeScript files
-yarn lint
-
-# Check formatting
-yarn format:check
-
-# Lint YAML files
-yamllint action.yml
-
-# Build to ensure no compilation errors
-yarn build
-```
-
-### Workflow Checks
-
-The project has several GitHub workflows:
-- `main.yml`: Main CI test workflow (builds actual kernel)
-- `build.yml`: Verifies the action builds successfully
-- `lint.yml`: Runs ESLint and Prettier checks
-- `check.yml`: Additional code quality checks
-- `lkm.yml`: Tests LKM (Loadable Kernel Module) functionality
-- `close-pr.yml`: PR automation
-
-## Migration Notes
-
-### From ncc to esbuild
-The project migrated from `@vercel/ncc` to `esbuild` for faster builds and smaller output:
-- **Old**: `ncc build` produced a single file
-- **New**: `esbuild` produces two files (main and post)
-- **Benefits**: Faster compilation, better tree-shaking, native TypeScript support
-
-### ESLint Flat Config
-ESLint configuration moved from `.eslintrc.json` to `eslint.config.js`:
-- Uses new flat config format (ESLint v9+)
-- Better TypeScript integration
-- Improved performance
-
-### Testing Framework
-The project now uses **Vitest** for testing:
-- Modern, fast test runner
-- Built-in TypeScript support
-- V8 coverage provider
-- Compatible with Jest-style assertions
+Always create PRs to `main` branch. The `@main` tag should not be used in production workflows as it may contain experimental changes.
