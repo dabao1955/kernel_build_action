@@ -26939,7 +26939,7 @@ var require_package2 = __commonJS({
   "node_modules/@actions/artifact/package.json"(exports2, module2) {
     module2.exports = {
       name: "@actions/artifact",
-      version: "6.2.0",
+      version: "6.2.1",
       preview: true,
       description: "Actions artifact lib",
       keywords: [
@@ -93655,7 +93655,7 @@ NetworkError2.isNetworkErrorCode = (code) => {
 };
 var UsageError2 = class extends Error {
   constructor() {
-    const message = `Artifact storage quota has been hit. Unable to upload any new artifacts. Usage is recalculated every 6-12 hours.
+    const message = `Artifact storage quota has been hit. Unable to upload any new artifacts.
 More info on storage limits: https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions#calculating-minute-and-storage-spending`;
     super(message);
     this.name = "UsageError";
@@ -98196,9 +98196,11 @@ function streamExtractExternal(url_1, directory_1) {
     const isZip = mimeType === "application/zip" || mimeType === "application/x-zip-compressed" || mimeType === "application/zip-compressed" || urlEndsWithZip;
     const contentDisposition = response.message.headers["content-disposition"] || "";
     let fileName = "artifact";
-    const filenameMatch = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?/i);
-    if (filenameMatch && filenameMatch[1]) {
-      fileName = path21.basename(decodeURIComponent(filenameMatch[1].trim()));
+    const filenameStar = contentDisposition.match(/filename\*\s*=\s*UTF-8''([^;\r\n]*)/i);
+    const filenamePlain = contentDisposition.match(/(?<!\*)filename\s*=\s*['"]?([^;\r\n"']*)['"]?/i);
+    const rawName = (filenameStar === null || filenameStar === void 0 ? void 0 : filenameStar[1]) || (filenamePlain === null || filenamePlain === void 0 ? void 0 : filenamePlain[1]);
+    if (rawName) {
+      fileName = path21.basename(decodeURIComponent(rawName.trim()));
     }
     debug(`Content-Type: ${contentType2}, mimeType: ${mimeType}, urlEndsWithZip: ${urlEndsWithZip}, isZip: ${isZip}, skipDecompress: ${skipDecompress}`);
     debug(`Content-Disposition: ${contentDisposition}, fileName: ${fileName}`);
