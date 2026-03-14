@@ -215,6 +215,30 @@ describe('findFiles', () => {
     vi.mocked(fs.existsSync).mockReturnValue(false);
     expect(findFiles('/nonexistent', /.*/)).toEqual([]);
   });
+
+  it('recursively finds files in subdirectories', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    let callCount = 0;
+    vi.mocked(fs.readdirSync).mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        // First call - root directory
+        return [
+          { name: 'subdir', isDirectory: () => true, isFile: () => false },
+          { name: 'root.ts', isDirectory: () => false, isFile: () => true },
+        ] as fs.Dirent[];
+      } else {
+        // Second call - subdirectory
+        return [
+          { name: 'nested.ts', isDirectory: () => false, isFile: () => true },
+        ] as fs.Dirent[];
+      }
+    });
+    
+    const results = findFiles('/dir', /\.ts$/);
+    expect(results).toContain('/dir/root.ts');
+    expect(results).toContain('/dir/subdir/nested.ts');
+  });
 });
 
 describe('getActionPath', () => {

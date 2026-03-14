@@ -179,6 +179,47 @@ error: undefined reference to 'func2'
     analyzeErrors('/build.log');
     expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Deprecated API Usage'));
   });
+
+  it('handles note lines as continuation of error block', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue(`
+file.c:10: error: undefined reference to 'func'
+note: previously defined here
+file.c:15: error: another error
+`);
+    const infoMock = vi.mocked(core.info);
+    
+    analyzeErrors('/build.log');
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #1'));
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #2'));
+  });
+
+  it('handles make error lines with *** as continuation', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue(`
+make[1]: *** [Makefile:10: target] Error 1
+make: *** [Makefile:20: all] Error 2
+`);
+    const infoMock = vi.mocked(core.info);
+    
+    analyzeErrors('/build.log');
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Analyzing log file'));
+  });
+
+  it('handles empty lines that end error blocks', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue(`
+file.c:10: error: some error
+
+file.c:20: error: another error
+`);
+    const infoMock = vi.mocked(core.info);
+    
+    const result = analyzeErrors('/build.log');
+    expect(result).toBe(2);
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #1'));
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #2'));
+  });
 });
 
 describe('analyzeBuildErrors', () => {

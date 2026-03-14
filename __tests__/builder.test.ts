@@ -332,7 +332,12 @@ describe('buildKernel', () => {
   it('handles exec exception and returns false', async () => {
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
-    vi.mocked(exec.exec).mockRejectedValue(new Error('Command failed'));
+    vi.mocked(exec.exec).mockImplementation(async (cmd) => {
+      if (cmd === 'make') {
+        throw new Error('Command failed');
+      }
+      return 0;
+    });
 
     const config: BuildConfig = {
       kernelDir: '/kernel',
@@ -473,6 +478,144 @@ describe('isBuildSuccessful', () => {
     const result = isBuildSuccessful('/kernel', 'arm64');
 
     expect(result).toBe(false);
+  });
+});
+
+describe('buildKernel additional coverage', () => {
+  it('builds with GCC only toolchain (no clang)', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {
+        gcc64Path: '/gcc-64',
+        gcc32Path: '/gcc-32',
+        gcc64Prefix: 'aarch64-linux-gnu',
+        gcc32Prefix: 'arm-linux-gnueabihf',
+      },
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(true);
+    // Verify GCC-only path was taken (CC should be gcc, not clang)
+    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall) {
+      const makeArgs = makeCall[1] as string[];
+      expect(makeArgs.some(arg => arg.includes('gcc'))).toBe(true);
+    }
+  });
+
+  it('builds with system toolchain when no paths provided', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {},
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(true);
+    // Verify system toolchain path (CC=/usr/bin/clang)
+    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall) {
+      const makeArgs = makeCall[1] as string[];
+      expect(makeArgs).toContain('CC=/usr/bin/clang');
+    }
+  });
+
+  it('handles make execution error (catch block)', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    const debugMock = vi.mocked(core.debug);
+    
+    // First exec (which clang) succeeds, second exec (make) throws
+    vi.mocked(exec.exec).mockImplementation(async (cmd) => {
+      if (cmd === 'make') {
+        throw new Error('Make failed');
+      }
+      return 0;
+    });
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {},
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(false);
+    expect(debugMock).toHaveBeenCalledWith(expect.stringContaining('Build command failed'));
+  });
+
+  it('builds with ccache when no toolchain paths provided', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {},
+      extraMakeArgs: '',
+      useCcache: true,
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(true);
+    // Verify ccache path is set even when no toolchain paths
+    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall && makeCall[2]) {
+      const env = (makeCall[2] as any).env;
+      expect(env.PATH).toContain('/usr/lib/ccache');
+    }
+  });
+
+  it('builds with ccache using system toolchain and no gcc32', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    // Use system toolchain (no clang, no gcc paths) with ccache
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {
+        // Explicitly undefined paths to ensure cmdPath stays empty
+        clangPath: undefined,
+        gcc64Path: undefined,
+        gcc32Path: undefined,
+      },
+      extraMakeArgs: '',
+      useCcache: true,
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(true);
   });
 });
 

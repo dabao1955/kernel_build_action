@@ -71,7 +71,15 @@ describe('packageBootimg', () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
     vi.mocked(fs.rmSync).mockImplementation(() => undefined);
-    vi.mocked(exec.exec).mockResolvedValue(0);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockImplementation(async (cmd, args, options) => {
+      // Simulate stdout and stderr callbacks for magiskboot unpack
+      if (cmd === 'split/magiskboot' && args?.[0] === 'unpack' && options?.listeners) {
+        options.listeners.stdout?.(Buffer.from('stdout data'));
+        options.listeners.stderr?.(Buffer.from('stderr data'));
+      }
+      return 0;
+    });
 
     await packageBootimg(baseConfig);
 
@@ -80,6 +88,7 @@ describe('packageBootimg', () => {
       expect.arrayContaining(['--', 'https://example.com/boot.img'])
     );
     expect(fs.mkdirSync).toHaveBeenCalledWith('split', { recursive: true });
+    expect(fs.appendFileSync).toHaveBeenCalledWith(expect.stringContaining('nohup.out'), expect.any(Buffer));
   });
 
   it('downloads correct magiskboot for x64 architecture', async () => {

@@ -8,6 +8,7 @@ import {
   cleanTempFiles,
   cleanSplitDir,
   cleanAll,
+  cleanCcache,
 } from '../src/clean';
 import * as fs from 'fs';
 import * as core from '@actions/core';
@@ -78,6 +79,15 @@ describe('cleanToolchains', () => {
     cleanToolchains();
     expect(rmMock).toHaveBeenCalledWith('/home/runner/gcc-64', { recursive: true, force: true });
     expect(rmMock).toHaveBeenCalledWith('/home/runner/gcc-32', { recursive: true, force: true });
+  });
+
+  it('warns when HOME is not set', () => {
+    delete process.env.HOME;
+    const warningMock = vi.mocked(core.warning);
+
+    cleanToolchains();
+
+    expect(warningMock).toHaveBeenCalledWith('HOME environment variable not set, skipping toolchain cleanup');
   });
 });
 
@@ -200,5 +210,23 @@ describe('cleanAll', () => {
 
     expect(fs.rmSync).toHaveBeenCalledWith('custom-kernel', { recursive: true, force: true });
     expect(fs.rmSync).toHaveBeenCalledWith('custom-build', { recursive: true, force: true });
+  });
+});
+
+describe('cleanCcache', () => {
+  it('clears ccache successfully', async () => {
+    vi.mocked(exec.exec).mockResolvedValue(0);
+    const infoMock = vi.mocked(core.info);
+
+    await cleanCcache();
+
+    expect(exec.exec).toHaveBeenCalledWith('ccache', ['-C']);
+    expect(infoMock).toHaveBeenCalledWith('Ccache cleared');
+  });
+
+  it('ignores error when ccache is not available', async () => {
+    vi.mocked(exec.exec).mockRejectedValue(new Error('ccache not found'));
+
+    await expect(cleanCcache()).resolves.not.toThrow();
   });
 });

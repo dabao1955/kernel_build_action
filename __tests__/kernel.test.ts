@@ -169,6 +169,13 @@ describe('findKernelImage', () => {
 });
 
 describe('findDtbFile', () => {
+  it('returns undefined when boot dir does not exist', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+
+    const dtb = findDtbFile('/kernel', 'arm64');
+    expect(dtb).toBeUndefined();
+  });
+
   it('returns dtb path when dtb file exists', () => {
     const expectedPath = '/kernel/out/arch/arm64/boot/dtb';
     vi.mocked(fs.existsSync).mockImplementation((p) => {
@@ -195,8 +202,16 @@ describe('findDtbFile', () => {
   });
 
   it('returns undefined when no dtb found', () => {
-    vi.mocked(fs.existsSync).mockReturnValue(false);
-    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      // boot directory exists, but dtb and dtb.img files don't
+      if (path.includes('boot') && !path.includes('dtb')) return true;
+      return false;
+    });
+    vi.mocked(fs.statSync).mockImplementation((p) => {
+      const path = String(p);
+      return { isDirectory: () => path.includes('boot'), isFile: () => !path.includes('boot') } as fs.Stats;
+    });
 
     const dtb = findDtbFile('/kernel', 'arm64');
     expect(dtb).toBeUndefined();
@@ -204,6 +219,13 @@ describe('findDtbFile', () => {
 });
 
 describe('findDtboFile', () => {
+  it('returns undefined when boot dir does not exist', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+
+    const dtbo = findDtboFile('/kernel', 'arm64');
+    expect(dtbo).toBeUndefined();
+  });
+
   it('returns dtbo.img path when file exists', () => {
     const expectedPath = '/kernel/out/arch/arm64/boot/dtbo.img';
     vi.mocked(fs.existsSync).mockImplementation((p) => {
@@ -216,8 +238,16 @@ describe('findDtboFile', () => {
   });
 
   it('returns undefined when no dtbo found', () => {
-    vi.mocked(fs.existsSync).mockReturnValue(false);
-    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      // boot directory exists, but dtbo.img doesn't
+      if (path.includes('boot') && !path.includes('dtbo.img')) return true;
+      return false;
+    });
+    vi.mocked(fs.statSync).mockImplementation((p) => {
+      const path = String(p);
+      return { isDirectory: () => path.includes('boot'), isFile: () => !path.includes('boot') } as fs.Stats;
+    });
 
     const dtbo = findDtboFile('/kernel', 'arm64');
     expect(dtbo).toBeUndefined();

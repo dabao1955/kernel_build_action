@@ -195,11 +195,22 @@ describe('setupCcache', () => {
 
   it('skips directory creation if already exists', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
     vi.mocked(cache.restoreCache).mockResolvedValue('ccache-defconfig-abc123');
 
     await setupCcache('defconfig');
 
     expect(fs.mkdirSync).not.toHaveBeenCalled();
+  });
+
+  it('creates directory when ccache dir does not exist', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(cache.restoreCache).mockResolvedValue('ccache-defconfig-abc123');
+
+    await setupCcache('defconfig');
+
+    expect(fs.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('.ccache'), { recursive: true });
   });
 });
 

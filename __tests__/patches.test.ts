@@ -194,6 +194,32 @@ describe('setupKernelSU', () => {
       expect.arrayContaining(['-c', expect.stringContaining('coccinelle')])
     );
   });
+
+  it('warns when KernelSU patches fail to apply', async () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      if (String(p).includes('.config')) return true;
+      return false;
+    });
+    vi.mocked(fs.readFileSync).mockReturnValue('CONFIG_KPROBES=n');
+    // All exec calls succeed except apply_cocci.py which throws
+    vi.mocked(exec.exec).mockImplementation(async (cmd, args) => {
+      // Check if this is the apply_cocci.py call
+      if (cmd === 'bash' && args?.[1]?.includes('apply_cocci.py')) {
+        throw new Error('Patch application failed');
+      }
+      return 0; // All other commands succeed
+    });
+
+    const nonGkiVersion = { version: 5, patchlevel: 4, sublevel: 0, isGki: false };
+
+    await setupKernelSU('/kernel', '/kernel/.config', {
+      version: 'v0.9.5',
+      lkm: false,
+      other: false,
+    }, nonGkiVersion);
+
+    expect(core.warning).toHaveBeenCalledWith('Failed to apply KernelSU patches');
+  });
 });
 
 describe('setupBBG', () => {
@@ -236,6 +262,17 @@ describe('setupBBG', () => {
     expect(writeFileMock).toHaveBeenCalled();
     const callArg = writeFileMock.mock.calls[0][1] as string;
     expect(callArg).toContain('baseband_guard');
+  });
+
+  it('handles missing Kconfig file gracefully', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await setupBBG('/kernel', '/kernel/.config');
+
+    // Should not throw and should still append CONFIG_BBG
+    expect(fs.appendFileSync).toHaveBeenCalledWith('/kernel/.config', 'CONFIG_BBG=y\n');
   });
 
   it('appends CONFIG_BBG=y to config', async () => {
