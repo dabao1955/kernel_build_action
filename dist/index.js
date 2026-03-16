@@ -90993,8 +90993,17 @@ async function downloadAndExtract(url2, outputName, extractDir, branch = "main")
   if (url2.endsWith(".zip")) {
     const zipPath = await downloadTool(url2, `${outputName}.zip`);
     await extractZip(zipPath, extractDir);
-  } else if (url2.endsWith(".tar.gz") || url2.endsWith(".gz") || url2.endsWith(".xz") || url2.endsWith(".bz2")) {
-    const ext = url2.endsWith(".tar.gz") ? ".tar.gz" : path14.extname(url2);
+  } else if (url2.endsWith(".tar.gz") || url2.endsWith(".gz") || url2.endsWith(".tar.xz") || url2.endsWith(".xz") || url2.endsWith(".tar.bz2") || url2.endsWith(".bz2")) {
+    let ext;
+    if (url2.endsWith(".tar.gz")) {
+      ext = ".tar.gz";
+    } else if (url2.endsWith(".tar.xz")) {
+      ext = ".tar.xz";
+    } else if (url2.endsWith(".tar.bz2")) {
+      ext = ".tar.bz2";
+    } else {
+      ext = path14.extname(url2);
+    }
     const tarPath = await downloadTool(url2, `${outputName}${ext}`);
     await extractTar2(tarPath, extractDir);
   } else {

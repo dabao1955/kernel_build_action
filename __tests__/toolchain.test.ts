@@ -635,7 +635,30 @@ describe('downloadAndExtract', () => {
 
     await downloadAndExtract('https://example.com/toolchain.xz', 'toolchain', '/home/runner/toolchain');
 
+    expect(tc.downloadTool).toHaveBeenCalledWith('https://example.com/toolchain.xz', 'toolchain.xz');
     expect(tc.extractTar).toHaveBeenCalledWith('/tmp/toolchain.xz', '/home/runner/toolchain');
+  });
+
+  it('downloads and extracts .tar.xz files', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(tc.downloadTool).mockResolvedValue('/tmp/toolchain.tar.xz');
+    vi.mocked(tc.extractTar).mockResolvedValue('/home/runner/toolchain');
+
+    await downloadAndExtract('https://example.com/toolchain.tar.xz', 'toolchain', '/home/runner/toolchain');
+
+    expect(tc.downloadTool).toHaveBeenCalledWith('https://example.com/toolchain.tar.xz', 'toolchain.tar.xz');
+    expect(tc.extractTar).toHaveBeenCalledWith('/tmp/toolchain.tar.xz', '/home/runner/toolchain');
+  });
+
+  it('downloads and extracts .tar.bz2 files', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(tc.downloadTool).mockResolvedValue('/tmp/toolchain.tar.bz2');
+    vi.mocked(tc.extractTar).mockResolvedValue('/home/runner/toolchain');
+
+    await downloadAndExtract('https://example.com/toolchain.tar.bz2', 'toolchain', '/home/runner/toolchain');
+
+    expect(tc.downloadTool).toHaveBeenCalledWith('https://example.com/toolchain.tar.bz2', 'toolchain.tar.bz2');
+    expect(tc.extractTar).toHaveBeenCalledWith('/tmp/toolchain.tar.bz2', '/home/runner/toolchain');
   });
 
   it('downloads and extracts .bz2 files', async () => {

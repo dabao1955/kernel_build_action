@@ -42,6 +42,7 @@ const ENV_VARS_TO_CLEAN = [
   'EXTRA_CMD',
   'FMT',
   'HOST_ARCH',
+  'RELEASE_MODE',
 ];
 
 /**

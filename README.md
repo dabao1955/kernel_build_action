@@ -81,13 +81,13 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | bbg | false | Enable [BaseBandGuard](https://github.com/vc-teahouse/Baseband-guard) support | false |
 | ccache | false | Enable ccache (clang only) to speed up kernel compilation | false |
 | aosp-gcc | false | Use AOSP GCC toolchain to compile the kernel (Enable when using AOSP clang toolchain) | false |
-| other-gcc32-url | false | URL of custom GCC arm32 toolchain (Supports .xz, .zip, .tar and .git formats) | https://github.com/username/gcc |
+| other-gcc32-url | false | URL of custom GCC arm32 toolchain (Supports .tar.gz, .tar.xz, .tar.bz2, .gz, .xz, .bz2, .zip and .git formats) | https://github.com/username/gcc |
 | other-gcc32-branch | false | Branch name of GCC arm32 toolchain | main |
-| other-gcc64-url | false | URL of custom GCC arm64 toolchain (Supports .xz, .zip, .tar and .git formats) | https://github.com/username/gcc |
+| other-gcc64-url | false | URL of custom GCC arm64 toolchain (Supports .tar.gz, .tar.xz, .tar.bz2, .gz, .xz, .bz2, .zip and .git formats) | https://github.com/username/gcc |
 | other-gcc64-branch | false | Branch name of GCC arm64 toolchain | main |
 | aosp-clang | false | Use AOSP clang toolchain to compile the kernel | false |
 | aosp-clang-version | false | AOSP clang version. [See all AOSP clang versions](https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/mirror-goog-main-llvm-toolchain-source/README.md). (default = r383902) | r383902 |
-| other-clang-url | false | URL of custom clang toolchain (Supports .xz, .zip, .tar and .git formats) | https://github.com/username/clang |
+| other-clang-url | false | URL of custom clang toolchain (Supports .tar.gz, .tar.xz, .tar.bz2, .gz, .xz, .bz2, .zip and .git formats) | https://github.com/username/clang |
 | other-clang-branch | false | Branch name of clang toolchain | main |
 | anykernel3 | false | Use AnyKernel3 to package the compiled kernel. (if false, must provide bootimg-url) | false |
 | anykernel3-url | false | URL for third-party AnyKernel3 | https://github.com/username/AnyKernel3 |

@@ -55,10 +55,22 @@ export async function downloadAndExtract(
   } else if (
     url.endsWith('.tar.gz') ||
     url.endsWith('.gz') ||
+    url.endsWith('.tar.xz') ||
     url.endsWith('.xz') ||
+    url.endsWith('.tar.bz2') ||
     url.endsWith('.bz2')
   ) {
-    const ext = url.endsWith('.tar.gz') ? '.tar.gz' : path.extname(url);
+    // Handle compound extensions like .tar.gz and .tar.xz
+    let ext: string;
+    if (url.endsWith('.tar.gz')) {
+      ext = '.tar.gz';
+    } else if (url.endsWith('.tar.xz')) {
+      ext = '.tar.xz';
+    } else if (url.endsWith('.tar.bz2')) {
+      ext = '.tar.bz2';
+    } else {
+      ext = path.extname(url);
+    }
     const tarPath = await tc.downloadTool(url, `${outputName}${ext}`);
     await tc.extractTar(tarPath, extractDir);
   } else {

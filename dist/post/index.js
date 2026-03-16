@@ -21698,7 +21698,8 @@ var ENV_VARS_TO_CLEAN = [
   "SAFE_EXTRA_ARGS",
   "EXTRA_CMD",
   "FMT",
-  "HOST_ARCH"
+  "HOST_ARCH",
+  "RELEASE_MODE"
 ];
 function cleanKernelSource(kernelDir) {
   if (dirExists(kernelDir)) {
