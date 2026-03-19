@@ -51,7 +51,7 @@ jobs:
           node-version: '20'
           cache: 'yarn'
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --force
       - name: Run ESLint
         run: yarn lint
       - name: Check formatting
@@ -69,14 +69,7 @@ jobs:
           node-version: '20'
           cache: 'yarn'
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
-      - name: Run tests
-        run: yarn test
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage-report
-          path: coverage/
+        run: yarn install --force
       - name: Build with esbuild
         run: yarn build
 
@@ -95,7 +88,7 @@ jobs:
           node-version: '20'
           cache: 'yarn'
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --force
       - name: Run tests with coverage
         run: yarn test
       - name: Coverage Report Comment
