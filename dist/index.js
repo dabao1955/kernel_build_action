@@ -58261,7 +58261,7 @@ function parseExtraMakeArgs(jsonStr) {
   }
 }
 function filterMakeArgs(args) {
-  const dangerous = [
+  const dangerousVars = [
     "CC=",
     "CXX=",
     "LD=",
@@ -58283,12 +58283,33 @@ function filterMakeArgs(args) {
     "O=",
     "ARCH="
   ];
+  const dangerousFlags = [
+    "-C",
+    "--directory",
+    "-f",
+    "--file",
+    "--makefile",
+    "-e",
+    "--environment-overrides"
+  ];
+  const shellMetachars = /[`$\\;|&<>(){}[\]]/;
   return args.filter((arg) => {
-    for (const prefix2 of dangerous) {
-      if (arg.startsWith(prefix2)) {
-        warning(`Ignoring override of critical variable: ${arg}`);
+    const upperArg = arg.toUpperCase();
+    for (const prefix2 of dangerousVars) {
+      if (upperArg.startsWith(prefix2.toUpperCase())) {
+        warning(`[FILTER:VAR] Ignoring critical variable override: ${arg}`);
         return false;
       }
+    }
+    for (const flag of dangerousFlags) {
+      if (arg === flag || arg.startsWith(`${flag}=`)) {
+        warning(`[FILTER:FLAG] Ignoring dangerous make flag: ${arg}`);
+        return false;
+      }
+    }
+    if (shellMetachars.test(arg)) {
+      warning(`[FILTER:SHELL] Ignoring argument with shell metacharacters: ${arg}`);
+      return false;
     }
     return true;
   });
@@ -64471,12 +64492,11 @@ function normalizeProcessEntities(value) {
   if (typeof value === "object" && value !== null) {
     return {
       enabled: value.enabled !== false,
-      // default true if not specified
-      maxEntitySize: value.maxEntitySize ?? 1e4,
-      maxExpansionDepth: value.maxExpansionDepth ?? 10,
-      maxTotalExpansions: value.maxTotalExpansions ?? 1e3,
-      maxExpandedLength: value.maxExpandedLength ?? 1e5,
-      maxEntityCount: value.maxEntityCount ?? 100,
+      maxEntitySize: Math.max(1, value.maxEntitySize ?? 1e4),
+      maxExpansionDepth: Math.max(1, value.maxExpansionDepth ?? 10),
+      maxTotalExpansions: Math.max(1, value.maxTotalExpansions ?? 1e3),
+      maxExpandedLength: Math.max(1, value.maxExpandedLength ?? 1e5),
+      maxEntityCount: Math.max(1, value.maxEntityCount ?? 100),
       allowedTags: value.allowedTags ?? null,
       tagFilter: value.tagFilter ?? null
     };
@@ -64567,7 +64587,7 @@ var DocTypeReader = class {
             let entityName, val;
             [entityName, val, i] = this.readEntityExp(xmlData, i + 1, this.suppressValidationErr);
             if (val.indexOf("&") === -1) {
-              if (this.options.enabled !== false && this.options.maxEntityCount && entityCount >= this.options.maxEntityCount) {
+              if (this.options.enabled !== false && this.options.maxEntityCount != null && entityCount >= this.options.maxEntityCount) {
                 throw new Error(
                   `Entity count (${entityCount + 1}) exceeds maximum allowed (${this.options.maxEntityCount})`
                 );
@@ -64621,11 +64641,11 @@ var DocTypeReader = class {
   }
   readEntityExp(xmlData, i) {
     i = skipWhitespace(xmlData, i);
-    let entityName = "";
+    const startIndex = i;
     while (i < xmlData.length && !/\s/.test(xmlData[i]) && xmlData[i] !== '"' && xmlData[i] !== "'") {
-      entityName += xmlData[i];
       i++;
     }
+    let entityName = xmlData.substring(startIndex, i);
     validateEntityName(entityName);
     i = skipWhitespace(xmlData, i);
     if (!this.suppressValidationErr) {
@@ -64637,7 +64657,7 @@ var DocTypeReader = class {
     }
     let entityValue = "";
     [i, entityValue] = this.readIdentifierVal(xmlData, i, "entity");
-    if (this.options.enabled !== false && this.options.maxEntitySize && entityValue.length > this.options.maxEntitySize) {
+    if (this.options.enabled !== false && this.options.maxEntitySize != null && entityValue.length > this.options.maxEntitySize) {
       throw new Error(
         `Entity "${entityName}" size (${entityValue.length}) exceeds maximum allowed size (${this.options.maxEntitySize})`
       );
@@ -64647,11 +64667,11 @@ var DocTypeReader = class {
   }
   readNotationExp(xmlData, i) {
     i = skipWhitespace(xmlData, i);
-    let notationName = "";
+    const startIndex = i;
     while (i < xmlData.length && !/\s/.test(xmlData[i])) {
-      notationName += xmlData[i];
       i++;
     }
+    let notationName = xmlData.substring(startIndex, i);
     !this.suppressValidationErr && validateEntityName(notationName);
     i = skipWhitespace(xmlData, i);
     const identifierType = xmlData.substring(i, i + 6).toUpperCase();
@@ -64683,10 +64703,11 @@ var DocTypeReader = class {
       throw new Error(`Expected quoted string, found "${startChar}"`);
     }
     i++;
+    const startIndex = i;
     while (i < xmlData.length && xmlData[i] !== startChar) {
-      identifierVal += xmlData[i];
       i++;
     }
+    identifierVal = xmlData.substring(startIndex, i);
     if (xmlData[i] !== startChar) {
       throw new Error(`Unterminated ${type} value`);
     }
@@ -64695,11 +64716,11 @@ var DocTypeReader = class {
   }
   readElementExp(xmlData, i) {
     i = skipWhitespace(xmlData, i);
-    let elementName = "";
+    const startIndex = i;
     while (i < xmlData.length && !/\s/.test(xmlData[i])) {
-      elementName += xmlData[i];
       i++;
     }
+    let elementName = xmlData.substring(startIndex, i);
     if (!this.suppressValidationErr && !isName(elementName)) {
       throw new Error(`Invalid element name: "${elementName}"`);
     }
@@ -64709,10 +64730,11 @@ var DocTypeReader = class {
     else if (xmlData[i] === "A" && hasSeq(xmlData, "NY", i)) i += 2;
     else if (xmlData[i] === "(") {
       i++;
+      const startIndex2 = i;
       while (i < xmlData.length && xmlData[i] !== ")") {
-        contentModel += xmlData[i];
         i++;
       }
+      contentModel = xmlData.substring(startIndex2, i);
       if (xmlData[i] !== ")") {
         throw new Error("Unterminated content model");
       }
@@ -64727,18 +64749,18 @@ var DocTypeReader = class {
   }
   readAttlistExp(xmlData, i) {
     i = skipWhitespace(xmlData, i);
-    let elementName = "";
+    let startIndex = i;
     while (i < xmlData.length && !/\s/.test(xmlData[i])) {
-      elementName += xmlData[i];
       i++;
     }
+    let elementName = xmlData.substring(startIndex, i);
     validateEntityName(elementName);
     i = skipWhitespace(xmlData, i);
-    let attributeName = "";
+    startIndex = i;
     while (i < xmlData.length && !/\s/.test(xmlData[i])) {
-      attributeName += xmlData[i];
       i++;
     }
+    let attributeName = xmlData.substring(startIndex, i);
     if (!validateEntityName(attributeName)) {
       throw new Error(`Invalid attribute name: "${attributeName}"`);
     }
@@ -64754,11 +64776,11 @@ var DocTypeReader = class {
       i++;
       let allowedNotations = [];
       while (i < xmlData.length && xmlData[i] !== ")") {
-        let notation = "";
+        const startIndex2 = i;
         while (i < xmlData.length && xmlData[i] !== "|" && xmlData[i] !== ")") {
-          notation += xmlData[i];
           i++;
         }
+        let notation = xmlData.substring(startIndex2, i);
         notation = notation.trim();
         if (!validateEntityName(notation)) {
           throw new Error(`Invalid notation name: "${notation}"`);
@@ -64775,10 +64797,11 @@ var DocTypeReader = class {
       i++;
       attributeType += " (" + allowedNotations.join("|") + ")";
     } else {
+      const startIndex2 = i;
       while (i < xmlData.length && !/\s/.test(xmlData[i])) {
-        attributeType += xmlData[i];
         i++;
       }
+      attributeType += xmlData.substring(startIndex2, i);
       const validTypes = ["CDATA", "ID", "IDREF", "IDREFS", "ENTITY", "ENTITIES", "NMTOKEN", "NMTOKENS"];
       if (!this.suppressValidationErr && !validTypes.includes(attributeType.toUpperCase())) {
         throw new Error(`Invalid attribute type: "${attributeType}"`);
@@ -64831,8 +64854,10 @@ var consider = {
   // oct: false,
   leadingZeros: true,
   decimalPoint: ".",
-  eNotation: true
-  //skipLike: /regex/
+  eNotation: true,
+  //skipLike: /regex/,
+  infinity: "original"
+  // "null", "infinity" (Infinity type), "string" ("Infinity" (the string literal))
 };
 function toNumber(str, options = {}) {
   options = Object.assign({}, consider, options);
@@ -64842,6 +64867,8 @@ function toNumber(str, options = {}) {
   else if (str === "0") return 0;
   else if (options.hex && hexRegex.test(trimmedStr)) {
     return parse_int(trimmedStr, 16);
+  } else if (!isFinite(trimmedStr)) {
+    return handleInfinity(str, Number(trimmedStr), options);
   } else if (trimmedStr.includes("e") || trimmedStr.includes("E")) {
     return resolveEnotation(str, trimmedStr, options);
   } else {
@@ -64896,10 +64923,14 @@ function resolveEnotation(str, trimmedStr, options) {
     if (leadingZeros.length > 1 && eAdjacentToLeadingZeros) return str;
     else if (leadingZeros.length === 1 && (notation[3].startsWith(`.${eChar}`) || notation[3][0] === eChar)) {
       return Number(trimmedStr);
-    } else if (options.leadingZeros && !eAdjacentToLeadingZeros) {
-      trimmedStr = (notation[1] || "") + notation[3];
+    } else if (leadingZeros.length > 0) {
+      if (options.leadingZeros && !eAdjacentToLeadingZeros) {
+        trimmedStr = (notation[1] || "") + notation[3];
+        return Number(trimmedStr);
+      } else return str;
+    } else {
       return Number(trimmedStr);
-    } else return str;
+    }
   } else {
     return str;
   }
@@ -64919,6 +64950,21 @@ function parse_int(numStr, base) {
   else if (Number.parseInt) return Number.parseInt(numStr, base);
   else if (window && window.parseInt) return window.parseInt(numStr, base);
   else throw new Error("parseInt, Number.parseInt, window.parseInt are not supported");
+}
+function handleInfinity(str, num, options) {
+  const isPositive = num === Infinity;
+  switch (options.infinity.toLowerCase()) {
+    case "null":
+      return null;
+    case "infinity":
+      return num;
+    // Return Infinity or -Infinity
+    case "string":
+      return isPositive ? "Infinity" : "-Infinity";
+    case "original":
+    default:
+      return str;
+  }
 }
 
 // node_modules/fast-xml-parser/src/ignoreAttributes.js
@@ -65706,7 +65752,7 @@ var parseXml = function(xmlData) {
         let attrExpPresent = result.attrExpPresent;
         let closeIndex = result.closeIndex;
         ({ tagName, tagExp } = transformTagName(this.options.transformTagName, tagName, tagExp, this.options));
-        if (this.options.strictReservedNames && (tagName === this.options.commentPropName || tagName === this.options.cdataPropName)) {
+        if (this.options.strictReservedNames && (tagName === this.options.commentPropName || tagName === this.options.cdataPropName || tagName === this.options.textNodeName || tagName === this.options.attributesGroupName)) {
           throw new Error(`Invalid tag name: ${tagName}`);
         }
         if (currentNode && textData) {

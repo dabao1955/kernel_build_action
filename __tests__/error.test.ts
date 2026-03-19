@@ -214,9 +214,26 @@ file.c:10: error: some error
 file.c:20: error: another error
 `);
     const infoMock = vi.mocked(core.info);
-    
+
     const result = analyzeErrors('/build.log');
     expect(result).toBe(2);
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #1'));
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #2'));
+  });
+
+  // Coverage: trimmedLine is falsy (empty line) during error processing (Line 301)
+  it('handles whitespace-only lines that end error blocks', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue(`
+file.c:10: error: some error
+   
+file.c:20: error: another error
+`);
+    const infoMock = vi.mocked(core.info);
+
+    const result = analyzeErrors('/build.log');
+    expect(result).toBe(2);
+    // Whitespace-only line should also end the error block
     expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #1'));
     expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #2'));
   });

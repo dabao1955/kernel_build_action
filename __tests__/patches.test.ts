@@ -220,6 +220,53 @@ describe('setupKernelSU', () => {
 
     expect(core.warning).toHaveBeenCalledWith('Failed to apply KernelSU patches');
   });
+
+  // Coverage: sedReplace with non-existent file (Lines 226-227)
+  it('handles sedReplace when config file does not exist', async () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      // Return false for config file to trigger early return in sedReplace
+      if (path.includes('.config')) return false;
+      return false;
+    });
+    vi.mocked(fs.readFileSync).mockReturnValue('CONFIG_KPROBES=y');
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const result = await setupKernelSU('/kernel', '/kernel/.config', {
+      version: 'v0.9.5',
+      lkm: true,  // LKM mode triggers sedReplace
+      other: false,
+    }, kernelVersion);
+
+    // Should complete without error even when config file doesn't exist
+    expect(result).toBeUndefined();
+  });
+
+  // Coverage: sedReplaceInRange with non-existent file (Lines 245-246)
+  it('handles sedReplaceInRange when Kconfig file does not exist', async () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      // Return true for .config but false for Kconfig
+      if (path.includes('.config')) return true;
+      if (path.includes('Kconfig')) return false;
+      return false;
+    });
+    vi.mocked(fs.readFileSync).mockImplementation((p) => {
+      const path = String(p);
+      if (path.includes('.config')) return 'CONFIG_KPROBES=n';  // No kprobes
+      return '';
+    });
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const result = await setupKernelSU('/kernel', '/kernel/.config', {
+      version: 'v0.9.5',
+      lkm: true,  // LKM mode triggers sedReplaceInRange when no kprobes
+      other: false,
+    }, kernelVersion);
+
+    // Should complete without error even when Kconfig file doesn't exist
+    expect(result).toBeUndefined();
+  });
 });
 
 describe('setupBBG', () => {

@@ -173,6 +173,21 @@ describe('setupCcache', () => {
     expect(core.info).toHaveBeenCalledWith(expect.stringContaining('Cache restored'));
   });
 
+  // Coverage: ccache directory already exists (Line 9 - dirExists returns true)
+  it('skips directory creation when ccache dir already exists', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(cache.restoreCache).mockResolvedValue('ccache-defconfig-abc123');
+
+    await setupCcache('defconfig');
+
+    // mkdirSync should NOT be called when directory already exists
+    expect(fs.mkdirSync).not.toHaveBeenCalled();
+    // But other setup steps should still execute
+    expect(exec.exec).toHaveBeenCalledWith('ccache', ['-M', '4G']);
+    expect(cache.restoreCache).toHaveBeenCalled();
+  });
+
   it('handles cache miss gracefully', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(false);
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);

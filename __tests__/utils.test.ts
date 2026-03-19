@@ -79,6 +79,140 @@ describe('filterMakeArgs', () => {
     ];
     expect(filterMakeArgs(dangerousArgs)).toEqual(['DEBUG=1']);
   });
+
+  // Security enhancement tests - case-insensitive matching
+  it('filters out lowercase cc= override (case-insensitive)', () => {
+    const args = ['-j8', 'cc=/bin/sh', 'DEBUG=1'];
+    expect(filterMakeArgs(args)).toEqual(['-j8', 'DEBUG=1']);
+  });
+
+  it('filters out mixed case Cc= override', () => {
+    const args = ['Cc=/bin/sh', 'cC=/bin/bash', 'DEBUG=1'];
+    expect(filterMakeArgs(args)).toEqual(['DEBUG=1']);
+  });
+
+  it('filters out lowercase cross_compile= override', () => {
+    const args = ['cross_compile=arm-', 'DEBUG=1'];
+    expect(filterMakeArgs(args)).toEqual(['DEBUG=1']);
+  });
+
+  // Security enhancement tests - shell metacharacter injection
+  it('filters out command substitution with $()', () => {
+    const args = ['-j8', 'CFLAGS=$(id)'];
+    expect(filterMakeArgs(args)).toEqual(['-j8']);
+  });
+
+  it('filters out backtick command substitution', () => {
+    const args = ['-j8', 'CFLAGS=`whoami`'];
+    expect(filterMakeArgs(args)).toEqual(['-j8']);
+  });
+
+  it('filters out semicolon injection', () => {
+    const args = ['-j8', 'CFLAGS=;rm -rf /'];
+    expect(filterMakeArgs(args)).toEqual(['-j8']);
+  });
+
+  it('filters out pipe injection', () => {
+    const args = ['-j8', 'CFLAGS=|cat /etc/passwd'];
+    expect(filterMakeArgs(args)).toEqual(['-j8']);
+  });
+
+  it('filters out ampersand injection', () => {
+    const args = ['-j8', 'CFLAGS=&malicious'];
+    expect(filterMakeArgs(args)).toEqual(['-j8']);
+  });
+
+  it('filters out backslash injection', () => {
+    const args = ['-j8', 'CFLAGS=\\n malicious'];
+    expect(filterMakeArgs(args)).toEqual(['-j8']);
+  });
+
+  it('filters out brace expansion injection', () => {
+    const args = ['-j8', 'CFLAGS={a,b}'];
+    expect(filterMakeArgs(args)).toEqual(['-j8']);
+  });
+
+  it('filters out parenthesis injection', () => {
+    const args = ['-j8', 'CFLAGS=(echo pwned)'];
+    expect(filterMakeArgs(args)).toEqual(['-j8']);
+  });
+
+  // Security enhancement tests - dangerous make flags
+  it('filters out -C directory change', () => {
+    const args = ['-C', '/etc', 'all'];
+    // Only -C is filtered, /etc and all remain
+    expect(filterMakeArgs(args)).toEqual(['/etc', 'all']);
+  });
+
+  it('filters out -C=/path format', () => {
+    const args = ['-C=/root', 'all'];
+    expect(filterMakeArgs(args)).toEqual(['all']);
+  });
+
+  it('filters out --directory flag', () => {
+    const args = ['--directory=/root', 'all'];
+    expect(filterMakeArgs(args)).toEqual(['all']);
+  });
+
+  it('filters out -f file override', () => {
+    const args = ['-f', '/etc/passwd'];
+    // Only -f is filtered, /etc/passwd remains
+    expect(filterMakeArgs(args)).toEqual(['/etc/passwd']);
+  });
+
+  it('filters out -f=/path format', () => {
+    const args = ['-f=/etc/shadow', 'all'];
+    expect(filterMakeArgs(args)).toEqual(['all']);
+  });
+
+  it('filters out --file flag', () => {
+    const args = ['--file=/etc/passwd'];
+    expect(filterMakeArgs(args)).toEqual([]);
+  });
+
+  it('filters out --makefile flag', () => {
+    const args = ['--makefile=/tmp/malicious.mk'];
+    expect(filterMakeArgs(args)).toEqual([]);
+  });
+
+  it('filters out -e environment override', () => {
+    const args = ['-e', 'all'];
+    expect(filterMakeArgs(args)).toEqual(['all']);
+  });
+
+  it('filters out --environment-overrides flag', () => {
+    const args = ['--environment-overrides', 'all'];
+    expect(filterMakeArgs(args)).toEqual(['all']);
+  });
+
+  // Audit logging tests
+  it('logs [FILTER:VAR] warning for variable override', () => {
+    filterMakeArgs(['CC=/bin/sh']);
+    expect(core.warning).toHaveBeenCalledWith(
+      expect.stringContaining('[FILTER:VAR]')
+    );
+  });
+
+  it('logs [FILTER:FLAG] warning for dangerous flag', () => {
+    filterMakeArgs(['-C', '/etc']);
+    expect(core.warning).toHaveBeenCalledWith(
+      expect.stringContaining('[FILTER:FLAG]')
+    );
+  });
+
+  it('logs [FILTER:SHELL] warning for shell metacharacters', () => {
+    filterMakeArgs(['CFLAGS=$(id)']);
+    expect(core.warning).toHaveBeenCalledWith(
+      expect.stringContaining('[FILTER:SHELL]')
+    );
+  });
+
+  it('logs warning with original argument content', () => {
+    filterMakeArgs(['cc=/bin/sh']);
+    expect(core.warning).toHaveBeenCalledWith(
+      expect.stringContaining('cc=/bin/sh')
+    );
+  });
 });
 
 describe('detectHostArch', () => {

@@ -153,9 +153,12 @@ export function parseExtraMakeArgs(jsonStr: string): string[] {
 
 /**
  * Filter out dangerous make arguments
+ * Enhanced with: case-insensitive matching, shell metachar detection,
+ * dangerous make flags filtering, and audit logging
  */
 export function filterMakeArgs(args: string[]): string[] {
-  const dangerous = [
+  // Dangerous variable prefixes (case-insensitive)
+  const dangerousVars = [
     'CC=',
     'CXX=',
     'LD=',
@@ -178,13 +181,45 @@ export function filterMakeArgs(args: string[]): string[] {
     'ARCH=',
   ];
 
+  // Dangerous make flags that could change build behavior or execute arbitrary commands
+  const dangerousFlags = [
+    '-C',
+    '--directory',
+    '-f',
+    '--file',
+    '--makefile',
+    '-e',
+    '--environment-overrides',
+  ];
+
+  // Shell metacharacters that could enable command injection
+  const shellMetachars = /[`$\\;|&<>(){}[\]]/;
+
   return args.filter((arg) => {
-    for (const prefix of dangerous) {
-      if (arg.startsWith(prefix)) {
-        core.warning(`Ignoring override of critical variable: ${arg}`);
+    const upperArg = arg.toUpperCase();
+
+    // Check 1: Dangerous variable override (case-insensitive)
+    for (const prefix of dangerousVars) {
+      if (upperArg.startsWith(prefix.toUpperCase())) {
+        core.warning(`[FILTER:VAR] Ignoring critical variable override: ${arg}`);
         return false;
       }
     }
+
+    // Check 2: Dangerous make flags
+    for (const flag of dangerousFlags) {
+      if (arg === flag || arg.startsWith(`${flag}=`)) {
+        core.warning(`[FILTER:FLAG] Ignoring dangerous make flag: ${arg}`);
+        return false;
+      }
+    }
+
+    // Check 3: Shell metacharacters (command injection prevention)
+    if (shellMetachars.test(arg)) {
+      core.warning(`[FILTER:SHELL] Ignoring argument with shell metacharacters: ${arg}`);
+      return false;
+    }
+
     return true;
   });
 }

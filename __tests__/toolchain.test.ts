@@ -235,7 +235,8 @@ describe('setupToolchains', () => {
     expect(result.gcc32Path).toBeDefined();
   });
 
-  it('downloads AOSP Clang without androidVersion', async () => {
+  // Coverage: AOSP Clang with empty androidVersion - uses default mirror branch (Line 143)
+  it('downloads AOSP Clang with default mirror branch when androidVersion is empty', async () => {
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
       if (options && typeof options === 'object' && 'withFileTypes' in options) {
@@ -253,9 +254,9 @@ describe('setupToolchains', () => {
 
     const config: ToolchainConfig = {
       aospClang: true,
-      aospClangVersion: '17.0',
+      aospClangVersion: 'r383902',
       aospGcc: true,
-      androidVersion: '',
+      androidVersion: '',  // Empty string triggers else branch (Line 143)
       otherClangUrl: '',
       otherClangBranch: '',
       otherGcc64Url: '',
@@ -266,8 +267,53 @@ describe('setupToolchains', () => {
 
     const result = await setupToolchains(config);
 
+    // Verify the mirror-goog-main URL is used (Line 143)
     expect(tc.downloadTool).toHaveBeenCalledWith(
       expect.stringContaining('mirror-goog-main-llvm-toolchain-source'),
+      expect.any(String)
+    );
+    expect(tc.downloadTool).toHaveBeenCalledWith(
+      expect.stringContaining('clang-r383902.tar.gz'),
+      expect.any(String)
+    );
+    expect(result.clangPath).toBeDefined();
+  });
+
+  // Coverage: AOSP Clang with androidVersion - uses android version branch (Line 141)
+  it('downloads AOSP Clang with android version branch when androidVersion is provided', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readdirSync).mockImplementation((path, options) => {
+      if (options && typeof options === 'object' && 'withFileTypes' in options) {
+        return [
+          { name: 'bin', isDirectory: () => true, isFile: () => false },
+        ] as any;
+      }
+      return [] as any;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(tc.downloadTool).mockResolvedValue('/tmp/clang.tar.gz');
+    vi.mocked(tc.extractTar).mockResolvedValue('/home/runner/clang');
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: ToolchainConfig = {
+      aospClang: true,
+      aospClangVersion: 'r383902',
+      aospGcc: true,
+      androidVersion: '14',  // Non-empty triggers if branch (Line 141)
+      otherClangUrl: '',
+      otherClangBranch: '',
+      otherGcc64Url: '',
+      otherGcc64Branch: '',
+      otherGcc32Url: '',
+      otherGcc32Branch: '',
+    };
+
+    const result = await setupToolchains(config);
+
+    // Verify the android version URL is used (Line 141)
+    expect(tc.downloadTool).toHaveBeenCalledWith(
+      expect.stringContaining('android14-release'),
       expect.any(String)
     );
     expect(result.clangPath).toBeDefined();
