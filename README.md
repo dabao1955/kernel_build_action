@@ -27,6 +27,9 @@ name: CI
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-kernel:
     name: Build Kernel
@@ -43,6 +46,9 @@ jobs:
           aosp-clang: true
           android-version: 12
           aosp-clang-version: r383902
+          anykernel3: true
+          release: true
+          access-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_action/blob/main/.github/workflows/build.yml) to modify it.
 
