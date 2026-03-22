@@ -1,9 +1,9 @@
 import * as core from '@actions/core';
-import * as path from 'path';
+import * as path from 'node:path';
 
 import { checkEnvironment, installDependencies, getActionPath, installSystemClang } from './utils';
 import { setupCcache, saveCcache, setupCcacheSymlinks } from './cache';
-import { setupToolchains, ToolchainConfig, getSystemToolchainPaths } from './toolchain';
+import { setupToolchains, type ToolchainConfig, getSystemToolchainPaths } from './toolchain';
 import {
   cloneKernel,
   cloneVendor,
@@ -11,7 +11,7 @@ import {
   getConfigPath,
   configExists,
   setupMkdtboimg,
-  KernelConfig,
+  type KernelConfig,
 } from './kernel';
 import { disableLto, enableKvm } from './config';
 import { setupKernelSU, setupBBG, setupReKernel, setupNetHunter, setupLXC } from './patches';
@@ -82,7 +82,7 @@ async function main(): Promise<void> {
     await installDependencies();
 
     // Setup toolchains
-    let toolchainConfig;
+    let toolchainConfig: ToolchainConfig | undefined;
     if (inputs.aospClang || inputs.otherClangUrl) {
       const tcConfig: ToolchainConfig = {
         aospClang: inputs.aospClang,

@@ -21687,12 +21687,12 @@ function getState(name) {
 }
 
 // src/post.ts
-var fs5 = __toESM(require("fs"));
-var path6 = __toESM(require("path"));
+var fs5 = __toESM(require("node:fs"));
+var path6 = __toESM(require("node:path"));
 
 // src/clean.ts
-var fs3 = __toESM(require("fs"));
-var path4 = __toESM(require("path"));
+var fs3 = __toESM(require("node:fs"));
+var path4 = __toESM(require("node:path"));
 
 // node_modules/@actions/tool-cache/lib/manifest.js
 var semver = __toESM(require_semver2(), 1);
@@ -21703,7 +21703,7 @@ var IS_WINDOWS3 = process.platform === "win32";
 var IS_MAC = process.platform === "darwin";
 
 // src/utils.ts
-var fs2 = __toESM(require("fs"));
+var fs2 = __toESM(require("node:fs"));
 function detectPackageManager() {
   if (fs2.existsSync("/bin/apt") || fs2.existsSync("/usr/bin/apt")) {
     return "apt";
@@ -21866,8 +21866,8 @@ async function cleanAll(options) {
 }
 
 // src/error.ts
-var fs4 = __toESM(require("fs"));
-var path5 = __toESM(require("path"));
+var fs4 = __toESM(require("node:fs"));
+var path5 = __toESM(require("node:path"));
 var ERROR_PATTERNS = [
   {
     pattern: /No such file or directory/i,
@@ -22128,7 +22128,8 @@ function analyzeErrors(logFile) {
   [${idx + 1}] ${block.type}`);
       warning(`      ${block.suggestion}`);
     }
-    info("\n" + "=".repeat(56));
+    info(`
+${"=".repeat(56)}`);
     info(`Total: ${errorCount} error(s)`);
     info("=".repeat(56));
   } else {

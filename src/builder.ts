@@ -1,9 +1,9 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
-import { ToolchainPaths } from './toolchain';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import type { ToolchainPaths } from './toolchain';
 import { filterMakeArgs, parseExtraMakeArgs } from './utils';
 
 export interface BuildConfig {

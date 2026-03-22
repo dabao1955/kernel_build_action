@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 export interface ReleaseConfig {
   token: string;
@@ -78,7 +78,7 @@ export async function createRelease(config: ReleaseConfig): Promise<void> {
         repo: context.repo.repo,
         release_id: release.id,
         name: fileName,
-        data: fileData as any,
+        data: fileData as Buffer,
       });
 
       core.info(`Uploaded: ${fileName}`);

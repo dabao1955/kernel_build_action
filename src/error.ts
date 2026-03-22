@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 interface ErrorPattern {
   pattern: RegExp;
@@ -348,7 +348,7 @@ export function analyzeErrors(logFile: string): number {
       core.info(`\n  [${idx + 1}] ${block.type}`);
       core.warning(`      ${block.suggestion}`);
     }
-    core.info('\n' + '='.repeat(56));
+    core.info(`\n${'='.repeat(56)}`);
     core.info(`Total: ${errorCount} error(s)`);
     core.info('='.repeat(56));
   } else {

@@ -8,7 +8,9 @@
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
-    "test": "vitest --coverage"
+    "test": "vitest --coverage",
+    "biome": "biome lint src/",
+    "biome:fix": "biome lint --write src/"
   },
   "dependencies": {
     "@actions/artifact": "^6.2.1",
@@ -23,6 +25,7 @@
     "@octokit/rest": "^22.0.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.8",
     "@eslint/js": "^10.0.0",
     "@types/node": "^25.5.0",
     "@typescript-eslint/eslint-plugin": "^8.57.1",

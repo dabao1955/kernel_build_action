@@ -58144,11 +58144,11 @@ function saveState(name, value) {
 }
 
 // src/index.ts
-var path24 = __toESM(require("path"));
+var path24 = __toESM(require("node:path"));
 
 // src/utils.ts
-var fs3 = __toESM(require("fs"));
-var path4 = __toESM(require("path"));
+var fs3 = __toESM(require("node:fs"));
+var path4 = __toESM(require("node:path"));
 async function sudoExec(command, args, options) {
   const isRoot = process.getuid && process.getuid() === 0;
   if (isRoot) {
@@ -91636,9 +91636,9 @@ function saveCacheV2(paths_1, key_1, options_1) {
 }
 
 // src/cache.ts
-var fs9 = __toESM(require("fs"));
-var os8 = __toESM(require("os"));
-var path12 = __toESM(require("path"));
+var fs9 = __toESM(require("node:fs"));
+var os8 = __toESM(require("node:os"));
+var path12 = __toESM(require("node:path"));
 var CCACHE_DIR = path12.join(process.env.HOME || os8.homedir(), ".ccache");
 async function setupCcache(config) {
   startGroup("Setting up ccache");
@@ -91691,8 +91691,8 @@ async function setupCcacheSymlinks() {
 }
 
 // src/toolchain.ts
-var fs11 = __toESM(require("fs"));
-var path14 = __toESM(require("path"));
+var fs11 = __toESM(require("node:fs"));
+var path14 = __toESM(require("node:path"));
 
 // node_modules/@actions/tool-cache/lib/tool-cache.js
 var crypto4 = __toESM(require("crypto"), 1);
@@ -92226,8 +92226,8 @@ function getSystemToolchainPaths() {
 }
 
 // src/kernel.ts
-var fs12 = __toESM(require("fs"));
-var path15 = __toESM(require("path"));
+var fs12 = __toESM(require("node:fs"));
+var path15 = __toESM(require("node:path"));
 async function cloneKernel(url2, branch, depth, targetDir) {
   startGroup("Pulling Kernel Source");
   fs12.mkdirSync(targetDir, { recursive: true });
@@ -92361,7 +92361,7 @@ function findDtboFile(kernelDir, arch2) {
 }
 
 // src/config.ts
-var fs13 = __toESM(require("fs"));
+var fs13 = __toESM(require("node:fs"));
 function disableLto(configPath) {
   startGroup("Disabling LTO");
   if (!fs13.existsSync(configPath)) {
@@ -92402,8 +92402,8 @@ function appendConfig(configPath, option) {
 }
 
 // src/patches.ts
-var fs14 = __toESM(require("fs"));
-var path16 = __toESM(require("path"));
+var fs14 = __toESM(require("node:fs"));
+var path16 = __toESM(require("node:path"));
 async function setupKernelSU(kernelDir, configPath, options, kernelVersion) {
   startGroup("Initializing KernelSU");
   info(
@@ -92554,9 +92554,9 @@ function sedReplaceInRange(filePath, startPattern, endPattern, search, replace) 
 }
 
 // src/builder.ts
-var fs15 = __toESM(require("fs"));
-var os9 = __toESM(require("os"));
-var path17 = __toESM(require("path"));
+var fs15 = __toESM(require("node:fs"));
+var os9 = __toESM(require("node:os"));
+var path17 = __toESM(require("node:path"));
 async function buildKernel(config) {
   startGroup("Building Kernel with selected cross compiler");
   if (config.config.startsWith("-")) {
@@ -92715,8 +92715,8 @@ function isBuildSuccessful(kernelDir, arch2) {
 }
 
 // src/packager.ts
-var fs16 = __toESM(require("fs"));
-var path18 = __toESM(require("path"));
+var fs16 = __toESM(require("node:fs"));
+var path18 = __toESM(require("node:path"));
 async function packageBootimg(config) {
   startGroup("Packaging boot.img");
   if (!config.bootimgUrl) {
@@ -99971,8 +99971,8 @@ If the error persists, please check whether Actions and API requests are operati
 var client = new DefaultArtifactClient();
 
 // src/artifact.ts
-var fs21 = __toESM(require("fs"));
-var path22 = __toESM(require("path"));
+var fs21 = __toESM(require("node:fs"));
+var path22 = __toESM(require("node:path"));
 async function uploadArtifacts(config) {
   if (config.release) {
     return;
@@ -100008,8 +100008,8 @@ async function uploadArtifacts(config) {
 }
 
 // src/release.ts
-var fs22 = __toESM(require("fs"));
-var path23 = __toESM(require("path"));
+var fs22 = __toESM(require("node:fs"));
+var path23 = __toESM(require("node:path"));
 async function createRelease(config) {
   startGroup("Creating GitHub Release");
   if (!config.token) {
