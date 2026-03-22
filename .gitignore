@@ -21,4 +21,5 @@
 node_modules
 action.yml.1
 coverage/
-skills
+skills/
+__pycache__/

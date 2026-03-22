@@ -1,0 +1,25 @@
+name: Python Test
+on:
+  pull_request:
+  push:
+    paths:
+      - '.github/workflows/pytest.yml'
+      - '**/*.py'
+      - 'pyproject.toml'
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-cov pytest-mock
+      - name: Run pytest
+        run: python3 -m pytest

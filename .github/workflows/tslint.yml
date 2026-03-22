@@ -1,0 +1,29 @@
+name: TypeScript Lint
+on:
+  pull_request:
+  push:
+    paths:
+      - '.github/workflows/tslint.yml'
+      - 'src/**/*.ts'
+      - 'yarn.lock'
+      - 'eslint.config.js'
+      - '.prettierrc'
+
+jobs:
+  typescript-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --force
+      - name: Run ESLint
+        run: yarn lint
+      - name: Check formatting
+        run: yarn format:check

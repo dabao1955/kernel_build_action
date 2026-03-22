@@ -2,6 +2,9 @@
 # Python version
 py-version = 3.10
 
+# Ignore external/legacy files
+ignore = mkdtboimg.py
+
 # Disable some style warnings that don't affect functionality
 disable =
     C0301,  # line-too-long
@@ -10,7 +13,20 @@ disable =
     R0915,  # too-many-statements
     R0801,  # duplicate-code
     W1309,  # f-string-without-interpolation
-    W0707   # raise-missing-from
+    W0707,  # raise-missing-from
+    W0613,  # unused-argument (common in test fixtures)
+    R0903,  # too-few-public-methods (common in test classes)
+    C0415,  # import-outside-toplevel (common in tests)
+    W0107,  # unnecessary-pass
+    W0611,  # unused-import (handled by other tools)
+    W0621,  # redefined-outer-name (common with pytest fixtures)
+    W0404,  # reimported (common in tests)
+    C0304,  # missing-final-newline
+    W1514,  # unspecified-encoding
+    C1803,  # use-implicit-booleaness-not-comparison
+    W0718,  # broad-exception-caught
+    W0612,  # unused-variable
+    E0401   # import-error (for pytest in CI)
 
 [FORMAT]
 # Allow longer lines

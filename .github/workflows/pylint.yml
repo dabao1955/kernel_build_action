@@ -1,0 +1,43 @@
+name: Python Lint
+on:
+  pull_request:
+  push:
+    paths:
+      - '.github/workflows/pylint.yml'
+      - '**/*.py'
+      - '.pylintrc'
+      - 'pyproject.toml'
+
+jobs:
+  python-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        lint: [mypy, pylint]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install pytest
+
+      - name: Run mypy
+        if: matrix.lint == 'mypy'
+        run: |
+          pip install mypy
+          mypy --explicit-package-bases $(find . -name "*.py" | grep -v __pycache__ | grep -v node_modules)
+
+      - name: Run pylint
+        if: matrix.lint == 'pylint'
+        run: |
+          pip install pylint
+          pylint $(find . -name "*.py" | grep -v __pycache__ | grep -v node_modules)

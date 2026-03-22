@@ -1,0 +1,49 @@
+name: TypeScript Build
+on:
+  pull_request:
+  push:
+    paths:
+      - '.github/workflows/tsbuild.yml'
+      - 'src/**/*.ts'
+      - 'yarn.lock'
+      - 'tsconfig.json'
+
+jobs:
+  typescript-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --force
+      - name: Build with esbuild
+        run: yarn build
+
+  coverage-report:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    needs: typescript-build
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --force
+      - name: Run tests with coverage
+        run: yarn test
+      - name: Coverage Report Comment
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-compare-path: ./coverage/coverage-summary.json
