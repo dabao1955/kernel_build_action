@@ -1,4 +1,7 @@
 name: Biome Lint
+permissions:
+  contents: read
+  packages: read
 
 on:
   push:
