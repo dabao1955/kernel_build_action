@@ -552,8 +552,9 @@ class TestConstants:
 
     def test_patches_base_format(self):
         """Test that PATCHES_BASE is properly formatted."""
-        assert rk_patch.PATCHES_BASE.startswith("https://")
-        assert "raw.githubusercontent.com" in rk_patch.PATCHES_BASE
+        parsed = urlparse(rk_patch.PATCHES_BASE)
+        assert parsed.scheme == "https"
+        assert parsed.hostname == "raw.githubusercontent.com"
 
 
 # =============================================================================

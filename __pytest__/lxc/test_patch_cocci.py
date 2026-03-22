@@ -281,10 +281,10 @@ class TestConstants:
 
     def test_repo_url_format(self):
         """Test that REPO_URL is properly formatted."""
-        assert patch_cocci.REPO_URL.startswith("https://")
         parsed = urlparse(patch_cocci.REPO_URL)
+        assert parsed.scheme == "https"
         assert parsed.hostname == "github.com"
-        assert patch_cocci.REPO_URL.endswith("/lxc")
+        assert parsed.path.endswith("/lxc")
 
 
 # =============================================================================
