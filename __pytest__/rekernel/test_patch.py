@@ -13,6 +13,7 @@ import importlib.util
 from pathlib import Path
 from subprocess import CalledProcessError
 from unittest.mock import MagicMock, patch as mock_patch
+from urllib.parse import urlparse
 
 import pytest  # pylint: disable=import-error
 
@@ -543,8 +544,11 @@ class TestConstants:
 
     def test_repo_base_format(self):
         """Test that REPO_BASE is properly formatted."""
-        assert rk_patch.REPO_BASE.startswith("https://")
-        assert "github.com" in rk_patch.REPO_BASE
+        parsed = urlparse(rk_patch.REPO_BASE)
+        assert parsed.scheme == "https"
+        # Require that the URL points to github.com or one of its subdomains.
+        assert parsed.hostname is not None
+        assert parsed.hostname == "github.com" or parsed.hostname.endswith(".github.com")
 
     def test_patches_base_format(self):
         """Test that PATCHES_BASE is properly formatted."""
