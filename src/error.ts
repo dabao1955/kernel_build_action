@@ -314,7 +314,11 @@ export function analyzeErrors(logFile: string): number {
     const trimmedLine = line.trim();
 
     // Check for error start (includes modpost, ld, and lto errors)
-    if (/\serror:|\sfatal error:|undefined reference to|WARNING: modpost:|ld:.*(error|unrecognized)|lto-wrapper:/i.test(line)) {
+    if (
+      /\serror:|\sfatal error:|undefined reference to|WARNING: modpost:|ld:.*(error|unrecognized)|lto-wrapper:/i.test(
+        line
+      )
+    ) {
       // Save previous error block if exists
       if (processingError && currentErrorLines.length > 0) {
         const { type, suggestion } = analyzeErrorBlock(currentErrorLines);

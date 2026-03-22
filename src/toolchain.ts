@@ -52,11 +52,7 @@ export async function downloadAndExtract(
   if (url.endsWith('.zip')) {
     const zipPath = await tc.downloadTool(url, `${outputName}.zip`);
     await tc.extractZip(zipPath, extractDir);
-  } else if (
-    url.endsWith('.tar.gz') ||
-    url.endsWith('.tar.xz') ||
-    url.endsWith('.tar.bz2')
-  ) {
+  } else if (url.endsWith('.tar.gz') || url.endsWith('.tar.xz') || url.endsWith('.tar.bz2')) {
     // Handle tar archives with compression
     let ext: string;
     if (url.endsWith('.tar.gz')) {

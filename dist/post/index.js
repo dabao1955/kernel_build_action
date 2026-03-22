@@ -22106,7 +22106,9 @@ function analyzeErrors(logFile) {
   let processingError = false;
   for (const line of lines) {
     const trimmedLine = line.trim();
-    if (/\serror:|\sfatal error:|undefined reference to|WARNING: modpost:|ld:.*(error|unrecognized)|lto-wrapper:/i.test(line)) {
+    if (/\serror:|\sfatal error:|undefined reference to|WARNING: modpost:|ld:.*(error|unrecognized)|lto-wrapper:/i.test(
+      line
+    )) {
       if (processingError && currentErrorLines.length > 0) {
         const { type, suggestion } = analyzeErrorBlock(currentErrorLines);
         errorBlocks.push({ lines: [...currentErrorLines], type, suggestion });
