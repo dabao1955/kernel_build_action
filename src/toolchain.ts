@@ -54,25 +54,50 @@ export async function downloadAndExtract(
     await tc.extractZip(zipPath, extractDir);
   } else if (
     url.endsWith('.tar.gz') ||
-    url.endsWith('.gz') ||
     url.endsWith('.tar.xz') ||
-    url.endsWith('.xz') ||
-    url.endsWith('.tar.bz2') ||
-    url.endsWith('.bz2')
+    url.endsWith('.tar.bz2')
   ) {
-    // Handle compound extensions like .tar.gz and .tar.xz
+    // Handle tar archives with compression
     let ext: string;
     if (url.endsWith('.tar.gz')) {
       ext = '.tar.gz';
     } else if (url.endsWith('.tar.xz')) {
       ext = '.tar.xz';
-    } else if (url.endsWith('.tar.bz2')) {
-      ext = '.tar.bz2';
     } else {
-      ext = path.extname(url);
+      ext = '.tar.bz2';
     }
     const tarPath = await tc.downloadTool(url, `${outputName}${ext}`);
     await tc.extractTar(tarPath, extractDir);
+  } else if (url.endsWith('.gz')) {
+    // Handle gzip compressed single files
+    const gzPath = await tc.downloadTool(url, `${outputName}.gz`);
+    await exec.exec('gzip', ['-d', '-c', gzPath], {
+      listeners: {
+        stdout: (data: Buffer) => {
+          fs.writeFileSync(path.join(extractDir, outputName), data);
+        },
+      },
+    });
+  } else if (url.endsWith('.xz')) {
+    // Handle xz compressed single files
+    const xzPath = await tc.downloadTool(url, `${outputName}.xz`);
+    await exec.exec('xz', ['-d', '-c', xzPath], {
+      listeners: {
+        stdout: (data: Buffer) => {
+          fs.writeFileSync(path.join(extractDir, outputName), data);
+        },
+      },
+    });
+  } else if (url.endsWith('.bz2')) {
+    // Handle bzip2 compressed single files
+    const bz2Path = await tc.downloadTool(url, `${outputName}.bz2`);
+    await exec.exec('bzip2', ['-d', '-c', bz2Path], {
+      listeners: {
+        stdout: (data: Buffer) => {
+          fs.writeFileSync(path.join(extractDir, outputName), data);
+        },
+      },
+    });
   } else {
     // Git clone
     await exec.exec('git', ['clone', '--depth=1', '-b', branch, '--', url, extractDir]);

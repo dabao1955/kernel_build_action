@@ -92025,19 +92025,44 @@ async function downloadAndExtract(url2, outputName, extractDir, branch = "main")
   if (url2.endsWith(".zip")) {
     const zipPath = await downloadTool(url2, `${outputName}.zip`);
     await extractZip(zipPath, extractDir);
-  } else if (url2.endsWith(".tar.gz") || url2.endsWith(".gz") || url2.endsWith(".tar.xz") || url2.endsWith(".xz") || url2.endsWith(".tar.bz2") || url2.endsWith(".bz2")) {
+  } else if (url2.endsWith(".tar.gz") || url2.endsWith(".tar.xz") || url2.endsWith(".tar.bz2")) {
     let ext;
     if (url2.endsWith(".tar.gz")) {
       ext = ".tar.gz";
     } else if (url2.endsWith(".tar.xz")) {
       ext = ".tar.xz";
-    } else if (url2.endsWith(".tar.bz2")) {
-      ext = ".tar.bz2";
     } else {
-      ext = path14.extname(url2);
+      ext = ".tar.bz2";
     }
     const tarPath = await downloadTool(url2, `${outputName}${ext}`);
     await extractTar2(tarPath, extractDir);
+  } else if (url2.endsWith(".gz")) {
+    const gzPath = await downloadTool(url2, `${outputName}.gz`);
+    await exec("gzip", ["-d", "-c", gzPath], {
+      listeners: {
+        stdout: (data) => {
+          fs11.writeFileSync(path14.join(extractDir, outputName), data);
+        }
+      }
+    });
+  } else if (url2.endsWith(".xz")) {
+    const xzPath = await downloadTool(url2, `${outputName}.xz`);
+    await exec("xz", ["-d", "-c", xzPath], {
+      listeners: {
+        stdout: (data) => {
+          fs11.writeFileSync(path14.join(extractDir, outputName), data);
+        }
+      }
+    });
+  } else if (url2.endsWith(".bz2")) {
+    const bz2Path = await downloadTool(url2, `${outputName}.bz2`);
+    await exec("bzip2", ["-d", "-c", bz2Path], {
+      listeners: {
+        stdout: (data) => {
+          fs11.writeFileSync(path14.join(extractDir, outputName), data);
+        }
+      }
+    });
   } else {
     await exec("git", ["clone", "--depth=1", "-b", branch, "--", url2, extractDir]);
   }
