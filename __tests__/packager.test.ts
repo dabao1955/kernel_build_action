@@ -309,9 +309,13 @@ describe('packageAnyKernel3', () => {
 
     await packageAnyKernel3(config);
 
+    // Verify mkdirSync is called before zip command
+    expect(fs.mkdirSync).toHaveBeenCalledWith('/build', { recursive: true });
+
+    // Verify zip command uses absolute path
     expect(exec.exec).toHaveBeenCalledWith(
       'zip',
-      expect.arrayContaining(['-r', expect.stringContaining('AnyKernel3-flasher.zip')]),
+      expect.arrayContaining(['-r', expect.stringMatching(/^\/.*AnyKernel3-flasher\.zip$/)]),
       expect.objectContaining({ cwd: 'AnyKernel3' })
     );
   });

@@ -194,7 +194,7 @@ export async function packageAnyKernel3(config: PackageConfig): Promise<void> {
 
   // Create zip if releasing, otherwise copy files
   if (config.release) {
-    const zipPath = path.join(config.buildDir, 'AnyKernel3-flasher.zip');
+    const zipPath = path.resolve(config.buildDir, 'AnyKernel3-flasher.zip');
     await exec.exec('zip', ['-r', zipPath, '.'], { cwd: anykernelDir });
     core.info(`Created: ${zipPath}`);
   } else {
