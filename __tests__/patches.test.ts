@@ -267,6 +267,71 @@ describe('setupKernelSU', () => {
     // Should complete without error even when Kconfig file doesn't exist
     expect(result).toBeUndefined();
   });
+
+  // Coverage: sedReplace with existing file (Lines 226-227)
+  it('handles sedReplace when file exists', async () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      // Return false for KernelSU dir (so setup runs)
+      if (path.includes('KernelSU/kernel/Kconfig')) return false;
+      // Return true for config file
+      if (path.includes('.config')) return true;
+      return false;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({
+      isFile: () => true,
+      isDirectory: () => false,
+    } as fs.Stats);
+    // CONFIG_KPROBES=y so hasKprobes is true, triggering sedReplace
+    vi.mocked(fs.readFileSync).mockReturnValue('CONFIG_KSU=y\nCONFIG_KPROBES=y');
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await setupKernelSU('/kernel', '/kernel/.config', {
+      version: 'v0.9.5',
+      lkm: true,  // LKM mode triggers sedReplace when hasKprobes is true
+      other: false,
+    }, kernelVersion);
+
+    // Verify writeFileSync was called (sedReplace executed)
+    expect(fs.writeFileSync).toHaveBeenCalled();
+  });
+
+  // Coverage: sedReplaceInRange with existing file (Lines 245-246)
+  it('handles sedReplaceInRange when file exists', async () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      // Return false for KernelSU dir (so setup runs)
+      if (path.includes('KernelSU/kernel/Kconfig')) return false;
+      // Return true for both config and Kconfig files
+      if (path.includes('.config')) return true;
+      if (path.includes('Kconfig')) return true;
+      return false;
+    });
+    vi.mocked(fs.statSync).mockReturnValue({
+      isFile: () => true,
+      isDirectory: () => false,
+    } as fs.Stats);
+    vi.mocked(fs.readFileSync).mockImplementation((p) => {
+      const path = String(p);
+      if (path.includes('.config')) return 'CONFIG_KPROBES=n';  // No kprobes
+      if (path.includes('Kconfig')) {
+        return 'config KSU\n\tbool "KernelSU"\n\tdefault y\n\thelp\n\t  KernelSU module';
+      }
+      return '';
+    });
+    vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await setupKernelSU('/kernel', '/kernel/.config', {
+      version: 'v0.9.5',
+      lkm: true,  // LKM mode triggers sedReplaceInRange when no kprobes
+      other: false,
+    }, kernelVersion);
+
+    // Verify writeFileSync was called (sedReplaceInRange executed)
+    expect(fs.writeFileSync).toHaveBeenCalled();
+  });
 });
 
 describe('setupBBG', () => {
@@ -409,4 +474,5 @@ describe('setupLXC', () => {
       expect.objectContaining({ cwd: '/kernel' })
     );
   });
+
 });

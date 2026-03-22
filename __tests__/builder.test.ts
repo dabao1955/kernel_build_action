@@ -692,6 +692,72 @@ describe('buildKernel additional coverage', () => {
 
     stderrWriteSpy.mockRestore();
   });
+
+  // Coverage: make stdout callback (Lines 200-202)
+  it('captures stdout output during build', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    const stdoutWriteSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    // Mock exec to trigger stdout callback
+    vi.mocked(exec.exec).mockImplementation(async (cmd, args, options) => {
+      if (cmd === 'make' && options?.listeners?.stdout) {
+        options.listeners.stdout(Buffer.from('Building kernel...'));
+      }
+      return 0;
+    });
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {},
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    await buildKernel(config);
+
+    // Verify stdout was written to log file and process.stdout
+    expect(fs.appendFileSync).toHaveBeenCalledWith(
+      expect.stringContaining('build.log'),
+      expect.any(Buffer)
+    );
+    expect(stdoutWriteSpy).toHaveBeenCalledWith(Buffer.from('Building kernel...'));
+
+    stdoutWriteSpy.mockRestore();
+  });
+
+  // Coverage: gcc32 path without gcc64 (Lines 89-90)
+  it('builds with only gcc32 toolchain (no gcc64)', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm',
+      config: 'defconfig',
+      toolchain: {
+        // Only gcc32, no gcc64 or clang
+        gcc32Path: '/gcc-32',
+        gcc32Prefix: 'arm-linux-androideabi-4.9',
+      },
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(true);
+    // Verify gcc32 path is set correctly
+    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall && makeCall[2]) {
+      const env = (makeCall[2] as any).env;
+      expect(env.PATH).toContain('/gcc-32/bin');
+    }
+  });
 });
 
 describe('Dangerous command detection', () => {

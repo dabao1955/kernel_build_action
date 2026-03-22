@@ -49,6 +49,20 @@ describe('getCcacheEnv', () => {
     expect(env.CCACHE_DIR).toBe('/custom/home/.ccache');
   });
 
+  // Coverage: os.homedir() fallback when HOME is not set (Line 9)
+  it('uses os.homedir() when HOME is not set', () => {
+    const originalHome = process.env.HOME;
+    delete process.env.HOME;
+
+    const env = getCcacheEnv();
+    expect(env.CCACHE_DIR).toContain('.ccache');
+
+    // Restore HOME
+    if (originalHome !== undefined) {
+      process.env.HOME = originalHome;
+    }
+  });
+
   it('falls back to default when HOME not set', () => {
     delete process.env.HOME;
     const env = getCcacheEnv();

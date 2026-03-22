@@ -237,6 +237,24 @@ file.c:20: error: another error
     expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #1'));
     expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #2'));
   });
+
+  // Coverage: trimmedLine branch - non-empty lines continue error block (Line 331)
+  it('continues error block with non-empty continuation lines', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue(`
+file.c:10: error: some error
+   some continuation text
+   another continuation
+file.c:20: error: another error
+`);
+    const infoMock = vi.mocked(core.info);
+
+    const result = analyzeErrors('/build.log');
+    expect(result).toBe(2);
+    // Non-empty continuation lines should be included in error blocks
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #1'));
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Error #2'));
+  });
 });
 
 describe('analyzeBuildErrors', () => {

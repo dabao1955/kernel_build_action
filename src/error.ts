@@ -231,6 +231,36 @@ const ERROR_PATTERNS: ErrorPattern[] = [
     suggestion:
       'File timestamps are in the future. Synchronize system clock or touch the affected files to update timestamps.',
   },
+  {
+    pattern: /WARNING: modpost:/i,
+    type: 'Module Post-processing Warning (modpost)',
+    suggestion:
+      'Section mismatch warnings indicate incompatible code sections. Build with CONFIG_DEBUG_SECTION_MISMATCH=y for details, or check for missing __init/__exit attributes on function declarations.',
+  },
+  {
+    pattern: /modpost:.*Error/i,
+    type: 'Module Post-processing Error (modpost)',
+    suggestion:
+      'Check module symbols and section compatibility. May need to fix EXPORT_SYMBOL usage or update kernel configuration.',
+  },
+  {
+    pattern: /ld: unrecognized option/i,
+    type: 'Linker Error: Unsupported Option',
+    suggestion:
+      'Your linker version does not support the specified option. Update your toolchain or check if the option is correctly specified for your linker version.',
+  },
+  {
+    pattern: /ld:.*error/i,
+    type: 'Linker Error (ld)',
+    suggestion:
+      'Link-time error. Check for missing libraries, incompatible object files, or incorrect linker flags.',
+  },
+  {
+    pattern: /lto-wrapper:/i,
+    type: 'Link Time Optimization Error (LTO)',
+    suggestion:
+      'LTO compilation failed. Try disabling LTO (disable-lto: true) or check for incompatible compiler flags.',
+  },
 ];
 
 /**
@@ -283,8 +313,8 @@ export function analyzeErrors(logFile: string): number {
   for (const line of lines) {
     const trimmedLine = line.trim();
 
-    // Check for error start
-    if (/\serror:|\sfatal error:|undefined reference to/i.test(line)) {
+    // Check for error start (includes modpost, ld, and lto errors)
+    if (/\serror:|\sfatal error:|undefined reference to|WARNING: modpost:|ld:.*(error|unrecognized)|lto-wrapper:/i.test(line)) {
       // Save previous error block if exists
       if (processingError && currentErrorLines.length > 0) {
         const { type, suggestion } = analyzeErrorBlock(currentErrorLines);
