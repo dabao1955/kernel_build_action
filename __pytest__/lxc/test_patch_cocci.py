@@ -9,6 +9,7 @@ import sys
 import importlib.util
 from pathlib import Path
 from unittest.mock import MagicMock, patch as mock_patch
+from urllib.parse import urlparse
 
 import pytest  # pylint: disable=import-error
 
@@ -281,7 +282,8 @@ class TestConstants:
     def test_repo_url_format(self):
         """Test that REPO_URL is properly formatted."""
         assert patch_cocci.REPO_URL.startswith("https://")
-        assert "github.com" in patch_cocci.REPO_URL
+        parsed = urlparse(patch_cocci.REPO_URL)
+        assert parsed.hostname == "github.com"
         assert patch_cocci.REPO_URL.endswith("/lxc")
 
 
