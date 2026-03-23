@@ -1,8 +1,8 @@
-# A simple action usage
+# 小米15 Ultra HyperOS 3.0.8 安卓16 专用SUSFS内核编译配置
 name: Build Kernel
 on:
+  push:
   workflow_dispatch:
-
 jobs:
   Build-Kernel:
     strategy:
@@ -10,21 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     steps:
       - name: Build Kernel
         uses: dabao1955/kernel_build_action@main
         with:
-          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
-          kernel-dir: msm-4.19
-          kernel-branch: taffy
-          config: cas_defconfig
+          # 小米15 Ultra 官方内核源码地址（固定不变）
+          kernel-url: https://github.com/MiCode/Xiaomi_Kernel_OpenSource
+          # 对应安卓16的内核分支（兜底方案看下面）
+          kernel-branch: ishtar-6.6-android16
+          # 小米15 Ultra 设备专属编译配置（固定不变）
+          config: ishtar_user_defconfig
+          # 处理器架构（固定不变）
           arch: arm64
-          aosp-gcc: true
+          # 编译器：用官方推荐的clang，避免冲突
           aosp-clang: true
+          # 启用KSU + SUSFS 核心功能
           ksu: true
-          ksu-version: main
-          android-version: 12
-          aosp-clang-version: r383902
-          disable-lto: true
+          ksu-version: susfs-dev
+          # 你的系统是安卓16，这里必须对应！
+          android-version: 16
+          # 自动打包成TWRP/内核刷入工具可直接刷的zip包
           anykernel3: true
+          # 自动注入SUSFS补丁，实现签名欺骗、root隐藏
+          extra-cmd: |
+            curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-dev
+
