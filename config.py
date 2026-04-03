@@ -545,49 +545,15 @@ def get_config_value(config_file: Path, config: str) -> str | None:
 # =============================================================================
 
 
-def main() -> None:
-    """Main entry point for checking and configuring kernel options."""
-    parser = argparse.ArgumentParser(description='Check and configure kernel options')
-    parser.add_argument('config_file', help='Path to kernel config file')
-    parser.add_argument('--type', '-t', required=True, choices=['lxc', 'nethunter'],
-                        help='Configuration type: lxc or nethunter')
-    parser.add_argument('-w', action='store_true', help='Write changes to config file')
-    args = parser.parse_args()
-
-    config_file = Path(args.config_file).resolve()
-    write_mode = args.w
-    config_type = args.type
-
-    if config_type not in TYPE_CONFIGS:
-        print(f"Error: Unknown type '{config_type}'. Use 'lxc' or 'nethunter'.")
-        sys.exit(1)
-
-    type_config = TYPE_CONFIGS[config_type]
-
-    if not config_file.is_relative_to(Path.cwd()):
-        print("Error: Config file must be within the current directory")
-        sys.exit(1)
-
-    if not config_file.exists():
-        print("Provide a config file as argument")
-        sys.exit(1)
-
-    configs_on = parse_configs(type_config["configs_on"])
-    configs_off = parse_configs(type_config["configs_off"])
-    configs_eq = parse_configs(type_config["configs_eq"])
-
-    print(f"\n\n{type_config['check_message']}\n\n")
-
+def _check_configs_exist(config_file: Path, configs: list[str], write_mode: bool) -> tuple[int, int]:
+    """Check that all configs exist in the config file."""
     errors = 0
     fixes = 0
-
-    # Check all configs exist
-    for config in configs_on + configs_off:
+    for config in configs:
         count = count_config_occurrences(config_file, config)
         if count > 1:
             print(color_red(f"{config} appears more than once in the config file, fix this"))
             errors += 1
-
         if count == 0:
             if write_mode:
                 print(color_white(f"Creating {config}"))
@@ -596,9 +562,14 @@ def main() -> None:
             else:
                 print(color_red(f"{config} is neither enabled nor disabled in the config file"))
                 errors += 1
+    return errors, fixes
 
-    # Enable configs that should be on
-    for config in configs_on:
+
+def _enable_required_configs(config_file: Path, configs: list[str], write_mode: bool) -> tuple[int, int]:
+    """Enable configs that should be on."""
+    errors = 0
+    fixes = 0
+    for config in configs:
         if is_config_enabled(config_file, config):
             print(color_green(f"{config} is already set"))
         else:
@@ -609,9 +580,14 @@ def main() -> None:
             else:
                 print(color_red(f"{config} is not set, set it"))
                 errors += 1
+    return errors, fixes
 
-    # Handle CONFIGS_EQ (equality checks)
-    for config in configs_eq:
+
+def _handle_eq_configs(config_file: Path, configs: list[str], write_mode: bool) -> tuple[int, int]:
+    """Handle CONFIGS_EQ (equality checks)."""
+    errors = 0
+    fixes = 0
+    for config in configs:
         if '=' not in config:
             continue
         lhs, rhs = config.split('=', 1)
@@ -640,9 +616,14 @@ def main() -> None:
             else:
                 print(color_red(f"{config} is not set"))
                 errors += 1
+    return errors, fixes
 
-    # Disable configs that should be off
-    for config in configs_off:
+
+def _disable_configs(config_file: Path, configs: list[str], write_mode: bool) -> tuple[int, int]:
+    """Disable configs that should be off."""
+    errors = 0
+    fixes = 0
+    for config in configs:
         if is_config_enabled(config_file, config):
             if write_mode:
                 print(color_white(f"Unsetting {config}"))
@@ -653,14 +634,66 @@ def main() -> None:
                 errors += 1
         else:
             print(color_green(f"{config} is already unset"))
+    return errors, fixes
 
-    if errors == 0:
+
+def main() -> None:
+    """Main entry point for checking and configuring kernel options."""
+    parser = argparse.ArgumentParser(description='Check and configure kernel options')
+    parser.add_argument('config_file', help='Path to kernel config file')
+    parser.add_argument('--type', '-t', required=True, choices=['lxc', 'nethunter'],
+                        help='Configuration type: lxc or nethunter')
+    parser.add_argument('-w', action='store_true', help='Write changes to config file')
+    args = parser.parse_args()
+
+    config_file = Path(args.config_file).resolve()
+
+    if args.type not in TYPE_CONFIGS:
+        print(f"Error: Unknown type '{args.type}'. Use 'lxc' or 'nethunter'.")
+        sys.exit(1)
+
+    type_config = TYPE_CONFIGS[args.type]
+
+    if not config_file.is_relative_to(Path.cwd()):
+        print("Error: Config file must be within the current directory")
+        sys.exit(1)
+
+    if not config_file.exists():
+        print("Provide a config file as argument")
+        sys.exit(1)
+
+    configs_on = parse_configs(type_config["configs_on"])
+    configs_off = parse_configs(type_config["configs_off"])
+    configs_eq = parse_configs(type_config["configs_eq"])
+
+    print(f"\n\n{type_config['check_message']}\n\n")
+
+    total_errors = 0
+    total_fixes = 0
+
+    errors, fixes = _check_configs_exist(config_file, configs_on + configs_off, args.w)
+    total_errors += errors
+    total_fixes += fixes
+
+    errors, fixes = _enable_required_configs(config_file, configs_on, args.w)
+    total_errors += errors
+    total_fixes += fixes
+
+    errors, fixes = _handle_eq_configs(config_file, configs_eq, args.w)
+    total_errors += errors
+    total_fixes += fixes
+
+    errors, fixes = _disable_configs(config_file, configs_off, args.w)
+    total_errors += errors
+    total_fixes += fixes
+
+    if total_errors == 0:
         print(color_green("\n\nConfig file checked, found no errors.\n\n"))
     else:
-        print(color_red(f"\n\nConfig file checked, found {errors} errors that I did not fix.\n\n"))
+        print(color_red(f"\n\nConfig file checked, found {total_errors} errors that I did not fix.\n\n"))
 
-    if fixes > 0:
-        print(color_green(f"{type_config['fix_message'].format(fixes)}\n\n"))
+    if total_fixes > 0:
+        print(color_green(f"{type_config['fix_message'].format(total_fixes)}\n\n"))
 
 
 if __name__ == "__main__":

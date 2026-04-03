@@ -11,7 +11,7 @@ from pathlib import Path
 from unittest.mock import patch as mock_patch
 from urllib.parse import urlparse
 
-import pytest  # pylint: disable=import-error
+import pytest
 
 # Import the module under test using importlib to avoid conflicts
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "lxc"))

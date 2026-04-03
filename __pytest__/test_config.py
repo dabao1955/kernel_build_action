@@ -1,18 +1,23 @@
-"""Tests for config.py - Unified kernel configuration checker.
+"""
+Tests for config.py - Unified kernel configuration checker.
 
 This module tests the functionality for checking and configuring kernel
 config options for LXC/Docker and Kali NetHunter support.
 """
 
+import importlib.util
+import os
 import sys
 from pathlib import Path
 from unittest.mock import patch as mock_patch
 
-import pytest  # pylint: disable=import-error
+import pytest
 
 # Import the module under test
-sys.path.insert(0, str(Path(__file__).parent.parent))
-import config  # pylint: disable=import-error,wrong-import-position
+config_path = Path(__file__).parent.parent / "config.py"
+spec = importlib.util.spec_from_file_location("config", config_path)
+config = importlib.util.module_from_spec(spec)  # type: ignore[assignment]
+spec.loader.exec_module(config)  # type: ignore[union-attr]
 
 
 # =============================================================================
@@ -460,7 +465,6 @@ class TestMain:
         outside_file.write_text("CONFIG_TEST=y\n")
 
         # Change to temp_dir so outside_file is not relative to cwd
-        import os
         original_cwd = os.getcwd()
         try:
             os.chdir(temp_dir)
@@ -483,7 +487,6 @@ class TestSecurity:
     @mock_patch('builtins.print')
     def test_path_traversal_blocked(self, mock_print, mock_exit, temp_dir):
         """Test that path traversal is blocked."""
-        import os
         original_cwd = os.getcwd()
         try:
             os.chdir(temp_dir)
@@ -507,7 +510,7 @@ class TestSecurity:
         config_file.write_text("CONFIG_TEST[]=$value\n")
 
         # Should not raise exception
-        result = config.is_config_set(config_file, "CONFIG_TEST[]")
+        _ = config.is_config_set(config_file, "CONFIG_TEST[]")
         # The function uses re.escape, so it should handle special chars
 
 

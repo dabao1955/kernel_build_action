@@ -5,8 +5,10 @@ This module provides common fixtures and utilities used across all Python tests
 in the kernel_build_action project.
 """
 
-import os
 import io
+import os
+import struct
+import subprocess
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, mock_open
@@ -74,10 +76,8 @@ def mock_subprocess(mocker: Any) -> MagicMock:
 @pytest.fixture
 def mock_subprocess_error(mocker: Any) -> MagicMock:
     """Mock subprocess.run to raise CalledProcessError."""
-    from subprocess import CalledProcessError
-
     def side_effect(*args, **kwargs):
-        raise CalledProcessError(1, args[0] if args else "cmd")
+        raise subprocess.CalledProcessError(1, args[0] if args else "cmd")
 
     mock = mocker.patch('subprocess.run')
     mock.side_effect = side_effect
@@ -250,7 +250,6 @@ def mock_cwd(mocker: Any, temp_dir: Path) -> Path:
 @pytest.fixture
 def dtbo_header_v0() -> bytes:
     """Create a valid DTBO header for version 0."""
-    import struct
     # DTBO magic, total_size, header_size, dt_entry_size, dt_entry_count,
     # dt_entries_offset, page_size, version
     return struct.pack('>8I',
@@ -268,7 +267,6 @@ def dtbo_header_v0() -> bytes:
 @pytest.fixture
 def dtbo_header_v1() -> bytes:
     """Create a valid DTBO header for version 1."""
-    import struct
     return struct.pack('>8I',
         0xd7b7ab1e,  # magic
         256,         # total_size
@@ -284,7 +282,6 @@ def dtbo_header_v1() -> bytes:
 @pytest.fixture
 def invalid_dtbo_header() -> bytes:
     """Create an invalid DTBO header (wrong magic)."""
-    import struct
     return struct.pack('>8I',
         0xdeadbeef,  # invalid magic
         256,         # total_size
@@ -428,7 +425,7 @@ def project_root() -> Path:
 @pytest.fixture(scope="session")
 def python_files(project_root: Path) -> list[Path]:
     """Return list of all Python files in the project."""
-    python_files: list[Path] = []
+    files: list[Path] = []
     for pattern in ["*.py", "**/*.py"]:
-        python_files.extend(project_root.glob(pattern))
-    return [f for f in python_files if "node_modules" not in str(f) and "__pycache__" not in str(f)]
+        files.extend(project_root.glob(pattern))
+    return [f for f in files if "node_modules" not in str(f) and "__pycache__" not in str(f)]

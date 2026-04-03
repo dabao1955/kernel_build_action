@@ -10,11 +10,11 @@ from pathlib import Path
 from subprocess import CalledProcessError
 from unittest.mock import MagicMock, patch
 
-import pytest  # pylint: disable=import-error,unused-import
+import pytest
 
 # Import the module under test
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "kernelsu"))
-import apply_cocci  # pylint: disable=import-error,wrong-import-position
+import apply_cocci
 
 
 # =============================================================================

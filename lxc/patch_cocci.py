@@ -62,7 +62,7 @@ def download_patch(patch_name: str, temp_dir: Path) -> Path:
         )
         return output_path
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to download {patch_name}: {e}")
+        raise RuntimeError(f"Failed to download {patch_name}: {e}") from e
 
 
 def download_patches_parallel(patch_names: list[str], temp_dir: Path) -> dict[str, Path]:
@@ -105,7 +105,7 @@ def apply_patch(patch_file: Path, target_file: Path, kernel_src: Path) -> None:
             text=True
         )
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to apply {patch_file.name}: {e}")
+        raise RuntimeError(f"Failed to apply {patch_file.name}: {e}") from e
 
 
 def main() -> None:

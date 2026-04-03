@@ -2,23 +2,13 @@
 # Python version
 py-version = 3.10
 
-# Ignore external/legacy files
-ignore = mkdtboimg.py
+# Ignore external/legacy files and test directories
+ignore = mkdtboimg.py,
+         __pytest__,
+         __pycache__
 
-# Disable some style warnings that don't affect functionality
+# No global disables needed for main code
 disable =
-    C0301,  # line-too-long
-    R0912,  # too-many-branches
-    R0914,  # too-many-locals
-    R0915,  # too-many-statements
-    W0707,  # raise-missing-from
-    W0613,  # unused-argument (common in test fixtures)
-    R0903,  # too-few-public-methods (common in test classes)
-    C0415,  # import-outside-toplevel (common in tests)
-    W0621,  # redefined-outer-name (common with pytest fixtures)
-    W0718,  # broad-exception-caught
-    W0612,  # unused-variable
-    E0401   # import-error (for pytest in CI)
 
 [FORMAT]
 # Allow longer lines
