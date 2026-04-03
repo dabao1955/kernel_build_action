@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/workflows/tsbuild.yml'
       - 'src/**/*.ts'
+      - '__tests__/**/*.ts'
       - 'yarn.lock'
+      - 'package.json'
       - 'tsconfig.json'
 
 jobs:

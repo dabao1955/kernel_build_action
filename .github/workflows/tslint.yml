@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/workflows/tslint.yml'
       - 'src/**/*.ts'
+      - '__tests__/**/*.ts'
       - 'yarn.lock'
+      - 'package.json'
       - 'eslint.config.js'
       - '.prettierrc'
 

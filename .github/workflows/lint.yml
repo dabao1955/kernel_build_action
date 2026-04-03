@@ -5,7 +5,7 @@ on:
     branches: main
     paths:
       - '.github/workflows/*.yml'
-      - 'actuon.yml'
+      - 'action.yml'
       - '.github/ISSUE_TEMPLATE/*.yml'
 
 jobs:
