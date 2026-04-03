@@ -11,6 +11,8 @@ import {
   getConfigPath,
   configExists,
   setupMkdtboimg,
+  isLocalKernelPath,
+  isKernelSource,
   type KernelConfig,
 } from './kernel';
 import { disableLto, enableKvm } from './config';
@@ -117,36 +119,54 @@ async function main(): Promise<void> {
       toolchainConfig = getSystemToolchainPaths();
     }
 
-    // Clone kernel source
-    const fullKernelDir = path.join('kernel', inputs.kernelDir);
-    const kernelConfig: KernelConfig = {
-      kernelUrl: inputs.kernelUrl,
-      kernelBranch: inputs.kernelBranch,
-      kernelDir: inputs.kernelDir,
-      depth: inputs.depth,
-      arch: inputs.arch,
-      config: inputs.config,
-      vendor: inputs.vendor,
-      vendorUrl: inputs.vendorUrl,
-      vendorBranch: inputs.vendorBranch,
-      vendorDir: inputs.vendorDir,
-    };
+    // Prepare kernel source directory
+    let kernelDir: string;
+    const isLocal = isLocalKernelPath(inputs.kernelUrl);
 
-    await cloneKernel(
-      kernelConfig.kernelUrl,
-      kernelConfig.kernelBranch,
-      kernelConfig.depth,
-      fullKernelDir
-    );
+    if (isLocal) {
+      // Use local kernel source
+      kernelDir = path.resolve(inputs.kernelUrl);
+      core.info(`Using local kernel source: ${kernelDir}`);
 
-    // Clone vendor if enabled
-    if (inputs.vendor && inputs.vendorUrl) {
-      const fullVendorDir = path.join('kernel', inputs.vendorDir);
-      await cloneVendor(inputs.vendorUrl, inputs.vendorBranch, inputs.depth, fullVendorDir);
+      // Validate kernel source
+      if (!isKernelSource(kernelDir)) {
+        throw new Error(
+          `Invalid kernel source directory: ${kernelDir}. ` +
+            'Make sure it contains Makefile with VERSION, Kconfig, and arch/ directory.'
+        );
+      }
+      core.info('Local kernel source validated successfully');
+    } else {
+      // Clone kernel source from remote URL
+      const fullKernelDir = path.join('kernel', inputs.kernelDir);
+      const kernelConfig: KernelConfig = {
+        kernelUrl: inputs.kernelUrl,
+        kernelBranch: inputs.kernelBranch,
+        kernelDir: inputs.kernelDir,
+        depth: inputs.depth,
+        arch: inputs.arch,
+        config: inputs.config,
+        vendor: inputs.vendor,
+        vendorUrl: inputs.vendorUrl,
+        vendorBranch: inputs.vendorBranch,
+        vendorDir: inputs.vendorDir,
+      };
+
+      await cloneKernel(
+        kernelConfig.kernelUrl,
+        kernelConfig.kernelBranch,
+        kernelConfig.depth,
+        fullKernelDir
+      );
+
+      kernelDir = fullKernelDir;
+
+      // Clone vendor if enabled
+      if (inputs.vendor && inputs.vendorUrl) {
+        const fullVendorDir = path.join('kernel', inputs.vendorDir);
+        await cloneVendor(inputs.vendorUrl, inputs.vendorBranch, inputs.depth, fullVendorDir);
+      }
     }
-
-    // Change to kernel directory
-    const kernelDir = fullKernelDir;
     const actionPath = getActionPath();
 
     // Get kernel version

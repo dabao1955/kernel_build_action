@@ -983,3 +983,98 @@ describe('Dangerous command detection', () => {
     });
   });
 });
+
+describe('buildKernel edge cases for coverage', () => {
+  // Coverage: lines 80-81 - GCC-only mode with no valid gcc64/gcc32 paths
+  it('uses /usr/bin/gcc when in GCC-only mode with no valid gcc64/gcc32 paths', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {
+        // gcc64Path exists but no prefix, gcc32Path exists but no prefix
+        // Both will fail the prefix check, falling through to /usr/bin/gcc
+        gcc64Path: '/gcc-64',
+        gcc64Prefix: undefined,
+        gcc32Path: '/gcc-32',
+        gcc32Prefix: undefined,
+      },
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(true);
+    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall) {
+      const makeArgs = makeCall[1] as string[];
+      expect(makeArgs).toContain('CC=/usr/bin/gcc');
+    }
+  });
+
+  // Coverage: line 110 - ccache with non-empty cmdPath
+  it('prepends ccache to existing PATH when cmdPath is set', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    // Use Clang toolchain (sets cmdPath) with ccache enabled
+    // This triggers line 110: cmdPath = `${ccachePath}:${cmdPath}`
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {
+        clangPath: '/clang',  // This sets cmdPath to /clang/bin
+      },
+      extraMakeArgs: '',
+      useCcache: true,  // This should prepend ccache to existing cmdPath
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(true);
+    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall && makeCall[2]) {
+      const env = (makeCall[2] as any).env;
+      // PATH should have ccache first, then clang/bin
+      expect(env.PATH).toMatch(/\/usr\/lib\/ccache:.*\/clang\/bin/);
+    }
+  });
+
+  // Coverage: line 112 - ccache with empty cmdPath (system toolchain)
+  it('sets ccache as only PATH when cmdPath is empty and useCcache is true', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    // System toolchain (no clang, no gcc) with ccache enabled
+    // cmdPath will be empty, so ccachePath becomes the only PATH (line 112)
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {},  // Empty toolchain -> system toolchain -> cmdPath stays empty
+      extraMakeArgs: '',
+      useCcache: true,
+    };
+
+    const result = await buildKernel(config);
+
+    expect(result).toBe(true);
+    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall && makeCall[2]) {
+      const env = (makeCall[2] as any).env;
+      // PATH should be exactly /usr/lib/ccache (no other paths)
+      expect(env.PATH).toContain('/usr/lib/ccache');
+    }
+  });
+});

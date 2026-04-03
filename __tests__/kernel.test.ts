@@ -11,6 +11,8 @@ import {
   cloneKernel,
   cloneVendor,
   setupMkdtboimg,
+  isLocalKernelPath,
+  isKernelSource,
 } from '../src/kernel';
 import * as fs from 'fs';
 import * as exec from '@actions/exec';
@@ -386,5 +388,95 @@ describe('setupMkdtboimg', () => {
     expect(exec.exec).toHaveBeenCalledWith('sudo', [
       'cp', '-v', '/action/mkdtboimg.py', '/usr/local/bin/mkdtboimg'
     ]);
+  });
+});
+
+describe('isLocalKernelPath', () => {
+  it('returns true for "." (current directory)', () => {
+    expect(isLocalKernelPath('.')).toBe(true);
+  });
+
+  it('returns true for "./" (current directory with slash)', () => {
+    expect(isLocalKernelPath('./')).toBe(true);
+  });
+
+  it('returns true for "./kernel/"', () => {
+    expect(isLocalKernelPath('./kernel/')).toBe(true);
+  });
+
+  it('returns true for "../kernel/"', () => {
+    expect(isLocalKernelPath('../kernel/')).toBe(true);
+  });
+
+  it('returns true for relative path without ./ prefix', () => {
+    expect(isLocalKernelPath('kernel/source/')).toBe(true);
+  });
+
+  it('returns false for path without trailing slash (except ".")', () => {
+    expect(isLocalKernelPath('./kernel')).toBe(false);
+    expect(isLocalKernelPath('../kernel')).toBe(false);
+    expect(isLocalKernelPath('kernel/source')).toBe(false);
+  });
+
+  it('returns false for remote URL with https://', () => {
+    expect(isLocalKernelPath('https://github.com/user/kernel')).toBe(false);
+  });
+
+  it('returns false for remote URL with git@', () => {
+    expect(isLocalKernelPath('git@github.com:user/kernel.git')).toBe(false);
+  });
+
+  it('returns false for remote URL with http://', () => {
+    expect(isLocalKernelPath('http://github.com/user/kernel')).toBe(false);
+  });
+
+  it('returns false for remote URL with trailing slash', () => {
+    expect(isLocalKernelPath('https://github.com/user/kernel/')).toBe(false);
+    expect(isLocalKernelPath('ftp://example.com/path/')).toBe(false);
+  });
+
+  it('returns false for git URL with trailing slash', () => {
+    expect(isLocalKernelPath('git@github.com:user/kernel.git/')).toBe(false);
+  });
+});
+
+describe('isKernelSource', () => {
+  it('returns true for valid kernel source directory', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue('VERSION = 5\nPATCHLEVEL = 10\n');
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+
+    expect(isKernelSource('/kernel')).toBe(true);
+  });
+
+  it('returns false when Makefile does not exist', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+
+    expect(isKernelSource('/kernel')).toBe(false);
+  });
+
+  it('returns false when Makefile does not contain VERSION', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue('# Not a kernel Makefile\n');
+
+    expect(isKernelSource('/kernel')).toBe(false);
+  });
+
+  it('returns false when Kconfig does not exist', () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      return path.includes('Makefile') && !path.includes('Kconfig');
+    });
+    vi.mocked(fs.readFileSync).mockReturnValue('VERSION = 5\n');
+
+    expect(isKernelSource('/kernel')).toBe(false);
+  });
+
+  it('returns false when arch/ directory does not exist', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue('VERSION = 5\n');
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => false } as fs.Stats);
+
+    expect(isKernelSource('/kernel')).toBe(false);
   });
 });

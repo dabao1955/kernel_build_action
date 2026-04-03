@@ -50,6 +50,48 @@ jobs:
           release: true
           access-token: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+### Using Local Kernel Source
+
+You can also use a local or relative path for the kernel source instead of cloning from a remote URL. This is useful when the kernel source is already checked out in the workflow.
+
+```yml
+name: CI
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-kernel:
+    name: Build Kernel
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout kernel source
+        uses: actions/checkout@v4
+        with:
+          repository: username/kernel_repo
+          ref: main
+          path: kernel/source
+
+      - name: Build
+        uses: dabao1955/kernel_build_action@main
+        with:
+          kernel-url: ./kernel/source/
+          config: defconfig
+          arch: arm64
+          aosp-clang: true
+          anykernel3: true
+```
+
+> [!NOTE]
+> - Local paths must end with `/` (except `.` for current directory)
+> - Supported formats: `.`, `./`, `./kernel/`, `../kernel/`, `kernel/source/`
+> - The directory must be a valid kernel source containing: `Makefile` (with VERSION), `Kconfig`, and `arch/` directory
+> - When using local path, `kernel-branch`, `depth`, and `kernel-dir` options are ignored
+
 Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_action/blob/main/.github/workflows/build.yml) to modify it.
 
 > [!NOTE]
@@ -61,7 +103,7 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 ## Inputs
 | input               | required | description | example value |
 |---------------------|----------|-------------|---------|
-| kernel-url | true | URL of the Android kernel source code | https://github.com/username/project |
+| kernel-url | true | URL of the Android kernel source code, or local/relative path. Local paths must end with / (except `.`). Supports: `.`, `./`, `./kernel/`, `../kernel/`, `kernel/source/` | https://github.com/username/project |
 | kernel-dir | false | Directory name for kernel source. Useful for OnePlus kernel sources | kernel |
 | depth | false | Use git clone depth to save time and storage space | 1 |
 | vendor | false | Enable vendor kernel source code | false |

@@ -81,6 +81,68 @@ export async function cloneVendor(
 }
 
 /**
+ * Check if the URL is a local/relative kernel path
+ * Supports: ., ./, ./path/, ../path/, path/path/
+ * Local paths must end with / (except for '.' which is a special case)
+ */
+export function isLocalKernelPath(url: string): boolean {
+  // Special case: current directory
+  if (url === '.') {
+    return true;
+  }
+
+  // Must end with / for all other local paths
+  if (!url.endsWith('/')) {
+    return false;
+  }
+
+  // Check if it's a relative path starting with ./ or ../
+  if (url.startsWith('./') || url.startsWith('../')) {
+    return true;
+  }
+
+  // Check if it's a relative path without protocol
+  // This handles paths like 'kernel/kernel/'
+  if (!url.includes('://') && !url.startsWith('git@')) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Check if directory is a valid kernel source directory
+ * Checks for: Makefile with VERSION, Kconfig, arch/ directory
+ */
+export function isKernelSource(dir: string): boolean {
+  const makefilePath = path.join(dir, 'Makefile');
+  const kconfigPath = path.join(dir, 'Kconfig');
+  const archPath = path.join(dir, 'arch');
+
+  // Check if Makefile exists and contains VERSION
+  if (!fs.existsSync(makefilePath)) {
+    return false;
+  }
+
+  const makefileContent = fs.readFileSync(makefilePath, 'utf-8');
+  if (!makefileContent.includes('VERSION =')) {
+    return false;
+  }
+
+  // Check for Kconfig
+  if (!fs.existsSync(kconfigPath)) {
+    return false;
+  }
+
+  // Check for arch/ directory
+  if (!dirExists(archPath)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Parse kernel version from Makefile
  */
 export function getKernelVersion(kernelDir: string): KernelVersion {
