@@ -8,7 +8,7 @@ patches to kernel source files in parallel.
 import sys
 import importlib.util
 from pathlib import Path
-from unittest.mock import MagicMock, patch as mock_patch
+from unittest.mock import patch as mock_patch
 from urllib.parse import urlparse
 
 import pytest  # pylint: disable=import-error
@@ -298,7 +298,6 @@ class TestSecurity:
     @pytest.mark.skip(reason="Mock path issue with importlib-loaded module")
     def test_url_construction_no_traversal(self):
         """Test that URL cannot be traversed."""
-        pass
 
     def test_target_path_validation(self, temp_dir):
         """Test target path validation."""

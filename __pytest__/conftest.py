@@ -5,13 +5,11 @@ This module provides common fixtures and utilities used across all Python tests
 in the kernel_build_action project.
 """
 
-import sys
 import os
 import io
-import zlib
 from pathlib import Path
-from typing import Generator, Any
-from unittest.mock import MagicMock, patch, mock_open
+from typing import Any
+from unittest.mock import MagicMock, mock_open
 
 import pytest
 

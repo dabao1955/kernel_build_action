@@ -7,6 +7,7 @@ in CI mode, including version detection and patch application.
 
 import sys
 import os
+import io
 import importlib.util
 from pathlib import Path
 from subprocess import CalledProcessError
@@ -34,8 +35,6 @@ class TestLoggingFunctions:
 
     def test_info_outputs_to_stderr(self):
         """Test info outputs to stderr."""
-        import io
-        import sys
         old_stderr = sys.stderr
         sys.stderr = io.StringIO()
         try:
@@ -48,8 +47,6 @@ class TestLoggingFunctions:
 
     def test_warn_outputs_to_stderr(self):
         """Test warn outputs to stderr."""
-        import io
-        import sys
         old_stderr = sys.stderr
         sys.stderr = io.StringIO()
         try:
@@ -62,8 +59,6 @@ class TestLoggingFunctions:
 
     def test_error_exits(self):
         """Test error exits with code 1."""
-        import io
-        import sys
         old_stderr = sys.stderr
         sys.stderr = io.StringIO()
         try:
@@ -295,17 +290,14 @@ class TestMain:
     @pytest.mark.skip(reason="Complex mocking with importlib-loaded module")
     def test_main_success(self):
         """Test main function success path - skipped due to import complexity."""
-        pass
 
     @pytest.mark.skip(reason="Complex mocking with importlib-loaded module")
     def test_main_no_makefile(self):
         """Test main when Makefile is not found - skipped."""
-        pass
 
     @pytest.mark.skip(reason="Complex mocking with importlib-loaded module")
     def test_main_no_patch_dir(self):
         """Test main when patch directory is not found - skipped."""
-        pass
 
 
 # =============================================================================

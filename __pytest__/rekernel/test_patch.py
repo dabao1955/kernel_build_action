@@ -6,7 +6,6 @@ Re:Kernel patches to kernel source files, including security features like
 ZipSlip attack prevention.
 """
 
-import io
 import sys
 import zipfile
 import importlib.util

@@ -10,7 +10,7 @@ from pathlib import Path
 from subprocess import CalledProcessError
 from unittest.mock import MagicMock, patch
 
-import pytest  # pylint: disable=import-error
+import pytest  # pylint: disable=import-error,unused-import
 
 # Import the module under test
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "kernelsu"))
@@ -122,7 +122,7 @@ file in "kernel/file.c"
 
         result = apply_cocci.extract_files_from_cocci(str(cocci_file))
 
-        assert result == []
+        assert not result
 
     def test_extract_complex_paths(self, temp_dir):
         """Test extracting files with complex paths."""

@@ -6,7 +6,7 @@ config options for LXC/Docker and Kali NetHunter support.
 
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch as mock_patch, mock_open
+from unittest.mock import patch as mock_patch
 
 import pytest  # pylint: disable=import-error
 
