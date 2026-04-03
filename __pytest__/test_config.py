@@ -16,8 +16,10 @@ import pytest
 # Import the module under test
 config_path = Path(__file__).parent.parent / "config.py"
 spec = importlib.util.spec_from_file_location("config", config_path)
-config = importlib.util.module_from_spec(spec)  # type: ignore[assignment]
-spec.loader.exec_module(config)  # type: ignore[union-attr]
+if spec is None or spec.loader is None:
+    raise ImportError(f"Cannot load module from {config_path}")
+config = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(config)
 
 
 # =============================================================================

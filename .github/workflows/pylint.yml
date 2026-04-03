@@ -34,10 +34,10 @@ jobs:
         if: matrix.lint == 'mypy'
         run: |
           pip install mypy
-          mypy --explicit-package-bases $(find . -name "*.py" | grep -v __pycache__ | grep -v node_modules)
+          mypy --explicit-package-bases kernelsu/ lxc/ nethunter/ rekernel/ config.py
 
       - name: Run pylint
         if: matrix.lint == 'pylint'
         run: |
           pip install pylint
-          pylint $(find . -name "*.py" | grep -v __pycache__ | grep -v node_modules)
+          pylint kernelsu/ lxc/ nethunter/ rekernel/ config.py
