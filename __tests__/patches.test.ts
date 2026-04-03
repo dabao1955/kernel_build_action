@@ -423,7 +423,7 @@ describe('setupNetHunter', () => {
 
     expect(exec.exec).toHaveBeenCalledWith(
       'python3',
-      expect.arrayContaining([expect.stringContaining('nethunter/config.py')])
+      expect.arrayContaining([expect.stringContaining('config.py'), '--type', 'nethunter'])
     );
   });
 
@@ -435,7 +435,7 @@ describe('setupNetHunter', () => {
 
     expect(exec.exec).toHaveBeenCalledWith(
       'python3',
-      expect.arrayContaining([expect.stringContaining('config.py')])
+      expect.arrayContaining([expect.stringContaining('config.py'), '--type', 'nethunter'])
     );
     expect(exec.exec).toHaveBeenCalledWith(
       'python3',
@@ -454,7 +454,7 @@ describe('setupLXC', () => {
 
     expect(exec.exec).toHaveBeenCalledWith(
       'python3',
-      expect.arrayContaining([expect.stringContaining('lxc/config.py')])
+      expect.arrayContaining([expect.stringContaining('config.py'), '--type', 'lxc'])
     );
   });
 
@@ -466,7 +466,7 @@ describe('setupLXC', () => {
 
     expect(exec.exec).toHaveBeenCalledWith(
       'python3',
-      expect.arrayContaining([expect.stringContaining('config.py')])
+      expect.arrayContaining([expect.stringContaining('config.py'), '--type', 'lxc'])
     );
     expect(exec.exec).toHaveBeenCalledWith(
       'python3',

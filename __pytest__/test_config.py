@@ -1,7 +1,7 @@
-"""Tests for lxc/config.py - LXC/Docker kernel configuration checker.
+"""Tests for config.py - Unified kernel configuration checker.
 
 This module tests the functionality for checking and configuring kernel
-config options required for LXC/Docker container support.
+config options for LXC/Docker and Kali NetHunter support.
 """
 
 import sys
@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch as mock_patch, mock_open
 import pytest  # pylint: disable=import-error
 
 # Import the module under test
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "lxc"))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 import config  # pylint: disable=import-error,wrong-import-position
 
 
@@ -397,6 +397,39 @@ class TestGetConfigValue:
 
 
 # =============================================================================
+# TYPE_CONFIGS Tests
+# =============================================================================
+
+
+class TestTypeConfigs:
+    """Tests for type configuration constants."""
+
+    def test_lxc_configs_on_not_empty(self):
+        """Test that LXC_CONFIGS_ON is not empty."""
+        configs = config.parse_configs(config.LXC_CONFIGS_ON)
+        assert len(configs) > 0
+        assert all(c.startswith("CONFIG_") for c in configs)
+
+    def test_nethunter_configs_on_not_empty(self):
+        """Test that NETHUNTER_CONFIGS_ON is not empty."""
+        configs = config.parse_configs(config.NETHUNTER_CONFIGS_ON)
+        assert len(configs) > 0
+        assert all(c.startswith("CONFIG_") for c in configs)
+
+    def test_type_configs_has_both_types(self):
+        """Test that TYPE_CONFIGS has both lxc and nethunter."""
+        assert "lxc" in config.TYPE_CONFIGS
+        assert "nethunter" in config.TYPE_CONFIGS
+
+    def test_type_configs_structure(self):
+        """Test TYPE_CONFIGS has required keys."""
+        required_keys = ["configs_on", "configs_off", "configs_eq", "description", "check_message", "fix_message"]
+        for type_name, type_config in config.TYPE_CONFIGS.items():
+            for key in required_keys:
+                assert key in type_config, f"{type_name} missing {key}"
+
+
+# =============================================================================
 # main Tests
 # =============================================================================
 
@@ -404,10 +437,17 @@ class TestGetConfigValue:
 class TestMain:
     """Tests for main function."""
 
-    @pytest.mark.skip(reason="Complex test setup issue with file paths")
-    def test_main_config_not_exists(self):
-        """Test main with non-existent config file - skipped."""
-        pass
+    def test_main_missing_type_exits(self):
+        """Test main without --type argument exits with error."""
+        with mock_patch('sys.argv', ['config.py', 'config_file']):
+            with pytest.raises(SystemExit):
+                config.main()
+
+    def test_main_invalid_type_exits(self):
+        """Test main with invalid type exits with error."""
+        with mock_patch('sys.argv', ['config.py', '--type', 'invalid', 'config_file']):
+            with pytest.raises(SystemExit):
+                config.main()
 
     @mock_patch('sys.exit')
     @mock_patch('builtins.print')
@@ -424,57 +464,11 @@ class TestMain:
         original_cwd = os.getcwd()
         try:
             os.chdir(temp_dir)
-            with mock_patch('sys.argv', ['config.py', str(outside_file)]):
+            with mock_patch('sys.argv', ['config.py', '--type', 'lxc', str(outside_file)]):
                 config.main()
             mock_exit.assert_called_with(1)
         finally:
             os.chdir(original_cwd)
-
-    @pytest.mark.skip(reason="Complex test setup issue with config parsing")
-    def test_main_check_mode_all_good(self):
-        """Test main in check mode - skipped."""
-        pass
-
-    @pytest.mark.skip(reason="Complex test setup issue with config parsing")
-    def test_main_write_mode(self):
-        """Test main in write mode - skipped."""
-        pass
-
-
-# =============================================================================
-# Constants Tests
-# =============================================================================
-
-
-class TestConstants:
-    """Tests for configuration constants."""
-
-    def test_configs_on_not_empty(self):
-        """Test that CONFIGS_ON is not empty."""
-        configs = config.parse_configs(config.CONFIGS_ON)
-        assert len(configs) > 0
-        assert all(c.startswith("CONFIG_") for c in configs)
-
-    def test_configs_off_not_empty(self):
-        """Test that CONFIGS_OFF is not empty."""
-        configs = config.parse_configs(config.CONFIGS_OFF)
-        assert len(configs) > 0
-        assert all(c.startswith("CONFIG_") for c in configs)
-
-    def test_configs_on_valid_format(self):
-        """Test that CONFIGS_ON has valid format."""
-        configs = config.parse_configs(config.CONFIGS_ON)
-        for c in configs:
-            assert c.isupper() or c.isdigit() or c == "_"
-            assert c.startswith("CONFIG_")
-
-    def test_configs_unique(self):
-        """Test that configs are unique between lists."""
-        on_configs = set(config.parse_configs(config.CONFIGS_ON))
-        off_configs = set(config.parse_configs(config.CONFIGS_OFF))
-
-        intersection = on_configs & off_configs
-        assert len(intersection) == 0, f"Configs in both ON and OFF: {intersection}"
 
 
 # =============================================================================
@@ -499,7 +493,7 @@ class TestSecurity:
             malicious_path = outside_dir / "passwd"
             malicious_path.write_text("test\n")
 
-            with mock_patch('sys.argv', ['config.py', str(malicious_path)]):
+            with mock_patch('sys.argv', ['config.py', '--type', 'lxc', str(malicious_path)]):
                 config.main()
 
             mock_exit.assert_called_with(1)

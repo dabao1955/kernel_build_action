@@ -92557,8 +92557,8 @@ async function setupReKernel(kernelDir) {
 }
 async function setupNetHunter(kernelDir, configPath, options) {
   startGroup("Initializing Kali NetHunter");
-  const configScript = path16.join(getActionPath(), "nethunter", "config.py");
-  await exec("python3", [configScript, configPath, "-w"]);
+  const configScript = path16.join(getActionPath(), "config.py");
+  await exec("python3", [configScript, "--type", "nethunter", configPath, "-w"]);
   if (options.patch) {
     const patchScript = path16.join(getActionPath(), "nethunter", "patch.py");
     await exec("python3", [patchScript], { cwd: kernelDir });
@@ -92567,8 +92567,8 @@ async function setupNetHunter(kernelDir, configPath, options) {
 }
 async function setupLXC(kernelDir, configPath, options) {
   startGroup("Enabling LXC");
-  const configScript = path16.join(getActionPath(), "lxc", "config.py");
-  await exec("python3", [configScript, configPath, "-w"]);
+  const configScript = path16.join(getActionPath(), "config.py");
+  await exec("python3", [configScript, "--type", "lxc", configPath, "-w"]);
   if (options.patch) {
     const patchScript = path16.join(getActionPath(), "lxc", "patch_cocci.py");
     await exec("python3", [patchScript], { cwd: kernelDir });

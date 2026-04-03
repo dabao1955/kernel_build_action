@@ -168,8 +168,8 @@ export async function setupNetHunter(
   core.startGroup('Initializing Kali NetHunter');
 
   // Run config script
-  const configScript = path.join(getActionPath(), 'nethunter', 'config.py');
-  await exec.exec('python3', [configScript, configPath, '-w']);
+  const configScript = path.join(getActionPath(), 'config.py');
+  await exec.exec('python3', [configScript, '--type', 'nethunter', configPath, '-w']);
 
   // Apply patches if requested
   if (options.patch) {
@@ -193,8 +193,8 @@ export async function setupLXC(
   core.startGroup('Enabling LXC');
 
   // Run config script
-  const configScript = path.join(getActionPath(), 'lxc', 'config.py');
-  await exec.exec('python3', [configScript, configPath, '-w']);
+  const configScript = path.join(getActionPath(), 'config.py');
+  await exec.exec('python3', [configScript, '--type', 'lxc', configPath, '-w']);
 
   // Apply patches if requested
   if (options.patch) {
