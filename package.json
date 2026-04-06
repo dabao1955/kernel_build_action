@@ -4,7 +4,7 @@
   "description": "Android Kernel Build Action",
   "main": "dist/index.js",
   "scripts": {
-    "build": "rm -rf dist && esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js && esbuild src/post.ts --bundle --platform=node --target=node20 --outfile=dist/post/index.js --format=cjs",
+    "build": "esbuild src/index.ts --bundle --minify --platform=node --target=node24 --outfile=dist/index.js && esbuild src/post.ts --bundle  --minify --platform=node --target=node24 --outfile=dist/post/index.js --format=cjs",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
