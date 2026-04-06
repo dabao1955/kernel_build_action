@@ -798,7 +798,7 @@
   dependencies:
     "@octokit/types" "^16.0.0"
 
-"@octokit/request@^10.0.6", "@octokit/request@^10.0.7", "@octokit/request@^10.0.8":
+"@octokit/request@^10.0.6", "@octokit/request@^10.0.7":
   version "10.0.8"
   resolved "https://registry.yarnpkg.com/@octokit/request/-/request-10.0.8.tgz#6609a5a38ad6f8ee203d9eb8ac9361d906a4414e"
   integrity sha512-SJZNwY9pur9Agf7l87ywFi14W+Hd9Jg6Ifivsd33+/bGUQIjNujdFiXII2/qSlN2ybqUHfp5xpekMEjIBTjlSw==
@@ -809,16 +809,6 @@
     fast-content-type-parse "^3.0.0"
     json-with-bigint "^3.5.3"
     universal-user-agent "^7.0.2"
-
-"@octokit/rest@^22.0.1":
-  version "22.0.1"
-  resolved "https://registry.npmjs.org/@octokit/rest/-/rest-22.0.1.tgz"
-  integrity sha512-Jzbhzl3CEexhnivb1iQ0KJ7s5vvjMWcmRtq5aUsKmKDrRW6z3r84ngmiFKFvpZjpiU/9/S6ITPFRpn5s/3uQJw==
-  dependencies:
-    "@octokit/core" "^7.0.6"
-    "@octokit/plugin-paginate-rest" "^14.0.0"
-    "@octokit/plugin-request-log" "^6.0.0"
-    "@octokit/plugin-rest-endpoint-methods" "^17.0.0"
 
 "@octokit/types@^16.0.0":
   version "16.0.0"
