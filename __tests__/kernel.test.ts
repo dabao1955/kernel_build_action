@@ -212,7 +212,10 @@ describe('findDtbFile', () => {
     });
     vi.mocked(fs.statSync).mockImplementation((p) => {
       const path = String(p);
-      return { isDirectory: () => path.includes('boot'), isFile: () => !path.includes('boot') } as fs.Stats;
+      return {
+        isDirectory: () => path.includes('boot'),
+        isFile: () => !path.includes('boot'),
+      } as fs.Stats;
     });
 
     const dtb = findDtbFile('/kernel', 'arm64');
@@ -248,7 +251,10 @@ describe('findDtboFile', () => {
     });
     vi.mocked(fs.statSync).mockImplementation((p) => {
       const path = String(p);
-      return { isDirectory: () => path.includes('boot'), isFile: () => !path.includes('boot') } as fs.Stats;
+      return {
+        isDirectory: () => path.includes('boot'),
+        isFile: () => !path.includes('boot'),
+      } as fs.Stats;
     });
 
     const dtbo = findDtboFile('/kernel', 'arm64');
@@ -265,9 +271,15 @@ describe('cloneKernel', () => {
 
     expect(fs.mkdirSync).toHaveBeenCalledWith('/kernel', { recursive: true });
     expect(exec.exec).toHaveBeenCalledWith('git', [
-      'clone', '--recursive', '-b', 'main',
-      '--depth', '1',
-      '--', 'https://github.com/test/kernel.git', '/kernel',
+      'clone',
+      '--recursive',
+      '-b',
+      'main',
+      '--depth',
+      '1',
+      '--',
+      'https://github.com/test/kernel.git',
+      '/kernel',
     ]);
   });
 
@@ -278,8 +290,13 @@ describe('cloneKernel', () => {
     await cloneKernel('https://github.com/test/kernel.git', 'develop', '0', '/kernel');
 
     expect(exec.exec).toHaveBeenCalledWith('git', [
-      'clone', '--recursive', '-b', 'develop',
-      '--', 'https://github.com/test/kernel.git', '/kernel',
+      'clone',
+      '--recursive',
+      '-b',
+      'develop',
+      '--',
+      'https://github.com/test/kernel.git',
+      '/kernel',
     ]);
   });
 });
@@ -317,7 +334,14 @@ describe('cloneVendor', () => {
     vi.mocked(fs.cpSync).mockImplementation(() => undefined);
     vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
 
-    await cloneVendor('https://github.com/test/vendor.git', 'main', '1', '/vendor');
+    await cloneVendor(
+      'https://github.com/test/vendor.git',
+      'main',
+      '1',
+      '/vendor',
+      '/kernel',
+      'vendor'
+    );
 
     expect(fs.mkdirSync).toHaveBeenCalledWith('/vendor', { recursive: true });
     expect(exec.exec).toHaveBeenCalledWith('git', expect.arrayContaining(['clone']));
@@ -328,10 +352,20 @@ describe('cloneVendor', () => {
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
     vi.mocked(fs.readdirSync).mockReturnValue(['README.md'] as any);
-    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => false, isFile: () => true } as fs.Stats);
+    vi.mocked(fs.statSync).mockReturnValue({
+      isDirectory: () => false,
+      isFile: () => true,
+    } as fs.Stats);
     vi.mocked(fs.existsSync).mockReturnValue(false);
 
-    await cloneVendor('https://github.com/test/vendor.git', 'main', '1', '/vendor');
+    await cloneVendor(
+      'https://github.com/test/vendor.git',
+      'main',
+      '1',
+      '/vendor',
+      '/kernel',
+      'vendor'
+    );
 
     expect(fs.cpSync).not.toHaveBeenCalled();
   });
@@ -346,7 +380,9 @@ describe('setupMkdtboimg', () => {
       const path = String(p);
       return path === makefilePath || path === mkdtboimgPath;
     });
-    vi.mocked(fs.readFileSync).mockReturnValue('MKDTIMG := python2 $(srctree)/scripts/dtc/libfdt/mkdtboimg.py');
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      'MKDTIMG := python2 $(srctree)/scripts/dtc/libfdt/mkdtboimg.py'
+    );
     vi.mocked(fs.rmSync).mockImplementation(() => undefined);
     vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
@@ -354,10 +390,7 @@ describe('setupMkdtboimg', () => {
     await setupMkdtboimg('/kernel', '/action');
 
     expect(fs.rmSync).toHaveBeenCalledWith(mkdtboimgPath);
-    expect(fs.copyFileSync).toHaveBeenCalledWith(
-      '/action/mkdtboimg.py',
-      mkdtboimgPath
-    );
+    expect(fs.copyFileSync).toHaveBeenCalledWith('/action/mkdtboimg.py', mkdtboimgPath);
   });
 
   it('copies to ufdt directory when ufdt is referenced but missing', async () => {
@@ -371,10 +404,9 @@ describe('setupMkdtboimg', () => {
 
     await setupMkdtboimg('/kernel', '/action');
 
-    expect(fs.mkdirSync).toHaveBeenCalledWith(
-      '/kernel/ufdt/libufdt/utils/src',
-      { recursive: true }
-    );
+    expect(fs.mkdirSync).toHaveBeenCalledWith('/kernel/ufdt/libufdt/utils/src', {
+      recursive: true,
+    });
   });
 
   it('copies to /usr/local/bin when mkdtboimg.py does not exist in kernel', async () => {
@@ -386,7 +418,10 @@ describe('setupMkdtboimg', () => {
     await setupMkdtboimg('/kernel', '/action');
 
     expect(exec.exec).toHaveBeenCalledWith('sudo', [
-      'cp', '-v', '/action/mkdtboimg.py', '/usr/local/bin/mkdtboimg'
+      'cp',
+      '-v',
+      '/action/mkdtboimg.py',
+      '/usr/local/bin/mkdtboimg',
     ]);
   });
 });

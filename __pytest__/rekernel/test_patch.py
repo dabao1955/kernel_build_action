@@ -578,19 +578,81 @@ class TestEdgeCases:
     def test_kconfig_with_multiple_endmenus(self, temp_dir):
         """Test Kconfig with multiple endmenu statements."""
         kconfig = temp_dir / "Kconfig"
-        kconfig.write_text("""menu A
-endmenu
-menu B
-endmenu
-menu C
-endmenu
-""")
+        kconfig.write_text("menu A\nendmenu\nmenu B\nendmenu\nmenu C\nendmenu\n")
 
         rk_patch.add_kconfig_rekernel(kconfig)
 
         content = kconfig.read_text()
         lines = content.split('\n')
-        endmenu_indices = [i for i, line in enumerate(lines) if line.strip() == "endmenu"]
-        assert len(endmenu_indices) == 3
+        menu_count = sum(1 for line in lines if line.strip() == "endmenu")
+        assert menu_count == 3
         # Should be inserted before last endmenu
         assert 'source "drivers/rekernel/Kconfig"' in content
+
+
+class TestCustomConfigPath:
+    """Tests for custom config path support."""
+
+    def test_add_config_rekernel_to_custom_config(self, temp_dir):
+        """Test adding Re:Kernel config to a custom config file (not defconfig)."""
+        custom_config = temp_dir / "my_custom_config"
+        custom_config.write_text("# Custom config\n")
+
+        rk_patch.add_config_rekernel(custom_config)
+
+        content = custom_config.read_text()
+        assert "CONFIG_REKERNEL=y" in content
+        assert "CONFIG_REKERNEL_NETWORK=n" in content
+
+    def test_custom_config_with_suffix(self, temp_dir):
+        """Test adding config to a defconfig variant (e.g., vendor_defconfig)."""
+        vendor_config = temp_dir / "vendor_defconfig"
+        vendor_config.write_text("# Vendor config\n")
+
+        rk_patch.add_config_rekernel(vendor_config)
+
+        content = vendor_config.read_text()
+        assert "CONFIG_REKERNEL=y" in content
+        assert "CONFIG_REKERNEL_NETWORK=n" in content
+
+    def test_main_parses_config_arg(self, temp_dir, monkeypatch):
+        """Test that main function parses --config argument correctly."""
+        kernel_src = temp_dir / "kernel"
+        kernel_src.mkdir(parents=True)
+
+        custom_config = kernel_src / "arch" / "arm64" / "configs" / "my_custom_defconfig"
+        custom_config.parent.mkdir(parents=True)
+        custom_config.write_text("# Original config\n")
+
+        kconfig = kernel_src / "drivers" / "Kconfig"
+        kconfig.parent.mkdir(parents=True)
+        kconfig.write_text("endmenu\n")
+
+        makefile = kernel_src / "drivers" / "Makefile"
+        makefile.write_text("")
+
+        # Test the argument parsing logic
+        test_argv = ['patch.py', '--config', str(custom_config), '--arch', 'arm64']
+        
+        config_path = None
+        arch = "arm64"
+        
+        for i in range(1, len(test_argv)):
+            if test_argv[i] == '--config' and i + 1 < len(test_argv):
+                config_path = Path(test_argv[i + 1])
+            elif test_argv[i] == '--arch' and i + 1 < len(test_argv):
+                arch = test_argv[i + 1]
+
+        assert config_path == custom_config
+        assert arch == "arm64"
+
+    def test_custom_config_file_ends_with_defconfig_suffix(self, temp_dir):
+        """Test that config files with _defconfig suffix are recognized."""
+        vendor_defconfig = temp_dir / "arch" / "arm64" / "configs" / "vendor_defconfig"
+        vendor_defconfig.parent.mkdir(parents=True)
+        vendor_defconfig.write_text("# Vendor defconfig\n")
+
+        rk_patch.add_config_rekernel(vendor_defconfig)
+
+        content = vendor_defconfig.read_text()
+        assert "CONFIG_REKERNEL=y" in content

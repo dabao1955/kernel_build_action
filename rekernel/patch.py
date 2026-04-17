@@ -80,6 +80,13 @@ def add_defconfig_rekernel(defconfig: Path) -> None:
         f.write("CONFIG_REKERNEL_NETWORK=n\n")
 
 
+def add_config_rekernel(config_path: Path) -> None:
+    """Add Re:Kernel config options to the specified config file."""
+    with open(config_path, 'a', encoding='utf-8') as f:
+        f.write("\nCONFIG_REKERNEL=y\n")
+        f.write("CONFIG_REKERNEL_NETWORK=n\n")
+
+
 def add_kconfig_rekernel(kconfig: Path) -> None:
     """Add Re:Kernel source to drivers/Kconfig."""
     if not kconfig.exists():
@@ -146,6 +153,16 @@ def main() -> None:
     """Main entry point for applying Re:Kernel patches."""
     kernel_src = Path.cwd()
 
+    config_path = None
+    _arch = "arm64"  # Reserved for future architecture-specific config selection
+
+    if len(sys.argv) > 1:
+        for i in range(1, len(sys.argv)):
+            if sys.argv[i] == '--config' and i + 1 < len(sys.argv):
+                config_path = Path(sys.argv[i + 1])
+            elif sys.argv[i] == '--arch' and i + 1 < len(sys.argv):
+                _arch = sys.argv[i + 1]
+
     with TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
         cocci_dir = temp_path / "cocci"
@@ -198,19 +215,28 @@ def main() -> None:
         # Handle config files with Python equivalents of sed operations
         print("Configuring kernel build files...")
 
-        patch_configs = [
-            kernel_src / "arch" / "arm64" / "configs" / "defconfig",
+        patch_configs = []
+
+        if config_path:
+            patch_configs.append(config_path)
+            print(f"Using user-specified config: {config_path}")
+
+        patch_configs.extend([
             kernel_src / "drivers" / "Kconfig",
             kernel_src / "drivers" / "Makefile",
-        ]
+        ])
 
         for config_file in patch_configs:
+            if not config_file.exists():
+                print(f"Warning: '{config_file}' does not exist, skipping")
+                continue
+
             if check_rekernel_present(config_file):
                 print(f"Warning: '{config_file}' contains Re:Kernel")
                 continue
 
-            if "defconfig" in config_file.name:
-                add_defconfig_rekernel(config_file)
+            if config_file.name.endswith('_defconfig') or config_file.name == 'defconfig':
+                add_config_rekernel(config_file)
                 print(f"Updated {config_file}")
             elif config_file.name == "Kconfig":
                 add_kconfig_rekernel(config_file)

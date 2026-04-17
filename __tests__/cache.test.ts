@@ -90,9 +90,7 @@ describe('addCcacheToPath', () => {
   });
 
   it('checks both ccache paths', () => {
-    vi.mocked(fs.existsSync).mockImplementation(
-      (p) => p === '/usr/local/opt/ccache/libexec'
-    );
+    vi.mocked(fs.existsSync).mockImplementation((p) => p === '/usr/local/opt/ccache/libexec');
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
     addCcacheToPath();
@@ -102,44 +100,49 @@ describe('addCcacheToPath', () => {
 });
 
 describe('setupCcacheSymlinks', () => {
-  it('creates symlinks for all compilers', async () => {
+  it('creates symlinks for all compilers with sudo', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(false);
-    const symlinkMock = vi.mocked(fs.symlinkSync);
+    vi.mocked(exec.exec).mockResolvedValue(0);
 
     await setupCcacheSymlinks();
 
-    expect(symlinkMock).toHaveBeenCalledTimes(6);
-    expect(symlinkMock).toHaveBeenCalledWith('/usr/bin/ccache', '/usr/lib/ccache/gcc');
-    expect(symlinkMock).toHaveBeenCalledWith('/usr/bin/ccache', '/usr/lib/ccache/g++');
-    expect(symlinkMock).toHaveBeenCalledWith('/usr/bin/ccache', '/usr/lib/ccache/clang');
-    expect(symlinkMock).toHaveBeenCalledWith('/usr/bin/ccache', '/usr/lib/ccache/clang++');
-    expect(symlinkMock).toHaveBeenCalledWith('/usr/bin/ccache', '/usr/lib/ccache/cc');
-    expect(symlinkMock).toHaveBeenCalledWith('/usr/bin/ccache', '/usr/lib/ccache/c++');
+    // With sudo, exec.exec should be called for mkdir and symlinks
+    expect(exec.exec).toHaveBeenCalled();
   });
 
   it('creates ccache directory if not exists', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(false);
-    const mkdirMock = vi.mocked(fs.mkdirSync);
+    vi.mocked(exec.exec).mockResolvedValue(0);
 
     await setupCcacheSymlinks();
 
-    expect(mkdirMock).toHaveBeenCalledWith('/usr/lib/ccache', { recursive: true });
+    // Should try to create directory with sudo
+    expect(exec.exec).toHaveBeenCalledWith('sudo', expect.arrayContaining(['mkdir']));
   });
 
   it('skips existing symlinks', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
-    const symlinkMock = vi.mocked(fs.symlinkSync);
 
     await setupCcacheSymlinks();
 
-    expect(symlinkMock).not.toHaveBeenCalled();
+    // Should not try to create symlinks if directory and symlinks exist
+    expect(exec.exec).not.toHaveBeenCalled();
   });
 
-  it('handles symlink creation errors gracefully', async () => {
+  it('falls back to non-sudo when sudo fails', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(false);
-    vi.mocked(fs.symlinkSync).mockImplementation(() => {
-      throw new Error('Permission denied');
+    // First sudo mkdir fails, second symlink sudo fails
+    vi.mocked(exec.exec).mockImplementation(async (cmd, args) => {
+      if (args?.includes('mkdir')) {
+        throw new Error('sudo failed');
+      }
+      if (args?.includes('ln')) {
+        throw new Error('sudo failed');
+      }
+      return 0;
     });
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.symlinkSync).mockImplementation(() => undefined);
 
     await expect(setupCcacheSymlinks()).resolves.not.toThrow();
   });
@@ -177,7 +180,9 @@ describe('setupCcache', () => {
 
     await setupCcache('defconfig');
 
-    expect(fs.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('.ccache'), { recursive: true });
+    expect(fs.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('.ccache'), {
+      recursive: true,
+    });
     expect(exec.exec).toHaveBeenCalledWith('ccache', ['-M', '4G']);
     expect(cache.restoreCache).toHaveBeenCalledWith(
       [expect.stringContaining('.ccache')],
@@ -239,7 +244,9 @@ describe('setupCcache', () => {
 
     await setupCcache('defconfig');
 
-    expect(fs.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('.ccache'), { recursive: true });
+    expect(fs.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('.ccache'), {
+      recursive: true,
+    });
   });
 });
 

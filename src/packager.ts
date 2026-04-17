@@ -48,7 +48,8 @@ export async function packageBootimg(config: PackageConfig): Promise<void> {
   }
 
   // Use -- separator to prevent option parsing
-  await exec.exec('aria2c', ['--', config.bootimgUrl, '-o', bootimgPath]);
+  // -o must come before -- to ensure URL is treated as positional argument
+  await exec.exec('aria2c', ['-o', bootimgPath, '--', config.bootimgUrl]);
 
   // Unpack boot.img
   const nohupPath = path.join(splitDir, 'nohup.out');
@@ -93,16 +94,31 @@ export async function packageBootimg(config: PackageConfig): Promise<void> {
   // Move output to build directory
   fs.mkdirSync(config.buildDir, { recursive: true });
 
-  // Find repacked image
+  // Find repacked image (prefer new.img over original boot.img)
   const entries = fs.readdirSync(splitDir);
+  let repackedImg: string | undefined;
   for (const entry of entries) {
-    if (entry.endsWith('.img')) {
-      const srcPath = path.join(splitDir, entry);
-      const destPath = path.join(config.buildDir, 'boot.img');
-      fs.renameSync(srcPath, destPath);
-      core.info(`Created: ${destPath}`);
+    if (entry === 'new.img') {
+      repackedImg = entry;
       break;
     }
+  }
+  if (!repackedImg) {
+    for (const entry of entries) {
+      if (entry.endsWith('.img') && entry !== 'boot.img') {
+        repackedImg = entry;
+        break;
+      }
+    }
+  }
+
+  if (repackedImg) {
+    const srcPath = path.join(splitDir, repackedImg);
+    const destPath = path.join(config.buildDir, 'boot.img');
+    fs.renameSync(srcPath, destPath);
+    core.info(`Created: ${destPath}`);
+  } else {
+    core.warning('No repacked image found in split directory');
   }
 
   // Cleanup

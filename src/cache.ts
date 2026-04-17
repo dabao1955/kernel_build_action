@@ -64,10 +64,14 @@ export async function saveCcache(config: string): Promise<void> {
 export async function setupCcacheSymlinks(): Promise<void> {
   core.startGroup('Setting up ccache symlinks');
 
-  // Create symlinks for common compilers
   const ccacheDir = '/usr/lib/ccache';
   if (!dirExists(ccacheDir)) {
-    fs.mkdirSync(ccacheDir, { recursive: true });
+    try {
+      await exec.exec('sudo', ['mkdir', '-p', ccacheDir]);
+    } catch {
+      core.warning('Failed to create ccache directory, trying without sudo');
+      fs.mkdirSync(ccacheDir, { recursive: true });
+    }
   }
 
   const compilers = ['gcc', 'g++', 'clang', 'clang++', 'cc', 'c++'];
@@ -75,9 +79,14 @@ export async function setupCcacheSymlinks(): Promise<void> {
     const symlinkPath = path.join(ccacheDir, compiler);
     if (!fs.existsSync(symlinkPath)) {
       try {
-        fs.symlinkSync('/usr/bin/ccache', symlinkPath);
+        await exec.exec('sudo', ['ln', '-sf', '/usr/bin/ccache', symlinkPath]);
       } catch {
-        // Ignore if symlink already exists
+        core.warning(`Failed to create symlink for ${compiler}, trying without sudo`);
+        try {
+          fs.symlinkSync('/usr/bin/ccache', symlinkPath);
+        } catch {
+          // Ignore if symlink creation fails
+        }
       }
     }
   }

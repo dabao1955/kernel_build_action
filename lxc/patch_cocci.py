@@ -99,7 +99,7 @@ def apply_patch(patch_file: Path, target_file: Path, kernel_src: Path) -> None:
 
     try:
         subprocess.run(
-            ["spatch", "--sp-file", str(patch_file), str(target_path)],
+            ["spatch", "--in-place", "--sp-file", str(patch_file), str(target_path)],
             check=True,
             capture_output=True,
             text=True

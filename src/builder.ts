@@ -43,7 +43,7 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
   let cmdCc: string;
   let cmdCrossCompile: string | undefined;
   let cmdCrossCompileArm32: string | undefined;
-  let cmdClangTriple: string;
+  const cmdClangTriple = getClangTriple(config.arch, cmdCrossCompile, cmdCrossCompileArm32);
 
   if (config.toolchain.clangPath) {
     // Use Clang
@@ -90,17 +90,10 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
       }
     }
   } else {
-    // System toolchain
+    // System toolchain - select appropriate defaults based on architecture
     cmdCc = '/usr/bin/clang';
-    cmdCrossCompile = '/usr/bin/aarch64-linux-gnu-';
-    cmdCrossCompileArm32 = 'arm-linux-gnueabihf-';
-  }
-
-  // Setup CLANG_TRIPLE (matches bash script)
-  if (config.arch === 'arm') {
-    cmdClangTriple = cmdCrossCompileArm32 || 'arm-linux-gnueabihf-';
-  } else {
-    cmdClangTriple = 'aarch64-linux-gnu-';
+    cmdCrossCompile = getSystemCrossCompile(config.arch);
+    cmdCrossCompileArm32 = getSystemCrossCompileArm32(config.arch);
   }
 
   // Add ccache to path if enabled (matches bash: CMD_PATH="/usr/lib/ccache:$CMD_PATH")
@@ -230,4 +223,68 @@ export function isBuildSuccessful(kernelDir: string, arch: string): boolean {
 
   // Check for Image or Image.*
   return entries.some((entry) => entry.startsWith('Image'));
+}
+
+function getSystemCrossCompile(arch: string): string | undefined {
+  switch (arch) {
+    case 'arm':
+      return 'arm-linux-gnueabihf-';
+    case 'arm64':
+      return 'aarch64-linux-gnu-';
+    case 'x86':
+      return 'i686-linux-gnu-';
+    case 'x86_64':
+      return 'x86_64-linux-gnu-';
+    case 'riscv':
+      return 'riscv32-linux-gnu-';
+    case 'riscv64':
+      return 'riscv64-linux-gnu-';
+    case 'mips':
+      return 'mips-linux-gnu-';
+    case 'mips64':
+      return 'mips64-linux-gnuabi64-';
+    default:
+      return undefined;
+  }
+}
+
+function getSystemCrossCompileArm32(arch: string): string | undefined {
+  switch (arch) {
+    case 'arm64':
+    case 'arm':
+      return 'arm-linux-gnueabihf-';
+    case 'riscv64':
+      return 'riscv32-linux-gnu-';
+    case 'mips64':
+      return 'mips-linux-gnu-';
+    default:
+      return undefined;
+  }
+}
+
+function getClangTriple(
+  arch: string,
+  cmdCrossCompile: string | undefined,
+  cmdCrossCompileArm32: string | undefined
+): string {
+  switch (arch) {
+    case 'arm':
+      return cmdCrossCompileArm32 || 'arm-linux-gnueabihf-';
+    case 'arm64':
+      return cmdCrossCompile || 'aarch64-linux-gnu-';
+    case 'x86':
+      return cmdCrossCompile || 'i686-linux-gnu-';
+    case 'x86_64':
+      return cmdCrossCompile || 'x86_64-linux-gnu-';
+    case 'riscv':
+      return cmdCrossCompile || 'riscv32-linux-gnu-';
+    case 'riscv64':
+      return cmdCrossCompile || 'riscv64-linux-gnu-';
+    case 'mips':
+      return cmdCrossCompile || 'mips-linux-gnu-';
+    case 'mips64':
+      return cmdCrossCompile || 'mips64-linux-gnuabi64-';
+    default:
+      return cmdCrossCompile || 'aarch64-linux-gnu-';
+  }
 }

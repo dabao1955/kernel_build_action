@@ -8,7 +8,7 @@ patches to kernel source files in parallel.
 import sys
 import importlib.util
 from pathlib import Path
-from unittest.mock import patch as mock_patch
+from unittest.mock import patch as mock_patch, MagicMock
 from urllib.parse import urlparse
 
 import pytest
@@ -355,3 +355,66 @@ class TestEdgeCases:
     def test_parallel_executor_cleanup(self, temp_dir):
         """Test that ThreadPoolExecutor downloads patches properly - skipped."""
         pytest.skip("Mock path issue with importlib-loaded module")
+
+
+class TestInPlacePatch:
+    """Tests for in-place patch application."""
+
+    def test_apply_patch_uses_in_place_flag(self, mock_subprocess, temp_dir):
+        """Test that spatch is called with --in-place flag."""
+        kernel_src = temp_dir / "kernel"
+        kernel_src.mkdir(parents=True)
+        patch_file = temp_dir / "test.cocci"
+        target_file = kernel_src / "test.c"
+        target_file.write_text("// test\n")
+
+        patch_cocci.apply_patch(patch_file, Path("test.c"), kernel_src)
+
+        mock_subprocess.assert_called_once()
+        call_args = mock_subprocess.call_args
+        cmd = call_args[0][0]
+        assert "--in-place" in cmd
+
+    def test_target_file_is_modified(self, temp_dir):
+        """Test that the target file is actually modified after applying patch."""
+        kernel_src = temp_dir / "kernel"
+        kernel_src.mkdir(parents=True)
+        patch_file = temp_dir / "test.cocci"
+        target_file = kernel_src / "test.c"
+        original_content = "// original\nvoid test() {}\n"
+        target_file.write_text(original_content)
+
+        modified_content = "// modified\nvoid test() { /* patched */ }\n"
+
+        with mock_patch('subprocess.run') as mock_run:
+            def side_effect(cmd, *args, **kwargs):
+                # Simulate spatch modifying the file in-place
+                if "--in-place" in cmd:
+                    target_file.write_text(modified_content)
+                return MagicMock(returncode=0, stdout="", stderr="")
+            mock_run.side_effect = side_effect
+
+            patch_cocci.apply_patch(patch_file, Path("test.c"), kernel_src)
+
+            # Verify file content was changed
+            assert target_file.read_text() == modified_content
+
+    def test_in_place_flag_prevents_stdout_redirect(self, temp_dir):
+        """Test that --in-place flag means spatch modifies file directly."""
+        kernel_src = temp_dir / "kernel"
+        kernel_src.mkdir(parents=True)
+        patch_file = temp_dir / "test.cocci"
+        target_file = kernel_src / "test.c"
+        target_file.write_text("// test\n")
+
+        with mock_patch('subprocess.run') as mock_run:
+            mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+
+            patch_cocci.apply_patch(patch_file, Path("test.c"), kernel_src)
+
+            call_args = mock_run.call_args
+            cmd = call_args[0][0]
+            # Verify --in-place is present
+            assert "--in-place" in cmd
+            # Verify no stdout redirect is being done manually
+            assert "--output" not in cmd

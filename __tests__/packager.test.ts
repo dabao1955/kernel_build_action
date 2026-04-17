@@ -1,10 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  packageKernel,
-  packageBootimg,
-  packageAnyKernel3,
-  PackageConfig,
-} from '../src/packager';
+import { packageKernel, packageBootimg, packageAnyKernel3, PackageConfig } from '../src/packager';
 import * as fs from 'fs';
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
@@ -88,7 +83,10 @@ describe('packageBootimg', () => {
       expect.arrayContaining(['--', 'https://example.com/boot.img'])
     );
     expect(fs.mkdirSync).toHaveBeenCalledWith('split', { recursive: true });
-    expect(fs.appendFileSync).toHaveBeenCalledWith(expect.stringContaining('nohup.out'), expect.any(Buffer));
+    expect(fs.appendFileSync).toHaveBeenCalledWith(
+      expect.stringContaining('nohup.out'),
+      expect.any(Buffer)
+    );
   });
 
   it('downloads correct magiskboot for x64 architecture', async () => {
@@ -170,7 +168,9 @@ describe('packageBootimg', () => {
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
-    await expect(packageBootimg(baseConfig)).rejects.toThrow('Kernel Image not found in out directory');
+    await expect(packageBootimg(baseConfig)).rejects.toThrow(
+      'Kernel Image not found in out directory'
+    );
   });
 
   it('handles different kernel formats (gzip)', async () => {
@@ -242,6 +242,104 @@ describe('packageBootimg', () => {
 
     expect(fs.rmSync).toHaveBeenCalledWith(expect.stringContaining('kernel'));
     expect(fs.copyFileSync).toHaveBeenCalled();
+  });
+
+  it('selects new.img instead of original boot.img when both exist', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz-dtb');
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.chmodSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readFileSync).mockReturnValue('KERNEL_FMT [raw]');
+    vi.mocked(fs.readdirSync).mockImplementation((path) => {
+      const p = String(path);
+      if (p.includes('split')) {
+        // Simulate both original boot.img and repacked new.img exist
+        return ['boot.img', 'new.img', 'kernel', 'ramdisk.cpio'] as any;
+      }
+      return [] as any;
+    });
+    vi.mocked(fs.renameSync).mockImplementation(() => undefined);
+    vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.rmSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await packageBootimg(baseConfig);
+
+    // Verify that new.img was selected (not boot.img)
+    expect(fs.renameSync).toHaveBeenCalledWith(
+      expect.stringContaining('new.img'),
+      expect.stringContaining('boot.img')
+    );
+    expect(fs.renameSync).not.toHaveBeenCalledWith(
+      expect.stringContaining('boot.img'),
+      expect.not.stringContaining('new.img')
+    );
+  });
+
+  it('selects repacked image when original boot.img does not exist', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz-dtb');
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.chmodSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readFileSync).mockReturnValue('KERNEL_FMT [raw]');
+    vi.mocked(fs.readdirSync).mockImplementation((path) => {
+      const p = String(path);
+      if (p.includes('split')) {
+        // Only repacked image exists
+        return ['new.img', 'kernel', 'ramdisk.cpio'] as any;
+      }
+      return [] as any;
+    });
+    vi.mocked(fs.renameSync).mockImplementation(() => undefined);
+    vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.rmSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await packageBootimg(baseConfig);
+
+    expect(fs.renameSync).toHaveBeenCalledWith(
+      expect.stringContaining('new.img'),
+      expect.stringContaining('boot.img')
+    );
+  });
+
+  it('puts -o option before -- in aria2c download command', async () => {
+    vi.mocked(kernel.findKernelImage).mockReturnValue('/kernel/out/arch/arm64/boot/Image.gz-dtb');
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.chmodSync).mockImplementation(() => undefined);
+    vi.mocked(fs.readFileSync).mockReturnValue('KERNEL_FMT [raw]');
+    vi.mocked(fs.readdirSync).mockImplementation((path) => {
+      const p = String(path);
+      if (p.includes('split')) return ['new.img'] as any;
+      return [] as any;
+    });
+    vi.mocked(fs.renameSync).mockImplementation(() => undefined);
+    vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
+    vi.mocked(fs.rmSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await packageBootimg(baseConfig);
+
+    // Find the aria2c call for boot.img download (second aria2c call)
+    const aria2cCalls = vi.mocked(exec.exec).mock.calls.filter((call) => call[0] === 'aria2c');
+    expect(aria2cCalls.length).toBeGreaterThanOrEqual(2);
+
+    // The second aria2c call is for boot.img download
+    const bootimgCall = aria2cCalls[1];
+    expect(bootimgCall).toBeDefined();
+    if (bootimgCall) {
+      const args = bootimgCall[1] as string[];
+      expect(args).toContain('--');
+      expect(args).toContain('-o');
+      const dashIndex = args.indexOf('--');
+      const oIndex = args.indexOf('-o');
+      // -o should come before --
+      expect(oIndex).toBeLessThan(dashIndex);
+    }
   });
 });
 
@@ -331,7 +429,10 @@ describe('packageAnyKernel3', () => {
     });
     vi.mocked(fs.statSync).mockImplementation((p) => {
       const path = String(p);
-      return { isDirectory: () => path.includes('subdir'), isFile: () => !path.includes('subdir') } as fs.Stats;
+      return {
+        isDirectory: () => path.includes('subdir'),
+        isFile: () => !path.includes('subdir'),
+      } as fs.Stats;
     });
     vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
     vi.mocked(fs.readFileSync).mockReturnValue('do.devicecheck=1');
@@ -553,8 +654,6 @@ IS_SLOT_DEVICE=0;`;
     expect(core.info).toHaveBeenCalledWith(expect.stringContaining('Copied dtb'));
   });
 
-
-
   it('removes unnecessary files from AnyKernel3 directory', async () => {
     const existingFiles = new Set(['.git', '.gitattributes', '.gitignore', 'README.md', 'Image']);
     vi.mocked(fs.existsSync).mockImplementation((p) => {
@@ -568,13 +667,19 @@ IS_SLOT_DEVICE=0;`;
       const path = String(p);
       return {
         isDirectory: () => path.includes('.git'),
-        isFile: () => !path.includes('.git')
+        isFile: () => !path.includes('.git'),
       } as fs.Stats;
     });
     vi.mocked(fs.readFileSync).mockReturnValue('do.devicecheck=1');
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
     vi.mocked(fs.copyFileSync).mockImplementation(() => undefined);
-    vi.mocked(fs.readdirSync).mockReturnValue(['.git', '.gitattributes', '.gitignore', 'README.md', 'Image'] as any);
+    vi.mocked(fs.readdirSync).mockReturnValue([
+      '.git',
+      '.gitattributes',
+      '.gitignore',
+      'README.md',
+      'Image',
+    ] as any);
     vi.mocked(fs.cpSync).mockImplementation(() => undefined);
     vi.mocked(fs.unlinkSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
@@ -655,7 +760,9 @@ IS_SLOT_DEVICE=0;`;
     });
     vi.mocked(exec.exec).mockResolvedValue(0);
 
-    await expect(packageAnyKernel3(config)).rejects.toThrow('Kernel Image not found in out directory');
+    await expect(packageAnyKernel3(config)).rejects.toThrow(
+      'Kernel Image not found in out directory'
+    );
   });
 
   it('copies files recursively in non-release mode with subdirectories', async () => {
@@ -702,8 +809,6 @@ IS_SLOT_DEVICE=0;`;
     expect(fs.copyFileSync).toHaveBeenCalled();
     expect(exec.exec).not.toHaveBeenCalledWith('zip', expect.any(Array), expect.any(Object));
   });
-
-
 });
 
 describe('packageKernel', () => {
@@ -727,10 +832,7 @@ describe('packageKernel', () => {
 
     await packageKernel(config);
 
-    expect(exec.exec).toHaveBeenCalledWith(
-      'git',
-      expect.arrayContaining(['clone'])
-    );
+    expect(exec.exec).toHaveBeenCalledWith('git', expect.arrayContaining(['clone']));
   });
 
   it('calls packageBootimg when anykernel3 is false', async () => {

@@ -74,14 +74,14 @@ async function main(): Promise<void> {
       extraMakeArgs: core.getInput('extra-make-args') || '[]',
     };
 
-    // Setup ccache if enabled
+    // Install dependencies
+    await installDependencies();
+
+    // Setup ccache if enabled (after dependencies to ensure proper permissions)
     if (inputs.ccache) {
       await setupCcache(inputs.config);
       await setupCcacheSymlinks();
     }
-
-    // Install dependencies
-    await installDependencies();
 
     // Setup toolchains
     let toolchainConfig: ToolchainConfig | undefined;
@@ -164,9 +164,21 @@ async function main(): Promise<void> {
       // Clone vendor if enabled
       if (inputs.vendor && inputs.vendorUrl) {
         const fullVendorDir = path.join('kernel', inputs.vendorDir);
-        await cloneVendor(inputs.vendorUrl, inputs.vendorBranch, inputs.depth, fullVendorDir);
+        await cloneVendor(
+          inputs.vendorUrl,
+          inputs.vendorBranch,
+          inputs.depth,
+          fullVendorDir,
+          kernelDir,
+          inputs.vendorDir
+        );
       }
     }
+
+    // Save state for post-action to use correct kernel directory
+    core.saveState('KERNEL_DIR', kernelDir);
+    core.saveState('IS_LOCAL_KERNEL', isLocal.toString());
+
     const actionPath = getActionPath();
 
     // Get kernel version
@@ -201,7 +213,7 @@ async function main(): Promise<void> {
     }
 
     if (inputs.rekernel) {
-      await setupReKernel(kernelDir);
+      await setupReKernel(kernelDir, configPath, inputs.arch);
     }
 
     if (inputs.nethunter) {

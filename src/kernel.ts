@@ -55,7 +55,9 @@ export async function cloneVendor(
   url: string,
   branch: string,
   depth: string,
-  targetDir: string
+  targetDir: string,
+  kernelSourceDir: string,
+  vendorDir: string
 ): Promise<void> {
   core.startGroup('Pulling Kernel Vendor Source');
 
@@ -73,8 +75,9 @@ export async function cloneVendor(
   const vendorSubdir = path.join(targetDir, 'vendor');
   if (dirExists(vendorSubdir)) {
     core.info('Copying vendor directory to kernel and root');
-    copyDir(vendorSubdir, 'kernel/vendor');
-    copyDir(vendorSubdir, 'vendor');
+    const kernelVendorDest = path.join(kernelSourceDir, 'vendor');
+    copyDir(vendorSubdir, kernelVendorDest);
+    copyDir(vendorSubdir, vendorDir);
   }
 
   core.endGroup();

@@ -56,17 +56,58 @@ export async function createRelease(config: ReleaseConfig): Promise<void> {
   }
 
   try {
-    // Create release
-    const { data: release } = await octokit.rest.repos.createRelease({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      tag_name: tagName,
-      name: releaseName,
-      body,
-      make_latest: 'true',
-    });
+    // Check if release already exists for this tag
+    let releaseId: number;
+    let existingRelease = false;
 
-    core.info(`Created release: ${release.html_url}`);
+    try {
+      const { data: existing } = await octokit.rest.repos.getReleaseByTag({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        tag: tagName,
+      });
+      releaseId = existing.id;
+      existingRelease = true;
+      core.info(`Found existing release with tag ${tagName}, will update`);
+
+      // Delete old assets
+      for (const asset of existing.assets) {
+        await octokit.rest.repos.deleteReleaseAsset({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          asset_id: asset.id,
+        });
+      }
+    } catch {
+      // Release doesn't exist, will create new one
+      existingRelease = false;
+    }
+
+    if (existingRelease) {
+      // Update existing release
+      const { data: updated } = await octokit.rest.repos.updateRelease({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        release_id: releaseId,
+        tag_name: tagName,
+        name: releaseName,
+        body,
+        make_latest: 'true',
+      });
+      core.info(`Updated release: ${updated.html_url}`);
+    } else {
+      // Create new release
+      const { data: release } = await octokit.rest.repos.createRelease({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        tag_name: tagName,
+        name: releaseName,
+        body,
+        make_latest: 'true',
+      });
+      releaseId = release.id;
+      core.info(`Created release: ${release.html_url}`);
+    }
 
     // Upload files
     for (const file of files) {
@@ -76,13 +117,16 @@ export async function createRelease(config: ReleaseConfig): Promise<void> {
       await octokit.rest.repos.uploadReleaseAsset({
         owner: context.repo.owner,
         repo: context.repo.repo,
-        release_id: release.id,
+        release_id: releaseId,
         name: fileName,
         data: fileData as Buffer,
       });
 
       core.info(`Uploaded: ${fileName}`);
     }
+
+    // Cleanup old CI releases (keep last 5)
+    await cleanupOldReleases(config.token, 5);
   } catch (error) {
     throw new Error(`Failed to create release: ${error}`, { cause: error });
   }

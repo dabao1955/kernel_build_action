@@ -12,28 +12,43 @@ async function post(): Promise<void> {
   try {
     core.info('Running post-action cleanup...');
 
+    // Use saved state from main action if available
+    const savedKernelDir = core.getState('KERNEL_DIR');
+    const isLocalKernel = core.getState('IS_LOCAL_KERNEL') === 'true';
+
+    // Determine kernel directory
+    let kernelDir: string;
+    if (savedKernelDir) {
+      kernelDir = savedKernelDir;
+      core.info(`Using kernel directory from main action: ${kernelDir}`);
+    } else {
+      // Fallback to legacy calculation for backward compatibility
+      const inputKernelDir = core.getInput('kernel-dir') || 'kernel';
+      if (isLocalKernel) {
+        kernelDir = path.resolve(inputKernelDir);
+      } else {
+        kernelDir = path.join('kernel', inputKernelDir);
+      }
+      core.warning('Using legacy kernel directory calculation');
+    }
+
     // Check if build failed
     const buildFailed = core.getState('BUILD_FAILED') === 'true';
 
     if (buildFailed) {
-      const kernelDir = core.getInput('kernel-dir') || 'kernel';
-      const fullKernelDir = path.join('kernel', kernelDir);
-      const buildLogPath = path.join(fullKernelDir, 'out', 'build.log');
+      const buildLogPath = path.join(kernelDir, 'out', 'build.log');
 
       // Only analyze errors if build.log exists
       if (fs.existsSync(buildLogPath)) {
         core.startGroup('Analyzing build errors');
-        analyzeBuildErrors(fullKernelDir);
+        analyzeBuildErrors(kernelDir);
         core.endGroup();
       }
     }
 
     // Cleanup
-    const kernelDir = core.getInput('kernel-dir') || 'kernel';
-    const fullKernelDir = path.join('kernel', kernelDir);
-
     await cleanAll({
-      kernelDir: fullKernelDir,
+      kernelDir,
       buildDir: 'build',
       toolchains: true,
       ccache: false,

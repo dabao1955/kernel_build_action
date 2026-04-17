@@ -431,7 +431,7 @@ describe('buildKernel', () => {
     expect(result).toBe(true);
     expect(exec.exec).toHaveBeenCalled();
     // Check that the make command includes the correct CROSS_COMPILE_ARM32
-    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
     expect(makeCall).toBeDefined();
     if (makeCall) {
       const makeArgs = makeCall[1] as string[];
@@ -505,11 +505,11 @@ describe('buildKernel additional coverage', () => {
 
     expect(result).toBe(true);
     // Verify GCC-only path was taken (CC should be gcc, not clang)
-    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
     expect(makeCall).toBeDefined();
     if (makeCall) {
       const makeArgs = makeCall[1] as string[];
-      expect(makeArgs.some(arg => arg.includes('gcc'))).toBe(true);
+      expect(makeArgs.some((arg) => arg.includes('gcc'))).toBe(true);
     }
   });
 
@@ -531,7 +531,7 @@ describe('buildKernel additional coverage', () => {
 
     expect(result).toBe(true);
     // Verify system toolchain path (CC=/usr/bin/clang)
-    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
     expect(makeCall).toBeDefined();
     if (makeCall) {
       const makeArgs = makeCall[1] as string[];
@@ -585,7 +585,7 @@ describe('buildKernel additional coverage', () => {
 
     expect(result).toBe(true);
     // Verify ccache path is set even when no toolchain paths
-    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
     expect(makeCall).toBeDefined();
     if (makeCall && makeCall[2]) {
       const env = (makeCall[2] as any).env;
@@ -649,7 +649,7 @@ describe('buildKernel additional coverage', () => {
     await buildKernel(config);
 
     // Verify PATH contains only ccache when no toolchain paths
-    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
     expect(makeCall).toBeDefined();
     if (makeCall && makeCall[2]) {
       const env = (makeCall[2] as any).env;
@@ -751,7 +751,7 @@ describe('buildKernel additional coverage', () => {
 
     expect(result).toBe(true);
     // Verify gcc32 path is set correctly
-    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
     expect(makeCall).toBeDefined();
     if (makeCall && makeCall[2]) {
       const env = (makeCall[2] as any).env;
@@ -1010,7 +1010,7 @@ describe('buildKernel edge cases for coverage', () => {
     const result = await buildKernel(config);
 
     expect(result).toBe(true);
-    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
     expect(makeCall).toBeDefined();
     if (makeCall) {
       const makeArgs = makeCall[1] as string[];
@@ -1031,16 +1031,16 @@ describe('buildKernel edge cases for coverage', () => {
       arch: 'arm64',
       config: 'defconfig',
       toolchain: {
-        clangPath: '/clang',  // This sets cmdPath to /clang/bin
+        clangPath: '/clang', // This sets cmdPath to /clang/bin
       },
       extraMakeArgs: '',
-      useCcache: true,  // This should prepend ccache to existing cmdPath
+      useCcache: true, // This should prepend ccache to existing cmdPath
     };
 
     const result = await buildKernel(config);
 
     expect(result).toBe(true);
-    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
     expect(makeCall).toBeDefined();
     if (makeCall && makeCall[2]) {
       const env = (makeCall[2] as any).env;
@@ -1061,7 +1061,7 @@ describe('buildKernel edge cases for coverage', () => {
       kernelDir: '/kernel',
       arch: 'arm64',
       config: 'defconfig',
-      toolchain: {},  // Empty toolchain -> system toolchain -> cmdPath stays empty
+      toolchain: {}, // Empty toolchain -> system toolchain -> cmdPath stays empty
       extraMakeArgs: '',
       useCcache: true,
     };
@@ -1069,12 +1069,163 @@ describe('buildKernel edge cases for coverage', () => {
     const result = await buildKernel(config);
 
     expect(result).toBe(true);
-    const makeCall = vi.mocked(exec.exec).mock.calls.find(call => call[0] === 'make');
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
     expect(makeCall).toBeDefined();
     if (makeCall && makeCall[2]) {
       const env = (makeCall[2] as any).env;
       // PATH should be exactly /usr/lib/ccache (no other paths)
       expect(env.PATH).toContain('/usr/lib/ccache');
+    }
+  });
+});
+
+describe('System toolchain architecture-specific defaults', () => {
+  const architectures = [
+    {
+      arch: 'arm',
+      expectedCrossCompile: 'arm-linux-gnueabihf-',
+      expectedTriple: 'arm-linux-gnueabihf-',
+    },
+    {
+      arch: 'arm64',
+      expectedCrossCompile: 'aarch64-linux-gnu-',
+      expectedTriple: 'aarch64-linux-gnu-',
+    },
+    { arch: 'x86', expectedCrossCompile: 'i686-linux-gnu-', expectedTriple: 'i686-linux-gnu-' },
+    {
+      arch: 'x86_64',
+      expectedCrossCompile: 'x86_64-linux-gnu-',
+      expectedTriple: 'x86_64-linux-gnu-',
+    },
+    {
+      arch: 'riscv',
+      expectedCrossCompile: 'riscv32-linux-gnu-',
+      expectedTriple: 'riscv32-linux-gnu-',
+    },
+    {
+      arch: 'riscv64',
+      expectedCrossCompile: 'riscv64-linux-gnu-',
+      expectedTriple: 'riscv64-linux-gnu-',
+    },
+    { arch: 'mips', expectedCrossCompile: 'mips-linux-gnu-', expectedTriple: 'mips-linux-gnu-' },
+    {
+      arch: 'mips64',
+      expectedCrossCompile: 'mips64-linux-gnuabi64-',
+      expectedTriple: 'mips64-linux-gnuabi64-',
+    },
+  ];
+
+  for (const { arch, expectedCrossCompile, expectedTriple } of architectures) {
+    it(`sets correct CROSS_COMPILE for ${arch} architecture`, async () => {
+      vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+      vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+      vi.mocked(exec.exec).mockResolvedValue(0);
+
+      const config: BuildConfig = {
+        kernelDir: '/kernel',
+        arch,
+        config: 'defconfig',
+        toolchain: {},
+        extraMakeArgs: '',
+        useCcache: false,
+      };
+
+      await buildKernel(config);
+
+      const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
+      expect(makeCall).toBeDefined();
+      if (makeCall) {
+        const makeArgs = makeCall[1] as string[];
+        const crossCompileArg = makeArgs.find((arg) => arg.startsWith('CROSS_COMPILE='));
+        expect(crossCompileArg).toBeDefined();
+        if (crossCompileArg) {
+          expect(crossCompileArg).toBe(`CROSS_COMPILE=${expectedCrossCompile}`);
+        }
+      }
+    });
+
+    it(`sets correct CLANG_TRIPLE for ${arch} architecture`, async () => {
+      vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+      vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+      vi.mocked(exec.exec).mockResolvedValue(0);
+
+      const config: BuildConfig = {
+        kernelDir: '/kernel',
+        arch,
+        config: 'defconfig',
+        toolchain: {},
+        extraMakeArgs: '',
+        useCcache: false,
+      };
+
+      await buildKernel(config);
+
+      const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
+      expect(makeCall).toBeDefined();
+      if (makeCall) {
+        const makeArgs = makeCall[1] as string[];
+        const tripleArg = makeArgs.find((arg) => arg.startsWith('CLANG_TRIPLE='));
+        expect(tripleArg).toBeDefined();
+        if (tripleArg) {
+          expect(tripleArg).toBe(`CLANG_TRIPLE=${expectedTriple}`);
+        }
+      }
+    });
+
+    it(`sets correct CC for ${arch} architecture`, async () => {
+      vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+      vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+      vi.mocked(exec.exec).mockResolvedValue(0);
+
+      const config: BuildConfig = {
+        kernelDir: '/kernel',
+        arch,
+        config: 'defconfig',
+        toolchain: {},
+        extraMakeArgs: '',
+        useCcache: false,
+      };
+
+      await buildKernel(config);
+
+      const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
+      expect(makeCall).toBeDefined();
+      if (makeCall) {
+        const makeArgs = makeCall[1] as string[];
+        const ccArg = makeArgs.find((arg) => arg.startsWith('CC='));
+        expect(ccArg).toBeDefined();
+        if (ccArg) {
+          expect(ccArg).toBe('CC=/usr/bin/clang');
+        }
+      }
+    });
+  }
+
+  it('sets CROSS_COMPILE_ARM32 for arm64 with system toolchain', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {},
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    await buildKernel(config);
+
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall) {
+      const makeArgs = makeCall[1] as string[];
+      const arm32Arg = makeArgs.find((arg) => arg.startsWith('CROSS_COMPILE_ARM32='));
+      expect(arm32Arg).toBeDefined();
+      if (arm32Arg) {
+        expect(arm32Arg).toBe('CROSS_COMPILE_ARM32=arm-linux-gnueabihf-');
+      }
     }
   });
 });

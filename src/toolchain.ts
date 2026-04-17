@@ -67,33 +67,39 @@ export async function downloadAndExtract(
   } else if (url.endsWith('.gz')) {
     // Handle gzip compressed single files
     const gzPath = await tc.downloadTool(url, `${outputName}.gz`);
+    const chunks: Buffer[] = [];
     await exec.exec('gzip', ['-d', '-c', gzPath], {
       listeners: {
         stdout: (data: Buffer) => {
-          fs.writeFileSync(path.join(extractDir, outputName), data);
+          chunks.push(data);
         },
       },
     });
+    fs.writeFileSync(path.join(extractDir, outputName), Buffer.concat(chunks));
   } else if (url.endsWith('.xz')) {
     // Handle xz compressed single files
     const xzPath = await tc.downloadTool(url, `${outputName}.xz`);
+    const chunks: Buffer[] = [];
     await exec.exec('xz', ['-d', '-c', xzPath], {
       listeners: {
         stdout: (data: Buffer) => {
-          fs.writeFileSync(path.join(extractDir, outputName), data);
+          chunks.push(data);
         },
       },
     });
+    fs.writeFileSync(path.join(extractDir, outputName), Buffer.concat(chunks));
   } else if (url.endsWith('.bz2')) {
     // Handle bzip2 compressed single files
     const bz2Path = await tc.downloadTool(url, `${outputName}.bz2`);
+    const chunks: Buffer[] = [];
     await exec.exec('bzip2', ['-d', '-c', bz2Path], {
       listeners: {
         stdout: (data: Buffer) => {
-          fs.writeFileSync(path.join(extractDir, outputName), data);
+          chunks.push(data);
         },
       },
     });
+    fs.writeFileSync(path.join(extractDir, outputName), Buffer.concat(chunks));
   } else {
     // Git clone
     await exec.exec('git', ['clone', '--depth=1', '-b', branch, '--', url, extractDir]);

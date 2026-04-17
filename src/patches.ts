@@ -146,11 +146,17 @@ export async function setupBBG(kernelDir: string, configPath: string): Promise<v
 /**
  * Setup Re-Kernel
  */
-export async function setupReKernel(kernelDir: string): Promise<void> {
+export async function setupReKernel(
+  kernelDir: string,
+  configPath: string,
+  arch: string
+): Promise<void> {
   core.startGroup('Initializing Re-Kernel');
 
   const patchScript = path.join(getActionPath(), 'rekernel', 'patch.py');
-  await exec.exec('python3', [patchScript], { cwd: kernelDir });
+  await exec.exec('python3', [patchScript, '--config', configPath, '--arch', arch], {
+    cwd: kernelDir,
+  });
 
   core.endGroup();
 }
