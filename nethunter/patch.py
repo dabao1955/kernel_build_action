@@ -120,7 +120,17 @@ def main():
 
     kdir = Path(args.kdir).resolve()
     patch_dir = Path(args.patch_dir).resolve()
-    os.system("git clone https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-kernel t --depth=1")
+    try:
+        subprocess.run(
+            ["git", "clone",
+             "https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-kernel",
+             "t", "--depth=1"],
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        error(f"Failed to clone kali-nethunter-kernel repository: {e}")
+    except FileNotFoundError:
+        error("git command not found; please install git")
 
     if not (kdir / "Makefile").is_file():
         error(f"Makefile not found in {kdir}")

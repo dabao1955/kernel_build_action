@@ -1,9 +1,24 @@
 import * as core from '@actions/core';
 import * as path from 'node:path';
 
-import { checkEnvironment, installDependencies, getActionPath, installSystemClang } from './utils';
+import {
+  checkEnvironment,
+  installDependencies,
+  getActionPath,
+  installSystemClang,
+  validateNoPathTraversal,
+  validateBranchName,
+  validatePositiveInteger,
+  validateUrlSegment,
+  validateKsuVersion,
+} from './utils';
 import { setupCcache, saveCcache, setupCcacheSymlinks } from './cache';
-import { setupToolchains, type ToolchainConfig, getSystemToolchainPaths } from './toolchain';
+import {
+  setupToolchains,
+  type ToolchainConfig,
+  type ToolchainPaths,
+  getSystemToolchainPaths,
+} from './toolchain';
 import {
   cloneKernel,
   cloneVendor,
@@ -29,6 +44,11 @@ async function main(): Promise<void> {
   try {
     // Check environment
     checkEnvironment();
+
+    const accessToken = core.getInput('access-token') || '';
+    if (accessToken) {
+      core.setSecret(accessToken);
+    }
 
     // Get inputs
     const inputs = {
@@ -70,9 +90,25 @@ async function main(): Promise<void> {
       anykernel3Url: core.getInput('anykernel3-url') || '',
       bootimgUrl: core.getInput('bootimg-url') || '',
       release: core.getBooleanInput('release'),
-      accessToken: core.getInput('access-token') || '',
+      accessToken,
       extraMakeArgs: core.getInput('extra-make-args') || '[]',
     };
+
+    validateNoPathTraversal(inputs.kernelDir, 'kernel-dir');
+    validateNoPathTraversal(inputs.vendorDir, 'vendor-dir');
+    validateBranchName(inputs.kernelBranch, 'kernel-branch');
+    validateBranchName(inputs.vendorBranch, 'vendor-branch');
+    validateBranchName(inputs.otherClangBranch, 'other-clang-branch');
+    validateBranchName(inputs.otherGcc64Branch, 'other-gcc64-branch');
+    validateBranchName(inputs.otherGcc32Branch, 'other-gcc32-branch');
+    validatePositiveInteger(inputs.depth, 'depth');
+    if (inputs.androidVersion) {
+      validateUrlSegment(inputs.androidVersion, 'android-version');
+    }
+    if (inputs.aospClangVersion) {
+      validateUrlSegment(inputs.aospClangVersion, 'aosp-clang-version');
+    }
+    validateKsuVersion(inputs.ksuVersion);
 
     // Install dependencies
     await installDependencies();
@@ -84,7 +120,7 @@ async function main(): Promise<void> {
     }
 
     // Setup toolchains
-    let toolchainConfig: ToolchainConfig | undefined;
+    let toolchainConfig: ToolchainPaths;
     if (inputs.aospClang || inputs.otherClangUrl) {
       const tcConfig: ToolchainConfig = {
         aospClang: inputs.aospClang,
@@ -114,7 +150,6 @@ async function main(): Promise<void> {
       };
       toolchainConfig = await setupToolchains(tcConfig);
     } else {
-      // Use system toolchain
       await installSystemClang();
       toolchainConfig = getSystemToolchainPaths();
     }

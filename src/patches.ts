@@ -99,10 +99,15 @@ export async function setupKernelSU(
 
       // Apply patches with opam environment evaluated
       const applyCocciPath = path.join(getActionPath(), 'kernelsu', 'apply_cocci.py');
+      const cocciDir = path.join(getActionPath(), 'kernelsu');
       try {
-        await exec.exec('bash', ['-c', `eval $(opam env) && python3 ${applyCocciPath}`], {
-          cwd: kernelDir,
-        });
+        await exec.exec(
+          'bash',
+          ['-c', `eval $(opam env) && python3 ${applyCocciPath} --cocci-dir ${cocciDir}`],
+          {
+            cwd: kernelDir,
+          }
+        );
       } catch {
         core.warning('Failed to apply KernelSU patches');
       }
@@ -205,7 +210,8 @@ export async function setupLXC(
   // Apply patches if requested
   if (options.patch) {
     const patchScript = path.join(getActionPath(), 'lxc', 'patch_cocci.py');
-    await exec.exec('python3', [patchScript], { cwd: kernelDir });
+    const cocciDir = path.join(getActionPath(), 'lxc');
+    await exec.exec('python3', [patchScript, '--cocci-dir', cocciDir], { cwd: kernelDir });
   }
 
   core.endGroup();

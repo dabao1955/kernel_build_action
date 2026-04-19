@@ -330,3 +330,40 @@ export function findFiles(dir: string, pattern: RegExp): string[] {
 
   return results;
 }
+
+export function validateNoPathTraversal(value: string, name: string): void {
+  if (value.includes('..')) {
+    throw new Error(`${name} must not contain path traversal sequences (..)`);
+  }
+}
+
+export function validateBranchName(branch: string, name: string): void {
+  if (branch.startsWith('-')) {
+    throw new Error(`${name} must not start with a hyphen`);
+  }
+}
+
+export function validatePositiveInteger(value: string, name: string): void {
+  if (!/^\d+$/.test(value)) {
+    throw new Error(`${name} must be a non-negative integer, got: ${value}`);
+  }
+}
+
+export function validateUrlSegment(value: string, name: string): void {
+  if (value.includes('..') || value.includes('/')) {
+    throw new Error(`${name} must not contain path traversal sequences or slashes`);
+  }
+}
+
+export function validateKsuVersion(version: string): void {
+  if (!/^[a-zA-Z0-9._-]+$/.test(version)) {
+    throw new Error(
+      `ksu-version contains invalid characters: ${version}. Only alphanumeric characters, dots, hyphens, and underscores are allowed`
+    );
+  }
+}
+
+export function sanitizeErrorMessage(error: unknown): string {
+  const msg = error instanceof Error ? error.message : String(error);
+  return msg.replace(/token[=:]\s*\S+/gi, 'token=***');
+}

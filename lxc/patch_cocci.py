@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
 """
-Download and apply LXC Coccinelle patches to kernel source files.
-Uses parallel downloads for efficiency.
+Apply LXC Coccinelle patches to kernel source files.
 """
 
+import argparse
 import subprocess
 import sys
 import shutil
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from tempfile import TemporaryDirectory
-
-
-REPO_URL = "https://github.com/dabao1955/kernel_build_action/raw/main/lxc"
 
 
 def find_cgroup_file(kernel_src: Path) -> str:
@@ -38,54 +33,12 @@ def check_dependencies() -> None:
     """Check that required dependencies are installed."""
     missing = []
 
-    if not shutil.which("aria2c"):
-        missing.append("aria2c")
     if not shutil.which("spatch"):
         missing.append("coccinelle")
 
     if missing:
         print(f"Error: Missing required dependencies: {' '.join(missing)}", file=sys.stderr)
         sys.exit(1)
-
-
-def download_patch(patch_name: str, temp_dir: Path) -> Path:
-    """Download a single patch file using aria2c."""
-    url = f"{REPO_URL}/{patch_name}"
-    output_path = temp_dir / patch_name
-
-    try:
-        subprocess.run(
-            ["aria2c", "-d", str(temp_dir), "-o", patch_name, url],
-            check=True,
-            capture_output=True,
-            text=True
-        )
-        return output_path
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to download {patch_name}: {e}") from e
-
-
-def download_patches_parallel(patch_names: list[str], temp_dir: Path) -> dict[str, Path]:
-    """Download multiple patches in parallel."""
-    downloaded = {}
-
-    with ThreadPoolExecutor() as executor:
-        futures = {
-            executor.submit(download_patch, name, temp_dir): name
-            for name in patch_names
-        }
-
-        for future in as_completed(futures):
-            name = futures[future]
-            try:
-                path = future.result()
-                downloaded[name] = path
-                print(f"Downloaded {name}")
-            except Exception as e:
-                print(f"Error: {e}", file=sys.stderr)
-                raise
-
-    return downloaded
 
 
 def apply_patch(patch_file: Path, target_file: Path, kernel_src: Path) -> None:
@@ -109,34 +62,29 @@ def apply_patch(patch_file: Path, target_file: Path, kernel_src: Path) -> None:
 
 
 def main() -> None:
-    """Main fcuntion."""
+    """Main entry point for applying LXC Coccinelle patches."""
+    parser = argparse.ArgumentParser(description='Apply LXC Coccinelle patches')
+    parser.add_argument('--cocci-dir', required=True, help='Directory containing local cocci files')
+    args = parser.parse_args()
+
+    cocci_dir = Path(args.cocci_dir)
     kernel_src = Path.cwd()
 
-    # Check dependencies
     check_dependencies()
 
-    # Get patches configuration
     patches = get_patches(kernel_src)
 
-    # Extract patch names
-    patch_names = [p[0] for p in patches]
-
-    with TemporaryDirectory() as temp_dir:
-        temp_path = Path(temp_dir)
-
-        # Download patches in parallel
-        print("Downloading patches...")
-        downloaded = download_patches_parallel(patch_names, temp_path)
-
-        # Apply patches
-        print("Applying patches...")
-        for patch_name, target_file in patches:
-            patch_file = downloaded[patch_name]
-            try:
-                apply_patch(patch_file, Path(target_file), kernel_src)
-            except RuntimeError as e:
-                print(f"Error: {e}", file=sys.stderr)
-                sys.exit(1)
+    print("Applying patches...")
+    for patch_name, target_file in patches:
+        patch_file = cocci_dir / patch_name
+        if not patch_file.exists():
+            print(f"Error: cocci file not found: {patch_file}", file=sys.stderr)
+            sys.exit(1)
+        try:
+            apply_patch(patch_file, Path(target_file), kernel_src)
+        except RuntimeError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            sys.exit(1)
 
     print("All patches processed successfully")
 

@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { sanitizeErrorMessage } from './utils';
 
 export interface ReleaseConfig {
   token: string;
@@ -57,7 +58,7 @@ export async function createRelease(config: ReleaseConfig): Promise<void> {
 
   try {
     // Check if release already exists for this tag
-    let releaseId: number;
+    let releaseId = 0;
     let existingRelease = false;
 
     try {
@@ -128,7 +129,7 @@ export async function createRelease(config: ReleaseConfig): Promise<void> {
     // Cleanup old CI releases (keep last 5)
     await cleanupOldReleases(config.token, 5);
   } catch (error) {
-    throw new Error(`Failed to create release: ${error}`, { cause: error });
+    throw new Error(`Failed to create release: ${sanitizeErrorMessage(error)}`, { cause: error });
   }
 
   core.endGroup();
@@ -203,6 +204,6 @@ export async function cleanupOldReleases(token: string, keepCount: number): Prom
       }
     }
   } catch (error) {
-    core.warning(`Failed to cleanup old releases: ${error}`);
+    core.warning(`Failed to cleanup old releases: ${sanitizeErrorMessage(error)}`);
   }
 }
