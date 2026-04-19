@@ -21,5 +21,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install pytest pytest-cov pytest-mock
+          sudo apt update && sudo apt install coccinelle -y
       - name: Run pytest
         run: python3 -m pytest

@@ -1,19 +1,17 @@
 """
-Tests for lxc/patch_cocci.py - LXC Coccinelle patch download and application.
+Tests for lxc/patch_cocci.py - LXC Coccinelle patch application.
 
-This module tests the functionality for downloading and applying LXC Coccinelle
-patches to kernel source files in parallel.
+This module tests the functionality for applying LXC Coccinelle
+patches to kernel source files using local cocci files.
 """
 
 import sys
 import importlib.util
 from pathlib import Path
 from unittest.mock import patch as mock_patch, MagicMock
-from urllib.parse import urlparse
 
 import pytest
 
-# Import the module under test using importlib to avoid conflicts
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "lxc"))
 spec = importlib.util.spec_from_file_location("lxc_patch", str(Path(__file__).parent.parent.parent / "lxc" / "patch_cocci.py"))
 patch_cocci = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
@@ -115,98 +113,13 @@ class TestCheckDependencies:
 
     @mock_patch('shutil.which')
     @mock_patch('sys.exit')
-    def test_aria2c_missing(self, mock_exit, mock_which):
-        """Test when aria2c is missing."""
-        def side_effect(cmd):
-            if cmd == "aria2c":
-                return None
-            return "/usr/bin/spatch"
-
-        mock_which.side_effect = side_effect
-
-        patch_cocci.check_dependencies()
-
-        mock_exit.assert_called_with(1)
-
-    @mock_patch('shutil.which')
-    @mock_patch('sys.exit')
     def test_spatch_missing(self, mock_exit, mock_which):
         """Test when spatch is missing."""
-        def side_effect(cmd):
-            if cmd == "spatch":
-                return None
-            return "/usr/bin/aria2c"
-
-        mock_which.side_effect = side_effect
-
-        patch_cocci.check_dependencies()
-
-        mock_exit.assert_called_with(1)
-
-    @mock_patch('shutil.which')
-    @mock_patch('sys.exit')
-    def test_both_deps_missing(self, mock_exit, mock_which):
-        """Test when both dependencies are missing."""
         mock_which.return_value = None
 
         patch_cocci.check_dependencies()
 
         mock_exit.assert_called_with(1)
-
-
-# =============================================================================
-# download_patch Tests
-# =============================================================================
-
-
-class TestDownloadPatch:
-    """Tests for download_patch function."""
-
-    def test_download_success(self, mock_subprocess, temp_dir):
-        """Test successful patch download."""
-        result = patch_cocci.download_patch("test.cocci", temp_dir)
-
-        assert result == temp_dir / "test.cocci"
-        mock_subprocess.assert_called_once()
-
-        # Check URL construction
-        call_args = mock_subprocess.call_args
-        cmd = call_args[0][0]
-        assert "aria2c" in cmd
-        assert patch_cocci.REPO_URL in cmd[5]
-        assert "test.cocci" in cmd[5]
-
-    def test_download_failure(self, mock_subprocess_error, temp_dir):
-        """Test download failure raises RuntimeError."""
-        with pytest.raises(RuntimeError, match="Failed to download"):
-            patch_cocci.download_patch("test.cocci", temp_dir)
-
-    def test_download_creates_correct_path(self, mock_subprocess, temp_dir):
-        """Test that download creates correct path."""
-        result = patch_cocci.download_patch("subdir/patch.cocci", temp_dir)
-
-        assert result == temp_dir / "subdir" / "patch.cocci"
-
-
-# =============================================================================
-# download_patches_parallel Tests
-# =============================================================================
-
-
-class TestDownloadPatchesParallel:
-    """Tests for download_patches_parallel function."""
-
-    def test_download_single_patch(self, temp_dir):
-        """Test downloading single patch - skipped due to import complexity."""
-        pytest.skip("Mock path issue with importlib-loaded module")
-
-    def test_download_multiple_patches(self, temp_dir):
-        """Test downloading multiple patches - skipped due to import complexity."""
-        pytest.skip("Mock path issue with importlib-loaded module")
-
-    def test_download_failure_raises(self, temp_dir):
-        """Test that download failure propagates - skipped due to import complexity."""
-        pytest.skip("Mock path issue with importlib-loaded module")
 
 
 # =============================================================================
@@ -262,29 +175,51 @@ class TestApplyPatch:
 class TestMain:
     """Tests for main function."""
 
-    def test_main_success(self):
-        """Test main function success path - skipped due to import complexity."""
-        pytest.skip("Mock path issue with importlib-loaded module")
+    def test_main_success(self, temp_dir, mock_subprocess):
+        """Test main function success path."""
+        kernel_src = temp_dir / "kernel"
+        kernel_src.mkdir(parents=True)
+        cgroup_dir = kernel_src / "kernel" / "cgroup"
+        cgroup_dir.mkdir(parents=True)
+        netfilter_dir = kernel_src / "net" / "netfilter"
+        netfilter_dir.mkdir(parents=True)
 
-    def test_main_apply_failure_exits(self):
-        """Test main exits when patch application fails - skipped."""
-        pytest.skip("Mock path issue with importlib-loaded module")
+        cgroup_file = kernel_src / "kernel" / "cgroup.c"
+        cgroup_file.write_text("other content\n")
 
+        cgroup_target = cgroup_dir / "cgroup.c"
+        cgroup_target.write_text("// cgroup\n")
 
-# =============================================================================
-# Constants Tests
-# =============================================================================
+        xt_target = netfilter_dir / "xt_qtaguid.c"
+        xt_target.write_text("// xt\n")
 
+        cocci_dir = temp_dir / "cocci"
+        cocci_dir.mkdir()
+        (cocci_dir / "cgroup.cocci").write_text("// patch\n")
+        (cocci_dir / "xt_qtaguid.cocci").write_text("// patch\n")
 
-class TestConstants:
-    """Tests for module constants."""
+        with mock_patch('sys.argv', ['patch_cocci.py', '--cocci-dir', str(cocci_dir)]):
+            with mock_patch('os.getcwd', return_value=str(kernel_src)):
+                patch_cocci.main()
 
-    def test_repo_url_format(self):
-        """Test that REPO_URL is properly formatted."""
-        parsed = urlparse(patch_cocci.REPO_URL)
-        assert parsed.scheme == "https"
-        assert parsed.hostname == "github.com"
-        assert parsed.path.endswith("/lxc")
+    def test_main_missing_cocci_file(self, temp_dir, mock_sys_exit):
+        """Test main exits when cocci file not found."""
+        kernel_src = temp_dir / "kernel"
+        kernel_src.mkdir(parents=True)
+        cgroup_dir = kernel_src / "kernel" / "cgroup"
+        cgroup_dir.mkdir(parents=True)
+        cgroup_file = kernel_src / "kernel" / "cgroup.c"
+        cgroup_file.write_text("other content\n")
+
+        cocci_dir = temp_dir / "cocci"
+        cocci_dir.mkdir()
+
+        with mock_patch('sys.argv', ['patch_cocci.py', '--cocci-dir', str(cocci_dir)]):
+            with mock_patch('os.getcwd', return_value=str(kernel_src)):
+                with mock_patch('shutil.which', return_value='/usr/bin/spatch'):
+                    patch_cocci.main()
+
+        mock_sys_exit.assert_called_with(1)
 
 
 # =============================================================================
@@ -295,23 +230,24 @@ class TestConstants:
 class TestSecurity:
     """Security-focused tests."""
 
-    @pytest.mark.skip(reason="Mock path issue with importlib-loaded module")
-    def test_url_construction_no_traversal(self):
-        """Test that URL cannot be traversed."""
-
     def test_target_path_validation(self, temp_dir):
         """Test target path validation."""
         kernel_src = temp_dir / "kernel"
         kernel_src.mkdir(parents=True)
         patch_file = temp_dir / "test.cocci"
 
-        # Should raise error for path outside kernel_src
         with pytest.raises(RuntimeError):
             patch_cocci.apply_patch(
                 patch_file,
                 Path("../outside_kernel.c"),
                 kernel_src
             )
+
+    def test_no_remote_download(self):
+        """Test that module does not expose any download functions."""
+        assert not hasattr(patch_cocci, 'download_patch')
+        assert not hasattr(patch_cocci, 'download_patches_parallel')
+        assert not hasattr(patch_cocci, 'REPO_URL')
 
 
 # =============================================================================
@@ -321,11 +257,6 @@ class TestSecurity:
 
 class TestEdgeCases:
     """Edge case tests."""
-
-    def test_empty_patch_list(self, temp_dir):
-        """Test with empty patch list."""
-        result = patch_cocci.download_patches_parallel([], temp_dir)
-        assert result == {}
 
     @pytest.mark.skip(reason="File system issue with test environment")
     def test_cgroup_file_with_unicode(self, temp_dir):
@@ -337,7 +268,6 @@ class TestEdgeCases:
 
         result = patch_cocci.find_cgroup_file(kernel_src)
 
-        # File exists and contains "int cgroup_add_file", so should return old path
         assert result == "kernel/cgroup.c"
 
     def test_cgroup_file_unicode_not_found(self, temp_dir):
@@ -349,12 +279,7 @@ class TestEdgeCases:
 
         result = patch_cocci.find_cgroup_file(kernel_src)
 
-        # Should fallback to new path
         assert result == "kernel/cgroup/cgroup.c"
-
-    def test_parallel_executor_cleanup(self, temp_dir):
-        """Test that ThreadPoolExecutor downloads patches properly - skipped."""
-        pytest.skip("Mock path issue with importlib-loaded module")
 
 
 class TestInPlacePatch:
@@ -388,7 +313,6 @@ class TestInPlacePatch:
 
         with mock_patch('subprocess.run') as mock_run:
             def side_effect(cmd, *args, **kwargs):
-                # Simulate spatch modifying the file in-place
                 if "--in-place" in cmd:
                     target_file.write_text(modified_content)
                 return MagicMock(returncode=0, stdout="", stderr="")
@@ -396,7 +320,6 @@ class TestInPlacePatch:
 
             patch_cocci.apply_patch(patch_file, Path("test.c"), kernel_src)
 
-            # Verify file content was changed
             assert target_file.read_text() == modified_content
 
     def test_in_place_flag_prevents_stdout_redirect(self, temp_dir):
@@ -414,7 +337,5 @@ class TestInPlacePatch:
 
             call_args = mock_run.call_args
             cmd = call_args[0][0]
-            # Verify --in-place is present
             assert "--in-place" in cmd
-            # Verify no stdout redirect is being done manually
             assert "--output" not in cmd
