@@ -4,37 +4,31 @@ on:
   pull_request:
     paths:
       - '.github/workflows/build.yml'
-      - '.github/workflows/close-pr.yml'
 
 jobs:
   auto-close:
+    runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-    runs-on: ubuntu-latest
+      issues: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Check if build.yml was modified
-        id: check
-        run: |
-          if git diff --name-only \
-            "${{ github.event.pull_request.base.sha }}" \
-            "${{ github.event.pull_request.head.sha }}" | \
-            grep -Fx ".github/workflows/build.yml"; then
-            echo "CHANGED=true" >> "$GITHUB_ENV"
-          else
-            echo "CHANGED=false" >> "$GITHUB_ENV"
-          fi
-
       - name: Close PR
-        if: env.CHANGED == 'true'
         uses: actions/github-script@v9
         with:
           script: |
             await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              state: 'closed'
+            });
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "🚫 This PR has been automatically closed because it modifies `.github/workflows/build.yml`.\n\nThis workflow file is a usage example and should not be modified as part of the Action logic."
+            });            await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.issue.number,
