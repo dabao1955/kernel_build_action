@@ -29,25 +29,32 @@ jobs:
       contents: write
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-      with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Download Kernel Source from Google Drive
+        run: |
+          wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=19uPZidD7pAqI0rHdGWehUKiMjVDvEUup' -O kernel_source.zip
+          unzip kernel_source.zip -d kernel-source
 
-    - name: Build Kernel
-      uses: ./
-      with:
-          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
-          kernel-dir: msm-4.19
-          kernel-branch: taffy
-          config: cas_defconfig
+      - name: Patch NetHunter
+        run: |
+          cd kernel-source
+          git clone https://github.com/kimocoder/kali-nethunter-kernel-patches.git
+          cd kali-nethunter-kernel-patches
+          chmod +x patch.sh
+          ./patch.sh ../
+
+      - name: Build Kernel
+        uses: ./
+        with:
+          kernel-url: https://github.com/mahinchasto-bot/samsung_a16_kernel
+          kernel-dir: kernel-source
+          kernel-branch: main
+          config: a16_defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
           ksu: true
           ksu-version: main
-          android-version: 12
-          aosp-clang-version: r383902
+          android-version: 13
           disable-lto: true
           anykernel3: true
+          
