@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Apply NetHunter kernel patches in CI mode."""
 import os
+import shutil
 import sys
 import subprocess
 import argparse
@@ -120,6 +121,9 @@ def main():
 
     kdir = Path(args.kdir).resolve()
     patch_dir = Path(args.patch_dir).resolve()
+    clone_dir = Path("t")
+    if clone_dir.exists():
+        shutil.rmtree(clone_dir)
     try:
         subprocess.run(
             ["git", "clone",

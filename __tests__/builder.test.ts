@@ -658,13 +658,13 @@ describe('buildKernel additional coverage', () => {
     }
   });
 
-  // Coverage: make stderr callback (Lines 202-204)
   it('captures stderr output during build', async () => {
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    const mockWrite = vi.fn();
+    vi.mocked(fs.createWriteStream).mockReturnValue({ write: mockWrite, end: vi.fn() } as any);
     const stderrWriteSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
-    // Mock exec to trigger stderr callback
     vi.mocked(exec.exec).mockImplementation(async (cmd, args, options) => {
       if (cmd === 'make' && options?.listeners?.stderr) {
         options.listeners.stderr(Buffer.from('Error: compilation warning'));
@@ -683,23 +683,19 @@ describe('buildKernel additional coverage', () => {
 
     await buildKernel(config);
 
-    // Verify stderr was written to log file and process.stderr
-    expect(fs.appendFileSync).toHaveBeenCalledWith(
-      expect.stringContaining('build.log'),
-      expect.any(Buffer)
-    );
+    expect(mockWrite).toHaveBeenCalledWith(Buffer.from('Error: compilation warning'));
     expect(stderrWriteSpy).toHaveBeenCalledWith(Buffer.from('Error: compilation warning'));
 
     stderrWriteSpy.mockRestore();
   });
 
-  // Coverage: make stdout callback (Lines 200-202)
   it('captures stdout output during build', async () => {
     vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
     vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    const mockWrite = vi.fn();
+    vi.mocked(fs.createWriteStream).mockReturnValue({ write: mockWrite, end: vi.fn() } as any);
     const stdoutWriteSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
 
-    // Mock exec to trigger stdout callback
     vi.mocked(exec.exec).mockImplementation(async (cmd, args, options) => {
       if (cmd === 'make' && options?.listeners?.stdout) {
         options.listeners.stdout(Buffer.from('Building kernel...'));
@@ -718,11 +714,7 @@ describe('buildKernel additional coverage', () => {
 
     await buildKernel(config);
 
-    // Verify stdout was written to log file and process.stdout
-    expect(fs.appendFileSync).toHaveBeenCalledWith(
-      expect.stringContaining('build.log'),
-      expect.any(Buffer)
-    );
+    expect(mockWrite).toHaveBeenCalledWith(Buffer.from('Building kernel...'));
     expect(stdoutWriteSpy).toHaveBeenCalledWith(Buffer.from('Building kernel...'));
 
     stdoutWriteSpy.mockRestore();

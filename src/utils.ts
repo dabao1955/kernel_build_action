@@ -193,7 +193,7 @@ export function filterMakeArgs(args: string[]): string[] {
   ];
 
   // Shell metacharacters that could enable command injection
-  const shellMetachars = /[`$\\;|&<>(){}[\]]/;
+  const shellMetachars = /[`$\\;|&<>(){}[\]*?!'"~#]/;
 
   return args.filter((arg) => {
     const upperArg = arg.toUpperCase();

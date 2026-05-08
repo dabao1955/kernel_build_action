@@ -343,10 +343,17 @@ describe('setupBBG', () => {
 
     await setupBBG('/kernel', '/kernel/.config');
 
-    expect(exec.exec).toHaveBeenCalledWith('bash', expect.arrayContaining([
-      '-c',
+    expect(exec.exec).toHaveBeenCalledWith('curl', expect.arrayContaining([
+      '-sSLf',
       expect.stringContaining('Baseband-guard'),
+      '-o',
+      expect.stringContaining('bbg_setup.sh'),
     ]));
+    expect(exec.exec).toHaveBeenCalledWith(
+      'bash',
+      expect.arrayContaining([expect.stringContaining('bbg_setup.sh')]),
+      expect.objectContaining({ cwd: '/kernel' })
+    );
   });
 
   it('modifies Kconfig to add baseband_guard to LSM', async () => {

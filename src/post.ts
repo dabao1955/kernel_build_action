@@ -14,7 +14,7 @@ async function post(): Promise<void> {
 
     // Use saved state from main action if available
     const savedKernelDir = core.getState('KERNEL_DIR');
-    const isLocalKernel = core.getState('IS_LOCAL_KERNEL') === 'true';
+    const savedIsLocalKernel = core.getState('IS_LOCAL_KERNEL') === 'true';
 
     // Determine kernel directory
     let kernelDir: string;
@@ -24,7 +24,7 @@ async function post(): Promise<void> {
     } else {
       // Fallback to legacy calculation for backward compatibility
       const inputKernelDir = core.getInput('kernel-dir') || 'kernel';
-      if (isLocalKernel) {
+      if (savedIsLocalKernel) {
         kernelDir = path.resolve(inputKernelDir);
       } else {
         kernelDir = path.join('kernel', inputKernelDir);

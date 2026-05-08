@@ -158,10 +158,15 @@ def main() -> None:
 
     if len(sys.argv) > 1:
         for i in range(1, len(sys.argv)):
-            if sys.argv[i] == '--config' and i + 1 < len(sys.argv):
+            arg = sys.argv[i]
+            if arg == '--config' and i + 1 < len(sys.argv):
                 config_path = Path(sys.argv[i + 1])
-            elif sys.argv[i] == '--arch' and i + 1 < len(sys.argv):
+            elif arg.startswith('--config='):
+                config_path = Path(arg.split('=', 1)[1])
+            elif arg == '--arch' and i + 1 < len(sys.argv):
                 _arch = sys.argv[i + 1]
+            elif arg.startswith('--arch='):
+                _arch = arg.split('=', 1)[1]
 
     with TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -181,13 +186,13 @@ def main() -> None:
         with zipfile.ZipFile(src_zip, 'r') as z:
             safe_extract(z, temp_path)
 
-        # Move rekernel to drivers/
+        # Move rekernel to drivers/ (use copytree for cross-filesystem safety)
         rekernel_src = temp_path / "rekernel"
         rekernel_dst = kernel_src / "drivers" / "rekernel"
         if rekernel_dst.exists():
             shutil.rmtree(rekernel_dst)
-        shutil.move(str(rekernel_src), str(rekernel_dst))
-        print(f"Moved rekernel to {rekernel_dst}")
+        shutil.copytree(str(rekernel_src), str(rekernel_dst))
+        print(f"Copied rekernel to {rekernel_dst}")
 
         # Apply Coccinelle patches to C files
         rekernel_file = rekernel_dst / "rekernel.c"

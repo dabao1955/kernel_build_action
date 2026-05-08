@@ -124,10 +124,14 @@ export async function setupBBG(kernelDir: string, configPath: string): Promise<v
   core.startGroup('Initializing BBG');
 
   // Download and run setup script
-  await exec.exec('bash', [
-    '-c',
-    'curl -Ss https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash',
+  const bbgSetupPath = path.join(kernelDir, 'bbg_setup.sh');
+  await exec.exec('curl', [
+    '-sSLf',
+    'https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh',
+    '-o',
+    bbgSetupPath,
   ]);
+  await exec.exec('bash', [bbgSetupPath], { cwd: kernelDir });
 
   // Modify Kconfig
   const kconfigPath = path.join(kernelDir, 'security', 'Kconfig');

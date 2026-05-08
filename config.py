@@ -487,23 +487,28 @@ def parse_configs(config_text: str) -> list[str]:
     return [line.strip() for line in config_text.strip().split('\n') if line.strip()]
 
 
+def _content(config_file: Path) -> str:
+    """Read file content once and cache it."""
+    return config_file.read_text(encoding='utf-8')
+
+
 def count_config_occurrences(config_file: Path, config: str) -> int:
     """Count how many times a config appears in the file."""
-    content = config_file.read_text(encoding='utf-8')
-    pattern = r'\b' + re.escape(config) + r'\b'
-    return len(re.findall(pattern, content))
+    content = _content(config_file)
+    pattern = r'^' + re.escape(config) + r'(?:=.*| is not set)?$'
+    return len(re.findall(pattern, content, re.MULTILINE))
 
 
 def is_config_enabled(config_file: Path, config: str) -> bool:
     """Check if a config is enabled (=y or =m)."""
-    content = config_file.read_text(encoding='utf-8')
+    content = _content(config_file)
     pattern = rf'^{re.escape(config)}=(y|m)$'
     return bool(re.search(pattern, content, re.MULTILINE))
 
 
 def is_config_set(config_file: Path, config: str) -> bool:
     """Check if a config line exists in the file."""
-    content = config_file.read_text(encoding='utf-8')
+    content = _content(config_file)
     pattern = rf'^{re.escape(config)}=.*$'
     return bool(re.search(pattern, content, re.MULTILINE))
 
@@ -545,45 +550,66 @@ def get_config_value(config_file: Path, config: str) -> str | None:
 # =============================================================================
 
 
-def _check_configs_exist(config_file: Path, configs: list[str], write_mode: bool) -> tuple[int, int]:
+def _check_configs_exist(configs: list[str], write_mode: bool, content: str) -> tuple[int, int, str]:
     """Check that all configs exist in the config file."""
     errors = 0
     fixes = 0
     for config in configs:
-        count = count_config_occurrences(config_file, config)
+        pattern = r'^' + re.escape(config) + r'(?:=.*| is not set)?$'
+        count = len(re.findall(pattern, content, re.MULTILINE))
         if count > 1:
             print(color_red(f"{config} appears more than once in the config file, fix this"))
             errors += 1
         if count == 0:
             if write_mode:
                 print(color_white(f"Creating {config}"))
-                add_config_not_set(config_file, config)
+                content += f"# {config} is not set\n"
                 fixes += 1
             else:
                 print(color_red(f"{config} is neither enabled nor disabled in the config file"))
                 errors += 1
-    return errors, fixes
+    return errors, fixes, content
 
 
-def _enable_required_configs(config_file: Path, configs: list[str], write_mode: bool) -> tuple[int, int]:
+def _is_enabled(content: str, config: str) -> bool:
+    """Check if a config is enabled (=y or =m) from cached content."""
+    pattern = rf'^{re.escape(config)}=(y|m)$'
+    return bool(re.search(pattern, content, re.MULTILINE))
+
+
+def _is_set(content: str, config: str) -> bool:
+    """Check if a config line exists from cached content."""
+    pattern = rf'^{re.escape(config)}=.*$'
+    return bool(re.search(pattern, content, re.MULTILINE))
+
+
+def _get_value(content: str, config: str) -> str | None:
+    """Get config value from cached content."""
+    pattern = rf'^{re.escape(config)}=(.+)$'
+    match = re.search(pattern, content, re.MULTILINE)
+    return match.group(1) if match else None
+
+
+def _enable_required_configs(configs: list[str], write_mode: bool, content: str) -> tuple[int, int, str]:
     """Enable configs that should be on."""
     errors = 0
     fixes = 0
     for config in configs:
-        if is_config_enabled(config_file, config):
+        if _is_enabled(content, config):
             print(color_green(f"{config} is already set"))
         else:
             if write_mode:
                 print(color_white(f"Setting {config}"))
-                enable_config(config_file, config)
+                pattern = rf'^# {re.escape(config)} is not set$'
+                content = re.sub(pattern, f'{config}=y', content, flags=re.MULTILINE)
                 fixes += 1
             else:
                 print(color_red(f"{config} is not set, set it"))
                 errors += 1
-    return errors, fixes
+    return errors, fixes, content
 
 
-def _handle_eq_configs(config_file: Path, configs: list[str], write_mode: bool) -> tuple[int, int]:
+def _handle_eq_configs(configs: list[str], write_mode: bool, content: str) -> tuple[int, int, str]:
     """Handle CONFIGS_EQ (equality checks)."""
     errors = 0
     fixes = 0
@@ -592,49 +618,47 @@ def _handle_eq_configs(config_file: Path, configs: list[str], write_mode: bool) 
             continue
         lhs, rhs = config.split('=', 1)
 
-        if is_config_set(config_file, config):
+        if _is_set(content, config):
             print(color_green(f"{config} is already set correctly."))
             continue
 
-        if is_config_set(config_file, lhs):
-            cur = get_config_value(config_file, lhs)
+        if _is_set(content, lhs):
+            cur = _get_value(content, lhs)
             print(color_red(f"{lhs} is set, but to {cur} not {rhs}."))
             if write_mode:
                 print(color_green(f"Setting {config} correctly"))
-                content = config_file.read_text(encoding='utf-8')
                 pattern = rf'^{re.escape(lhs)}=.*$'
                 replacement = f'# {lhs} was {cur}\n{config}'
-                new_content = re.sub(pattern, replacement, content, flags=re.MULTILINE)
-                config_file.write_text(new_content, encoding='utf-8')
+                content = re.sub(pattern, replacement, content, flags=re.MULTILINE)
                 fixes += 1
         else:
             if write_mode:
                 print(color_white(f"Setting {config}"))
-                with open(config_file, 'a', encoding='utf-8') as f:
-                    f.write(f"{config}\n")
+                content += f"{config}\n"
                 fixes += 1
             else:
                 print(color_red(f"{config} is not set"))
                 errors += 1
-    return errors, fixes
+    return errors, fixes, content
 
 
-def _disable_configs(config_file: Path, configs: list[str], write_mode: bool) -> tuple[int, int]:
+def _disable_configs(configs: list[str], write_mode: bool, content: str) -> tuple[int, int, str]:
     """Disable configs that should be off."""
     errors = 0
     fixes = 0
     for config in configs:
-        if is_config_enabled(config_file, config):
+        if _is_enabled(content, config):
             if write_mode:
                 print(color_white(f"Unsetting {config}"))
-                disable_config(config_file, config)
+                pattern = rf'^{re.escape(config)}=.*$'
+                content = re.sub(pattern, f'# {config} is not set', content, flags=re.MULTILINE)
                 fixes += 1
             else:
                 print(color_red(f"{config} is set, unset it"))
                 errors += 1
         else:
             print(color_green(f"{config} is already unset"))
-    return errors, fixes
+    return errors, fixes, content
 
 
 def main() -> None:
@@ -668,24 +692,28 @@ def main() -> None:
 
     print(f"\n\n{type_config['check_message']}\n\n")
 
+    content = config_file.read_text(encoding='utf-8')
     total_errors = 0
     total_fixes = 0
 
-    errors, fixes = _check_configs_exist(config_file, configs_on + configs_off, args.w)
+    errors, fixes, content = _check_configs_exist(configs_on + configs_off, args.w, content)
     total_errors += errors
     total_fixes += fixes
 
-    errors, fixes = _enable_required_configs(config_file, configs_on, args.w)
+    errors, fixes, content = _enable_required_configs(configs_on, args.w, content)
     total_errors += errors
     total_fixes += fixes
 
-    errors, fixes = _handle_eq_configs(config_file, configs_eq, args.w)
+    errors, fixes, content = _handle_eq_configs(configs_eq, args.w, content)
     total_errors += errors
     total_fixes += fixes
 
-    errors, fixes = _disable_configs(config_file, configs_off, args.w)
+    errors, fixes, content = _disable_configs(configs_off, args.w, content)
     total_errors += errors
     total_fixes += fixes
+
+    if total_fixes > 0:
+        config_file.write_text(content, encoding='utf-8')
 
     if total_errors == 0:
         print(color_green("\n\nConfig file checked, found no errors.\n\n"))

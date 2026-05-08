@@ -43,7 +43,6 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
   let cmdCc: string;
   let cmdCrossCompile: string | undefined;
   let cmdCrossCompileArm32: string | undefined;
-  const cmdClangTriple = getClangTriple(config.arch, cmdCrossCompile, cmdCrossCompileArm32);
 
   if (config.toolchain.clangPath) {
     // Use Clang
@@ -105,6 +104,8 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
       cmdPath = ccachePath;
     }
   }
+
+  const cmdClangTriple = getClangTriple(config.arch, cmdCrossCompile, cmdCrossCompileArm32);
 
   // Parse extra make arguments
   const extraArgs = parseExtraMakeArgs(config.extraMakeArgs);
@@ -181,20 +182,20 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
 
   // Run make using bash to match the bash script behavior exactly
   // This ensures environment variables are handled the same way
+  const logStream = fs.createWriteStream(logFile, { flags: 'a' });
   let exitCode: number;
   try {
-    // Use exec.exec with the constructed environment
     exitCode = await exec.exec('make', makeCmdArgs, {
       cwd: config.kernelDir,
       env: { ...process.env, ...envVars } as { [key: string]: string },
       silent: true,
       listeners: {
         stdout: (data: Buffer) => {
-          fs.appendFileSync(logFile, data);
+          logStream.write(data);
           process.stdout.write(data);
         },
         stderr: (data: Buffer) => {
-          fs.appendFileSync(logFile, data);
+          logStream.write(data);
           process.stderr.write(data);
         },
       },
@@ -202,6 +203,12 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
   } catch (error) {
     core.debug(`Build command failed: ${error}`);
     exitCode = 1;
+  } finally {
+    try {
+      logStream.end();
+    } catch {
+      // Ignore if stream was not available (e.g. in mocked environments)
+    }
   }
 
   core.endGroup();

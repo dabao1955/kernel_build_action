@@ -329,10 +329,12 @@ export function analyzeErrors(logFile: string): number {
       errorCount++;
       currentErrorLines = [line];
     }
-    // Check for continuation lines (notes, make errors)
+    // Check for continuation lines (notes, make errors, indented context)
     else if (
       processingError &&
-      (line.includes('note:') || (/make\[\d+\]:/.test(line) && line.includes('***')) || trimmedLine)
+      (line.includes('note:') ||
+        (/make\[\d+\]:/.test(line) && line.includes('***')) ||
+        (trimmedLine && /^\s+/.test(line)))
     ) {
       currentErrorLines.push(line);
     } else {

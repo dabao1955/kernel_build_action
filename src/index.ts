@@ -142,7 +142,7 @@ async function main(): Promise<void> {
         aospGcc: inputs.aospGcc,
         androidVersion: inputs.androidVersion,
         otherClangUrl: '',
-        otherClangBranch: 'main',
+        otherClangBranch: inputs.otherClangBranch,
         otherGcc64Url: inputs.otherGcc64Url,
         otherGcc64Branch: inputs.otherGcc64Branch,
         otherGcc32Url: inputs.otherGcc32Url,
