@@ -8,6 +8,7 @@
 | `@latest`       | ✅         |
 | `@main`         | ⚠️ [^1]    |
 | Historical Tags | ❌ [^2]    |
+| `@legacy`       | ⚠️ [^3]    |
 
 
 ## Reporting a Vulnerability
@@ -40,3 +41,4 @@ To ensure the safe use of this GitHub Action:
 ## Note
 [^1]: The `@main` tag may include experimental or unstable changes. It is recommended to use stable tags such as `@v1` in production workflows.
 [^2]: Due to limitations of git, we cannot make modifications on the released version.
+[^3]: Legacy branch is only suitable for advanced users would like to modify actions. For normal users we suggest to use main branch.
