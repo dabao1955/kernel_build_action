@@ -79,8 +79,8 @@ export async function createRelease(config: ReleaseConfig): Promise<void> {
           asset_id: asset.id,
         });
       }
-    } catch (error: any) {
-      if (error.status !== 404) {
+    } catch (error: unknown) {
+      if ((error as { status: number }).status !== 404) {
         throw error;
       }
       existingRelease = false;

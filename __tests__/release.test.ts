@@ -13,11 +13,13 @@ vi.mock('fs');
 vi.mock('@actions/core');
 vi.mock('@actions/github');
 
+const mockGetReleaseByTag = vi.fn();
 const mockCreateRelease = vi.fn();
 const mockUploadReleaseAsset = vi.fn();
 const mockListReleases = vi.fn();
 const mockDeleteRelease = vi.fn();
 const mockDeleteRef = vi.fn();
+const mockPaginate = vi.fn();
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -35,6 +37,7 @@ beforeEach(() => {
   vi.mocked(github.getOctokit).mockReturnValue({
     rest: {
       repos: {
+        getReleaseByTag: mockGetReleaseByTag,
         createRelease: mockCreateRelease,
         uploadReleaseAsset: mockUploadReleaseAsset,
         listReleases: mockListReleases,
@@ -44,10 +47,16 @@ beforeEach(() => {
         deleteRef: mockDeleteRef,
       },
     },
+    paginate: mockPaginate,
   } as any);
 });
 
 describe('createRelease', () => {
+  beforeEach(() => {
+    mockGetReleaseByTag.mockRejectedValue({ status: 404 });
+    mockPaginate.mockResolvedValue([]);
+  });
+
   const baseConfig: ReleaseConfig = {
     token: 'test-token',
     buildDir: '/build',
@@ -194,14 +203,12 @@ describe('createRelease', () => {
 
 describe('cleanupOldReleases', () => {
   beforeEach(() => {
-    mockListReleases.mockResolvedValue({
-      data: [
-        { id: 1, tag_name: 'last-ci-abc123' },
-        { id: 2, tag_name: 'last-ci-def456' },
-        { id: 3, tag_name: 'last-ci-ghi789' },
-        { id: 4, tag_name: 'v1.0.0' }, // Not a CI release
-      ],
-    });
+    mockPaginate.mockResolvedValue([
+      { id: 1, tag_name: 'last-ci-abc123' },
+      { id: 2, tag_name: 'last-ci-def456' },
+      { id: 3, tag_name: 'last-ci-ghi789' },
+      { id: 4, tag_name: 'v1.0.0' }, // Not a CI release
+    ]);
     mockDeleteRelease.mockResolvedValue({});
     mockDeleteRef.mockResolvedValue({});
   });
@@ -246,7 +253,7 @@ describe('cleanupOldReleases', () => {
   });
 
   it('handles API errors gracefully', async () => {
-    mockListReleases.mockRejectedValue(new Error('API error'));
+    mockPaginate.mockRejectedValue(new Error('API error'));
 
     await cleanupOldReleases('test-token', 1);
 
@@ -254,12 +261,10 @@ describe('cleanupOldReleases', () => {
   });
 
   it('does nothing when no CI releases exist', async () => {
-    mockListReleases.mockResolvedValue({
-      data: [
-        { id: 1, tag_name: 'v1.0.0' },
-        { id: 2, tag_name: 'v2.0.0' },
-      ],
-    });
+    mockPaginate.mockResolvedValue([
+      { id: 1, tag_name: 'v1.0.0' },
+      { id: 2, tag_name: 'v2.0.0' },
+    ]);
 
     await cleanupOldReleases('test-token', 1);
 
