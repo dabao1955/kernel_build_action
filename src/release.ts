@@ -79,8 +79,10 @@ export async function createRelease(config: ReleaseConfig): Promise<void> {
           asset_id: asset.id,
         });
       }
-    } catch {
-      // Release doesn't exist, will create new one
+    } catch (error: any) {
+      if (error.status !== 404) {
+        throw error;
+      }
       existingRelease = false;
     }
 
@@ -172,7 +174,7 @@ export async function cleanupOldReleases(token: string, keepCount: number): Prom
   const context = github.context;
 
   try {
-    const { data: releases } = await octokit.rest.repos.listReleases({
+    const releases = await octokit.paginate(octokit.rest.repos.listReleases, {
       owner: context.repo.owner,
       repo: context.repo.repo,
       per_page: 100,
@@ -194,11 +196,15 @@ export async function cleanupOldReleases(token: string, keepCount: number): Prom
         });
 
         // Delete tag
-        await octokit.rest.git.deleteRef({
-          owner: context.repo.owner,
-          repo: context.repo.repo,
-          ref: `tags/${release.tag_name}`,
-        });
+        try {
+          await octokit.rest.git.deleteRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: `tags/${release.tag_name}`,
+          });
+        } catch (e) {
+          core.warning(`Failed to delete tag ${release.tag_name}: ${e}`);
+        }
 
         core.info(`Deleted old release: ${release.tag_name}`);
       }
