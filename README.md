@@ -28,26 +28,28 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: w
 
 jobs:
   build-kernel:
     name: Build Kernel
     runs-on: ubuntu-22.04
     steps:
-      - name: Build
+              - name: Build Kernel
         uses: dabao1955/kernel_build_action@main
         with:
-          kernel-url: https://github.com/AcmeUI-Devices/android_kernel_xiaomi_cas
-          kernel-branch: taffy
-          config: cas_defconfig
+          kernel-url: https://github.com
+          kernel-dir: msm-4.19
+          kernel-branch: lineage-23.2
+          config: kiev_defconfig
           arch: arm64
           aosp-gcc: true
           aosp-clang: true
-          android-version: 12
-          aosp-clang-version: r383902
+          ksu: true
+          ksu-version: main
+          android-version: 16
           anykernel3: true
-          release: true
+      release: true
           access-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
