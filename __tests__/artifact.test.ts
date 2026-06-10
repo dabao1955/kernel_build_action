@@ -19,6 +19,14 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+function mockArtifactClientUpload(uploadArtifact: ReturnType<typeof vi.fn>): void {
+  vi.mocked(artifact.DefaultArtifactClient).mockImplementation(
+    class {
+      uploadArtifact = uploadArtifact;
+    } as any
+  );
+}
+
 describe('uploadArtifacts', () => {
   const baseConfig: ArtifactConfig = {
     buildDir: '/build',
@@ -57,9 +65,7 @@ describe('uploadArtifacts', () => {
     vi.mocked(fs.statSync).mockReturnValue({ isFile: () => true } as fs.Stats);
 
     const mockUpload = vi.fn().mockResolvedValue(undefined);
-    vi.mocked(artifact.DefaultArtifactClient).mockReturnValue({
-      uploadArtifact: mockUpload,
-    } as any);
+    mockArtifactClientUpload(mockUpload);
 
     await uploadArtifacts(baseConfig);
 
@@ -78,9 +84,7 @@ describe('uploadArtifacts', () => {
     vi.mocked(fs.statSync).mockReturnValue({ isFile: () => true } as fs.Stats);
 
     const mockUpload = vi.fn().mockResolvedValue(undefined);
-    vi.mocked(artifact.DefaultArtifactClient).mockReturnValue({
-      uploadArtifact: mockUpload,
-    } as any);
+    mockArtifactClientUpload(mockUpload);
 
     await uploadArtifacts(config);
 
@@ -105,9 +109,7 @@ describe('uploadArtifacts', () => {
     vi.mocked(fs.statSync).mockReturnValue({ isFile: () => true } as fs.Stats);
 
     const mockUpload = vi.fn().mockRejectedValue(new Error('Upload failed'));
-    vi.mocked(artifact.DefaultArtifactClient).mockReturnValue({
-      uploadArtifact: mockUpload,
-    } as any);
+    mockArtifactClientUpload(mockUpload);
 
     await expect(uploadArtifacts(baseConfig)).rejects.toThrow('Failed to upload artifacts');
   });
@@ -118,9 +120,7 @@ describe('uploadArtifacts', () => {
     vi.mocked(fs.statSync).mockReturnValue({ isFile: () => true } as fs.Stats);
 
     const mockUpload = vi.fn().mockResolvedValue(undefined);
-    vi.mocked(artifact.DefaultArtifactClient).mockReturnValue({
-      uploadArtifact: mockUpload,
-    } as any);
+    mockArtifactClientUpload(mockUpload);
 
     await uploadArtifacts(baseConfig);
 
