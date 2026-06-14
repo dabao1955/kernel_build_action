@@ -1220,4 +1220,115 @@ describe('System toolchain architecture-specific defaults', () => {
       }
     }
   });
+
+  // Regression test for issue #263: when AOSP GCC prefixes are used as
+  // CROSS_COMPILE (e.g. with a non-AOSP clang like Proton Clang), the
+  // Android prefix must NOT leak into CLANG_TRIPLE, otherwise the kernel
+  // Makefile's clang-android.sh sanity check on Linux 4.19 trees aborts
+  // the build with "Clang with Android --target detected".
+  it('falls back to GNU CLANG_TRIPLE when CROSS_COMPILE is an Android prefix (issue #263)', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {
+        clangPath: '/proton-clang',
+        gcc64Path: '/aosp-gcc-64',
+        gcc64Prefix: 'aarch64-linux-android-4.9',
+        gcc32Path: '/aosp-gcc-32',
+        gcc32Prefix: 'arm-linux-androideabi-4.9',
+      },
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    await buildKernel(config);
+
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall) {
+      const makeArgs = makeCall[1] as string[];
+      // CROSS_COMPILE keeps the AOSP GCC prefix...
+      expect(makeArgs).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('CROSS_COMPILE='),
+          expect.stringContaining('aarch64-linux-android-4.9-'),
+          expect.stringContaining('CROSS_COMPILE_ARM32='),
+          expect.stringContaining('arm-linux-androideabi-4.9-'),
+        ])
+      );
+      // ...but CLANG_TRIPLE must be the GNU triple, not the Android one.
+      const tripleArg = makeArgs.find((arg) => arg.startsWith('CLANG_TRIPLE='));
+      expect(tripleArg).toBeDefined();
+      expect(tripleArg).toBe('CLANG_TRIPLE=aarch64-linux-gnu-');
+      expect(tripleArg).not.toMatch(/android/i);
+    }
+  });
+
+  it('uses GNU CLANG_TRIPLE for arm with Android CROSS_COMPILE_ARM32 (issue #263)', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm',
+      config: 'defconfig',
+      toolchain: {
+        clangPath: '/proton-clang',
+        gcc32Path: '/aosp-gcc-32',
+        gcc32Prefix: 'arm-linux-androideabi-4.9',
+      },
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    await buildKernel(config);
+
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall) {
+      const makeArgs = makeCall[1] as string[];
+      const tripleArg = makeArgs.find((arg) => arg.startsWith('CLANG_TRIPLE='));
+      expect(tripleArg).toBeDefined();
+      expect(tripleArg).toBe('CLANG_TRIPLE=arm-linux-gnueabihf-');
+      expect(tripleArg).not.toMatch(/android/i);
+    }
+  });
+
+  it('still passes through a non-Android CROSS_COMPILE as CLANG_TRIPLE', async () => {
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const config: BuildConfig = {
+      kernelDir: '/kernel',
+      arch: 'arm64',
+      config: 'defconfig',
+      toolchain: {
+        clangPath: '/proton-clang',
+        gcc64Path: '/gnu-gcc-64',
+        gcc64Prefix: 'aarch64-linux-gnu',
+      },
+      extraMakeArgs: '',
+      useCcache: false,
+    };
+
+    await buildKernel(config);
+
+    const makeCall = vi.mocked(exec.exec).mock.calls.find((call) => call[0] === 'make');
+    expect(makeCall).toBeDefined();
+    if (makeCall) {
+      const makeArgs = makeCall[1] as string[];
+      const tripleArg = makeArgs.find((arg) => arg.startsWith('CLANG_TRIPLE='));
+      expect(tripleArg).toBeDefined();
+      // Non-Android prefix is passed through (path-prefixed, like CROSS_COMPILE).
+      expect(tripleArg).toMatch(/CLANG_TRIPLE=.*aarch64-linux-gnu-$/);
+      expect(tripleArg).not.toMatch(/android/i);
+    }
+  });
 });

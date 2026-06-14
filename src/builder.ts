@@ -269,29 +269,70 @@ function getSystemCrossCompileArm32(arch: string): string | undefined {
   }
 }
 
+/**
+ * Detect whether a CROSS_COMPILE/CROSS_COMPILE_ARM32 prefix is an Android
+ * toolchain (e.g. `aarch64-linux-android-`, `arm-linux-androideabi-4.9-`).
+ *
+ * Such prefixes are valid for the GCC binutils used as CROSS_COMPILE, but
+ * they must NOT be reused as CLANG_TRIPLE: the kernel Makefile strips the
+ * trailing `-` and feeds the result to clang as `--target=`, which would
+ * trip the `scripts/clang-android.sh` sanity check on Linux 4.19 vendor
+ * trees ("Clang with Android --target detected. Did you specify
+ * CLANG_TRIPLE?"). See issue #263.
+ */
+function isAndroidTriple(prefix: string | undefined): boolean {
+  if (!prefix) {
+    return false;
+  }
+  const lower = prefix.toLowerCase();
+  return lower.includes('android') || lower.includes('androideabi');
+}
+
 function getClangTriple(
   arch: string,
   cmdCrossCompile: string | undefined,
   cmdCrossCompileArm32: string | undefined
 ): string {
   switch (arch) {
-    case 'arm':
-      return cmdCrossCompileArm32 || 'arm-linux-gnueabihf-';
-    case 'arm64':
-      return cmdCrossCompile || 'aarch64-linux-gnu-';
+    case 'arm': {
+      const triple = cmdCrossCompileArm32;
+      return triple && !isAndroidTriple(triple)
+        ? triple
+        : getSystemCrossCompileArm32(arch) || 'arm-linux-gnueabihf-';
+    }
+    case 'arm64': {
+      const triple = cmdCrossCompile;
+      return triple && !isAndroidTriple(triple)
+        ? triple
+        : getSystemCrossCompile(arch) || 'aarch64-linux-gnu-';
+    }
     case 'x86':
-      return cmdCrossCompile || 'i686-linux-gnu-';
+      return cmdCrossCompile && !isAndroidTriple(cmdCrossCompile)
+        ? cmdCrossCompile
+        : getSystemCrossCompile(arch) || 'i686-linux-gnu-';
     case 'x86_64':
-      return cmdCrossCompile || 'x86_64-linux-gnu-';
+      return cmdCrossCompile && !isAndroidTriple(cmdCrossCompile)
+        ? cmdCrossCompile
+        : getSystemCrossCompile(arch) || 'x86_64-linux-gnu-';
     case 'riscv':
-      return cmdCrossCompile || 'riscv32-linux-gnu-';
+      return cmdCrossCompile && !isAndroidTriple(cmdCrossCompile)
+        ? cmdCrossCompile
+        : getSystemCrossCompile(arch) || 'riscv32-linux-gnu-';
     case 'riscv64':
-      return cmdCrossCompile || 'riscv64-linux-gnu-';
+      return cmdCrossCompile && !isAndroidTriple(cmdCrossCompile)
+        ? cmdCrossCompile
+        : getSystemCrossCompile(arch) || 'riscv64-linux-gnu-';
     case 'mips':
-      return cmdCrossCompile || 'mips-linux-gnu-';
+      return cmdCrossCompile && !isAndroidTriple(cmdCrossCompile)
+        ? cmdCrossCompile
+        : getSystemCrossCompile(arch) || 'mips-linux-gnu-';
     case 'mips64':
-      return cmdCrossCompile || 'mips64-linux-gnuabi64-';
+      return cmdCrossCompile && !isAndroidTriple(cmdCrossCompile)
+        ? cmdCrossCompile
+        : getSystemCrossCompile(arch) || 'mips64-linux-gnuabi64-';
     default:
-      return cmdCrossCompile || 'aarch64-linux-gnu-';
+      return cmdCrossCompile && !isAndroidTriple(cmdCrossCompile)
+        ? cmdCrossCompile
+        : 'aarch64-linux-gnu-';
   }
 }
