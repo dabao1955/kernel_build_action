@@ -22,10 +22,10 @@
     jwt-decode "^4.0.0"
     unzip-stream "^0.3.1"
 
-"@actions/cache@^6.1.0":
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/@actions/cache/-/cache-6.1.0.tgz#3ff53efad1b0e01d61daecfe0a2b4a7ac5487456"
-  integrity sha512-LVqybSbzhBp2uAETOQ3HnVjXA4AcjavgMH+LCr+cjgO+PZfciv/1QAgoW+esXBaAhvDid+vXeV70GGJpAh4V5Q==
+"@actions/cache@^6.2.0":
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/@actions/cache/-/cache-6.2.0.tgz#23dc34451640a43db99466f06c5391ab94e6c044"
+  integrity sha512-Nv0xWRmbxfDbAn/70flO/F6tj2Nv4XTYMAsQHiDFSojCDfso/Zni+fRKa14ToI9hnmOW/rQcY1WYb6wsM7Pgwg==
   dependencies:
     "@actions/core" "^3.0.1"
     "@actions/exec" "^3.0.0"
