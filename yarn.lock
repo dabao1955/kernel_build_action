@@ -881,10 +881,10 @@
   resolved "https://registry.npmmirror.com/@types/json-schema/-/json-schema-7.0.15.tgz"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
 
-"@types/node@^26.1.2":
-  version "26.1.2"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-26.1.2.tgz#da79708f1f9c6294f4cdec8f455a3032b028808a"
-  integrity sha512-Vu4a5UFA9rIIFJ7rB/Vaafh9lrCQszopTCx6KjFboXTGQbPNasehVR5TEiithSDGyd1DEiUByggTZsg8jukeIg==
+"@types/node@^26.2.0":
+  version "26.2.0"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-26.2.0.tgz#5a4875a862fda8fdc57de8faa579bb81ecba1685"
+  integrity sha512-5IviulTZeRNp2vAJ514cc/HUlY5nZ9fCbq9DMyC52BrhFZACo3nI0R7qBxhQmo/d27NFe96ur/b7Wwxklda+kg==
   dependencies:
     undici-types "~8.3.0"
 
@@ -1433,10 +1433,10 @@ eslint-visitor-keys@^5.0.0, eslint-visitor-keys@^5.0.1:
   resolved "https://registry.npmmirror.com/eslint-visitor-keys/-/eslint-visitor-keys-5.0.1.tgz"
   integrity sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==
 
-eslint@^10.8.0:
-  version "10.8.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-10.8.0.tgz#e6d19907a3f090a53a022261ba34c5ff6d04908b"
-  integrity sha512-nuKKvN+oIBO0koN7Tm7dlkmnkc21mtt0QJLwAKzjLq14y6lRTdVG36MZHJ8eQHwdJMwZbQNMlPOYedMq/oVJvQ==
+eslint@^10.8.1:
+  version "10.8.1"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-10.8.1.tgz#fb37d514c19b6dd5b2d6b70169fd26fddfa97967"
+  integrity sha512-wqA7W2jbsC/BnV9Iv1UZpKVFkO1AdNoSmYW8NWG4HNOBbkAMvIqDZ27pI2f07dqn583NcIC44ckjAcOXDL1QbQ==
   dependencies:
     "@eslint-community/eslint-utils" "^4.8.0"
     "@eslint-community/regexpp" "^4.12.2"
