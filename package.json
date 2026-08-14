@@ -21,11 +21,11 @@
     "@actions/tool-cache": "^4.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.7",
+    "@biomejs/biome": "^2.5.8",
     "@eslint/js": "^10.0.0",
     "@types/node": "^26.2.0",
-    "@typescript-eslint/eslint-plugin": "^8.66.0",
-    "@typescript-eslint/parser": "^8.66.0",
+    "@typescript-eslint/eslint-plugin": "^8.67.0",
+    "@typescript-eslint/parser": "^8.67.0",
     "@vitest/coverage-v8": "4.1.10",
     "esbuild": "^0.28.2",
     "eslint": "^10.8.1",
