@@ -1,6 +1,6 @@
 {
   "name": "kernel-build-action",
-  "version": "1.9.2",
+  "version": "1.10.3",
   "description": "Android Kernel Build Action",
   "main": "dist/index.js",
   "scripts": {
