@@ -26,12 +26,12 @@
     "@types/node": "^26.2.0",
     "@typescript-eslint/eslint-plugin": "^8.67.0",
     "@typescript-eslint/parser": "^8.67.0",
-    "@vitest/coverage-v8": "4.1.10",
+    "@vitest/coverage-v8": "4.1.11",
     "esbuild": "^0.28.2",
     "eslint": "^10.8.1",
     "prettier": "^3.9.6",
     "typescript": "^6.0.3",
-    "vitest": "4.1.10"
+    "vitest": "4.1.11"
   },
   "resolutions": {
     "**/@actions/glob": "0.7.0",
