@@ -73,7 +73,7 @@ export async function extractDefconfigFromBoot(
     if (!configText.includes('CONFIG_')) {
       throw new Error(
         'extract-ikconfig produced no kernel config. ' +
-          'The stock kernel was likely built without CONFIG_IKCONFIG_PROC.'
+          'The stock kernel was likely built without CONFIG_IKCONFIG.'
       );
     }
 

@@ -421,8 +421,8 @@ describe('detectKsuFork', () => {
   it('handles .git suffix and raw.githubusercontent.com URLs', () => {
     expect(detectKsuFork('https://github.com/ShirkNeko/SukiSU-Ultra.git')?.id).toBe('sukisu');
     expect(
-      detectKsuFork('https://raw.githubusercontent.com/cyberc3dr/KernelSU/main/kernel/setup.sh')?.id
-    ).toBe('rsuntk-susfs');
+      detectKsuFork('https://raw.githubusercontent.com/rsuntk/KernelSU/main/kernel/setup.sh')?.id
+    ).toBe('rsuntk');
   });
 
   it('returns undefined for unknown or invalid URLs', () => {
@@ -448,12 +448,14 @@ describe('setupKernelSU fork strategies', () => {
       { version: 5, patchlevel: 4, sublevel: 100, isGki: false }
     );
 
-    // setup.sh fetched from the fork's setup branch (main)
+    // setup.sh fetched from the fork's pinned immutable revision
     expect(exec.exec).toHaveBeenCalledWith(
       'curl',
       expect.arrayContaining([
         '-sSLf',
-        'https://github.com/SukiSU-Ultra/SukiSU-Ultra/raw/main/kernel/setup.sh',
+        expect.stringMatching(
+          /^https:\/\/github\.com\/SukiSU-Ultra\/SukiSU-Ultra\/raw\/[0-9a-f]{40}\/kernel\/setup\.sh$/
+        ),
         '-o',
         '/kernel/ksu_setup.sh',
       ])
@@ -462,8 +464,6 @@ describe('setupKernelSU fork strategies', () => {
     expect(exec.exec).toHaveBeenCalledWith('bash', ['ksu_setup.sh', 'builtin'], {
       cwd: '/kernel',
     });
-    // fork tweak applied
-    expect(fs.appendFileSync).toHaveBeenCalledWith('/kernel/.config', 'CONFIG_KSU_SUSFS=n\n');
   });
 
   it('respects a pinned ksu-version over fork defaults', async () => {
@@ -574,7 +574,9 @@ describe('setupNoMount', () => {
       'curl',
       expect.arrayContaining([
         '-sSLf',
-        'https://github.com/maxsteeel/nomount/raw/dev/kernel/setup.sh',
+        expect.stringMatching(
+          /^https:\/\/github\.com\/maxsteeel\/nomount\/raw\/[0-9a-f]{40}\/kernel\/setup\.sh$/
+        ),
         '-o',
         '/kernel/nomount_setup.sh',
       ])

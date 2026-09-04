@@ -22,8 +22,12 @@ interface KsuConfigTweak {
 export interface KsuForkStrategy {
   id: string;
   label: string;
-  /** Branch that hosts kernel/setup.sh for raw download. */
-  setupBranch: string;
+  /**
+   * Pinned commit SHA that hosts kernel/setup.sh for raw download.
+   * Immutable revisions keep the executed script reproducible; bump the SHA
+   * deliberately when picking up upstream changes.
+   */
+  setupSha: string;
   /** Ref passed to setup.sh when the user did not pin ksu-version. */
   defaultInstallRef: string | ((kernelVersion: KernelVersion) => string);
   /** defconfig tweaks applied after integration. */
@@ -34,47 +38,45 @@ function isKernelBelow(version: number, patchlevel: number, kv: KernelVersion): 
   return kv.version < version || (kv.version === version && kv.patchlevel < patchlevel);
 }
 
-/** Known forks, keyed by lowercase `owner/repo`. */
+/**
+ * Known forks, keyed by lowercase `owner/repo`.
+ * `setupSha` values are pinned commit SHAs of the revision that hosts
+ * kernel/setup.sh (KernelSU-Next has no `main` branch; its default branch
+ * is `dev`).
+ */
 const KSU_FORKS: Record<string, KsuForkStrategy> = {
   'backslashxx/kernelsu': {
     id: 'xxksu',
     label: 'KernelSU (xxksu)',
-    setupBranch: 'master',
+    setupSha: '76fecfc35b1551ef68ca6e46d8a9873c35064d86',
     defaultInstallRef: 'master',
     configTweaks: [{ option: 'CONFIG_KSU_KPROBES_KSUD', value: 'n' }],
   },
   'rsuntk/kernelsu': {
     id: 'rsuntk',
     label: 'KernelSU (rsuntk)',
-    setupBranch: 'main',
-    defaultInstallRef: 'main',
-    configTweaks: [{ option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' }],
-  },
-  'cyberc3dr/kernelsu': {
-    id: 'rsuntk-susfs',
-    label: 'KernelSU (rsuntk SuSFS fork)',
-    setupBranch: 'main',
+    setupSha: '648e5988cf421172769f80ce07f86331b548c053',
     defaultInstallRef: 'main',
     configTweaks: [{ option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' }],
   },
   'sukisu-ultra/sukisu-ultra': {
     id: 'sukisu',
     label: 'SukiSU-Ultra',
-    setupBranch: 'main',
+    setupSha: '9fbe8fe8ca90c62c259c5894bf96d02ac31209b9',
     defaultInstallRef: 'builtin',
-    configTweaks: [{ option: 'CONFIG_KSU_SUSFS', value: 'n' }],
+    configTweaks: [],
   },
   'shirkneko/sukisu-ultra': {
     id: 'sukisu',
     label: 'SukiSU-Ultra',
-    setupBranch: 'main',
+    setupSha: '9fbe8fe8ca90c62c259c5894bf96d02ac31209b9',
     defaultInstallRef: 'builtin',
-    configTweaks: [{ option: 'CONFIG_KSU_SUSFS', value: 'n' }],
+    configTweaks: [],
   },
   'kernelsu-next/kernelsu-next': {
     id: 'next',
     label: 'KernelSU-Next',
-    setupBranch: 'main',
+    setupSha: '36aa55c521e509449bfe48bae0ab8c397174c1cb',
     defaultInstallRef: (kv) => (isKernelBelow(5, 10, kv) ? 'legacy' : 'main'),
     configTweaks: [
       { option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' },
@@ -88,11 +90,14 @@ const KSU_FORKS: Record<string, KsuForkStrategy> = {
   'resukisu/resukisu': {
     id: 'resukisu',
     label: 'ReSukiSU',
-    setupBranch: 'main',
+    setupSha: '9d0ff6aea9e25fc7dd26f4643175a41f68375e5e',
     defaultInstallRef: 'main',
     configTweaks: [{ option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' }],
   },
 };
+
+/** Upstream KernelSU revision pinned for downloading kernel/setup.sh. */
+const KSU_UPSTREAM_SHA = '3c1240625655978f319a98398031100b80e9da7c';
 
 /**
  * Detect a known KernelSU fork from a GitHub URL.
@@ -195,7 +200,7 @@ export async function setupKernelSU(
 
     if (forkStrategy) {
       core.info(`Detected known KernelSU fork: ${forkStrategy.label}`);
-      const setupRef = versionPinned ? options.version : forkStrategy.setupBranch;
+      const setupRef = versionPinned ? options.version : forkStrategy.setupSha;
       ksuUrl = `${normalizedUrl}/raw/${setupRef}/kernel/setup.sh`;
     } else {
       core.warning(
@@ -205,7 +210,7 @@ export async function setupKernelSU(
       ksuUrl = `${normalizedUrl}/raw/${options.version}/kernel/setup.sh`;
     }
   } else {
-    ksuUrl = `https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh`;
+    ksuUrl = `https://raw.githubusercontent.com/tiann/KernelSU/${KSU_UPSTREAM_SHA}/kernel/setup.sh`;
   }
 
   core.info(`Downloading KernelSU setup script from: ${ksuUrl}`);
@@ -330,11 +335,11 @@ export async function setupBBG(
 export async function setupNoMount(kernelDir: string, configPath: string): Promise<void> {
   core.startGroup('Initializing NoMount');
 
-  // Download and run upstream setup script
+  // Download and run upstream setup script (pinned to an immutable revision)
   const nomountSetupPath = path.join(kernelDir, 'nomount_setup.sh');
   await exec.exec('curl', [
     '-sSLf',
-    'https://github.com/maxsteeel/nomount/raw/dev/kernel/setup.sh',
+    'https://github.com/maxsteeel/nomount/raw/2d3863b036d69fd587585ee0cdde2560d983beb8/kernel/setup.sh',
     '-o',
     nomountSetupPath,
   ]);

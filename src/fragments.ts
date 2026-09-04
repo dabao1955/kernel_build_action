@@ -9,7 +9,8 @@ import { fileExists } from './utils';
  * local absolute config fragment paths.
  *
  * Each entry is either:
- *  - an https URL, which is downloaded into the kernel tree, or
+ *  - an https URL (plain http is rejected), which is downloaded into the
+ *    kernel tree, or
  *  - a path relative to the kernel source directory.
  *
  * Fragments are merged over the expanded defconfig with
@@ -41,6 +42,7 @@ export async function resolveConfigFragments(
   const resolved: string[] = [];
   const fragmentsDir = path.join(kernelDir, 'out', 'config-fragments');
   const absKernelDir = path.resolve(kernelDir);
+  const total = entries.length;
   let index = 0;
 
   for (const entry of entries as string[]) {
@@ -48,11 +50,27 @@ export async function resolveConfigFragments(
       throw new Error(`merge-configs entries must not start with a hyphen: ${entry}`);
     }
 
-    if (/^https?:\/\//.test(entry)) {
+    if (/^https?:\/\//i.test(entry)) {
+      if (!/^https:\/\//i.test(entry)) {
+        throw new Error('merge-configs remote fragments must use https:// URLs');
+      }
       fs.mkdirSync(fragmentsDir, { recursive: true });
       const fragmentPath = path.join(fragmentsDir, `fragment_${index}.config`);
-      core.info(`Downloading config fragment: ${entry}`);
-      await exec.exec('curl', ['-sSLf', '--', entry, '-o', fragmentPath]);
+      // Never log the URL itself: it may carry credentials or signed query
+      // parameters that must not end up in the build log.
+      core.info(`Downloading config fragment ${index + 1}/${total}`);
+      // Restrict curl to https for both the initial request and redirects.
+      await exec.exec('curl', [
+        '-sSLf',
+        '--proto',
+        '=https',
+        '--proto-redir',
+        '=https',
+        '--',
+        entry,
+        '-o',
+        fragmentPath,
+      ]);
       resolved.push(fragmentPath);
     } else {
       const fragmentPath = path.resolve(kernelDir, entry);

@@ -1,0 +1,108 @@
+name: Check pinned setup revisions
+
+# The KernelSU fork / NoMount setup scripts executed by this action are pinned
+# to immutable commit SHAs in src/patches.ts. This workflow compares each
+# pinned SHA against the head of the branch it tracks and opens (or updates) a
+# tracking issue whenever upstream has moved, so a bump can be reviewed
+# deliberately instead of the pin silently going stale.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare pinned SHAs with upstream branch heads
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # lowercase fork key -> "Proper/Repo tracked-branch"
+          declare -A TRACK=(
+            [backslashxx/kernelsu]='backslashxx/KernelSU master'
+            [rsuntk/kernelsu]='rsuntk/KernelSU main'
+            [sukisu-ultra/sukisu-ultra]='SukiSU-Ultra/SukiSU-Ultra main'
+            [shirkneko/sukisu-ultra]='ShirkNeko/SukiSU-Ultra main'
+            [kernelsu-next/kernelsu-next]='KernelSU-Next/KernelSU-Next dev'
+            [resukisu/resukisu]='ReSukiSU/ReSukiSU main'
+            [tiann/kernelsu]='tiann/KernelSU main'
+            [maxsteeel/nomount]='maxsteeel/nomount dev'
+          )
+
+          re_entry="^ *'([-a-zA-Z0-9_.]+/[-a-zA-Z0-9_.]+)': \{"
+          re_sha="setupSha: '([0-9a-f]{40})'"
+          re_upstream="KSU_UPSTREAM_SHA = '([0-9a-f]{40})'"
+          re_nomount="maxsteeel/nomount/raw/([0-9a-f]{40})/kernel/setup\.sh"
+
+          pins=()
+          repo=''
+          while IFS= read -r line; do
+            if [[ $line =~ $re_entry ]]; then
+              repo="${BASH_REMATCH[1]}"
+            elif [[ -n $repo && $line =~ $re_sha ]]; then
+              pins+=("${repo}=${BASH_REMATCH[1]}")
+              repo=''
+            elif [[ $line =~ $re_upstream ]]; then
+              pins+=("tiann/kernelsu=${BASH_REMATCH[1]}")
+            elif [[ $line =~ $re_nomount ]]; then
+              pins+=("maxsteeel/nomount=${BASH_REMATCH[1]}")
+            fi
+          done < src/patches.ts
+
+          if [[ ${#pins[@]} -ne ${#TRACK[@]} ]]; then
+            echo "::error::Expected ${#TRACK[@]} pinned revisions in src/patches.ts, found ${#pins[@]}. Update the TRACK map in this workflow."
+            exit 1
+          fi
+
+          outdated=()
+          for pin in "${pins[@]}"; do
+            key="${pin%%=*}"
+            sha="${pin##*=}"
+            read -r display branch <<< "${TRACK[$key]}"
+            head="$(gh api "repos/${display}/commits/${branch}" --jq .sha)"
+            if [[ "$head" != "$sha" ]]; then
+              echo "DRIFT: ${display}@${branch} pinned ${sha:0:12}, upstream ${head:0:12}"
+              outdated+=("| [\`${display}\`](https://github.com/${display}) | \`${branch}\` | \`${sha:0:12}\` | [\`${head:0:12}\`](https://github.com/${display}/commit/${head}) |")
+            else
+              echo "ok: ${display}@${branch} ${sha:0:12}"
+            fi
+          done
+
+          if [[ ${#outdated[@]} -eq 0 ]]; then
+            echo "All pinned setup-script revisions are current."
+            exit 0
+          fi
+
+          rows="$(printf '%s\n' "${outdated[@]}")"
+          body="$(cat <<EOF
+          Some pinned setup-script revisions in \`src/patches.ts\` fell behind their upstream branches.
+
+          | Repository | Branch | Pinned | Upstream HEAD |
+          |---|---|---|---|
+          ${rows}
+
+          To update: bump the matching \`setupSha\` / \`KSU_UPSTREAM_SHA\` / NoMount URL in \`src/patches.ts\`, run \`yarn build\`, and close this issue.
+          EOF
+          )"
+
+          gh label create pinned-sha-drift --color D4C5F9 2>/dev/null || true
+          number="$(gh issue list --label pinned-sha-drift --state open --json number --jq '.[0].number // empty')"
+          if [[ -n "$number" ]]; then
+            echo "Updating existing tracking issue #${number}"
+            gh issue edit "$number" --body "$body"
+          else
+            gh issue create \
+              --title 'Pinned setup-script revisions need a bump' \
+              --body "$body" \
+              --label pinned-sha-drift
+          fi

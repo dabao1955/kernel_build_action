@@ -67,12 +67,23 @@ describe('resolveConfigFragments', () => {
       'curl',
       expect.arrayContaining([
         '-sSLf',
+        '--proto',
+        '=https',
+        '--proto-redir',
+        '=https',
         '--',
         'https://example.com/frag.config',
         '-o',
         '/kernel/out/config-fragments/fragment_0.config',
       ])
     );
+  });
+
+  it('rejects plain-http fragment URLs', async () => {
+    await expect(
+      resolveConfigFragments('["http://example.com/frag.config"]', '/kernel')
+    ).rejects.toThrow(/must use https:\/\/ URLs/);
+    expect(exec.exec).not.toHaveBeenCalled();
   });
 
   it('rejects entries starting with a hyphen', async () => {

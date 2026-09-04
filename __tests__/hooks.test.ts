@@ -40,9 +40,47 @@ describe('stripBlockRange', () => {
     ]);
   });
 
-  it('does not match CONFIG_KSU_SUSFS blocks (exact macro match)', () => {
-    const lines = ['#ifdef CONFIG_KSU_SUSFS', '\tsusfs_hook();', '#endif', 'keep();'];
+  it('does not match other CONFIG_KSU_* macros (exact macro match)', () => {
+    const lines = ['#ifdef CONFIG_KSU_MANUAL_HOOK', '\thook();', '#endif', 'keep();'];
     expect(stripBlockRange(lines, /^\s*#\s*ifdef\s+CONFIG_KSU\s*$/)).toEqual(lines);
+  });
+
+  it('removes nested preprocessor conditionals within the block', () => {
+    const lines = [
+      'int foo(void)',
+      '{',
+      '#ifdef CONFIG_KSU',
+      '#ifdef CONFIG_MODULES',
+      '\tksu_a();',
+      '#endif',
+      '\tksu_b();',
+      '#endif',
+      '\treturn 0;',
+      '}',
+    ];
+    expect(stripBlockRange(lines, /^\s*#\s*ifdef\s+CONFIG_KSU\s*$/)).toEqual([
+      'int foo(void)',
+      '{',
+      '\treturn 0;',
+      '}',
+    ]);
+  });
+
+  it('handles #else/#elif without affecting the nesting depth', () => {
+    const lines = [
+      '#ifdef CONFIG_KSU',
+      '#if defined(CONFIG_A) && defined(CONFIG_B)',
+      '\ta();',
+      '#elif defined(CONFIG_C)',
+      '\tc();',
+      '#else',
+      '\td();',
+      '#endif',
+      '\tksu_b();',
+      '#endif',
+      'keep();',
+    ];
+    expect(stripBlockRange(lines, /^\s*#\s*ifdef\s+CONFIG_KSU\s*$/)).toEqual(['keep();']);
   });
 
   it('leaves unrelated ifdefs untouched', () => {
@@ -83,41 +121,6 @@ describe('cleanExistingHooks', () => {
     const execContent = fs.readFileSync(execC, 'utf-8');
     expect(execContent).not.toContain('CONFIG_KSU');
     expect(execContent).toContain('do_execveat_common');
-  });
-
-  it('leaves SuSFS integration untouched', () => {
-    const namespaceC = path.join(tmpDir, 'fs', 'namespace.c');
-    fs.mkdirSync(path.dirname(namespaceC), { recursive: true });
-    const original = [
-      'void mount(void)',
-      '{',
-      '#ifdef CONFIG_KSU_SUSFS',
-      '\tsusfs_mount();',
-      '#endif',
-      '#ifndef CONFIG_KSU_SUSFS',
-      '\torig_mount();',
-      '#else',
-      '\tsusfs_other();',
-      '#endif',
-      '}',
-      '',
-    ].join('\n');
-    fs.writeFileSync(namespaceC, original);
-
-    const susfsC = path.join(tmpDir, 'fs', 'susfs.c');
-    fs.writeFileSync(susfsC, '/* susfs */\n');
-    const fsMakefile = path.join(tmpDir, 'fs', 'Makefile');
-    fs.writeFileSync(
-      fsMakefile,
-      'obj-y += read_write.o\nobj-$(CONFIG_KSU_SUSFS) += susfs.o\n'
-    );
-
-    cleanExistingHooks(tmpDir);
-
-    // Everything SuSFS-related is preserved as-is
-    expect(fs.readFileSync(namespaceC, 'utf-8')).toBe(original);
-    expect(fs.existsSync(susfsC)).toBe(true);
-    expect(fs.readFileSync(fsMakefile, 'utf-8')).toContain('CONFIG_KSU_SUSFS');
   });
 
   it('is a no-op on a clean kernel tree', () => {

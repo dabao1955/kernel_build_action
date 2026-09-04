@@ -11,10 +11,6 @@ import { fileExists } from './utils';
  * on top of such a tree double-hooks the kernel and breaks the build.
  * This module strips the well-known KernelSU leftovers before the patch is
  * applied.
- *
- * Note: SuSFS integration is intentionally left untouched. This action does
- * not integrate SuSFS itself, so removing pre-existing SuSFS hooks would
- * silently change kernels whose sources carry it on purpose.
  */
 
 /** Directories that contain a full KernelSU checkout / integration. */
@@ -35,30 +31,37 @@ const KSU_HOOK_FILES = [
   'kernel/sys.c',
 ];
 
-/** Matches `#ifdef CONFIG_KSU` exactly, so CONFIG_KSU_SUSFS is not touched. */
+/** Matches the exact `#ifdef CONFIG_KSU` line used by KernelSU hooks. */
 const KSU_IFDEF_RE = /^\s*#\s*ifdef\s+CONFIG_KSU\s*$/;
 /** Any remaining preprocessor conditional on the exact CONFIG_KSU macro. */
 const KSU_ANY_RE = /^\s*#\s*if(?:n?def)?\b[^\n]*\bCONFIG_KSU\b/m;
+/** Any preprocessor conditional opening directive (`#if`, `#ifdef`, `#ifndef`). */
+const IF_RE = /^\s*#\s*if(?:n?def)?\b/;
 const ENDIF_RE = /^\s*#\s*endif\b/;
 
 /**
- * Delete lines from `start` (inclusive) until the first `#endif` (inclusive).
+ * Delete lines from `start` (inclusive) through the matching `#endif`
+ * (inclusive). Nested preprocessor conditionals opened inside the block are
+ * tracked so removal only ends at the *outer* `#endif`, which keeps the
+ * remaining source free of unmatched directives.
  */
 export function stripBlockRange(lines: string[], start: RegExp): string[] {
   const out: string[] = [];
-  let skipping = false;
+  let depth = 0;
   for (const line of lines) {
-    if (!skipping && start.test(line)) {
-      skipping = true;
-      continue;
-    }
-    if (skipping) {
-      if (ENDIF_RE.test(line)) {
-        skipping = false;
+    if (depth === 0) {
+      if (start.test(line)) {
+        depth = 1;
+      } else {
+        out.push(line);
       }
       continue;
     }
-    out.push(line);
+    if (IF_RE.test(line)) {
+      depth++;
+    } else if (ENDIF_RE.test(line)) {
+      depth--;
+    }
   }
   return out;
 }
@@ -94,8 +97,7 @@ export function cleanExistingHooks(kernelDir: string): void {
     }
   }
 
-  // Strip #ifdef CONFIG_KSU ... #endif blocks (exact macro match: SuSFS
-  // guards such as #ifdef CONFIG_KSU_SUSFS are deliberately left alone).
+  // Strip #ifdef CONFIG_KSU ... #endif blocks (exact macro match).
   for (const file of KSU_HOOK_FILES) {
     const filePath = path.join(kernelDir, file);
     if (cleanFile(filePath, [(lines) => stripBlockRange(lines, KSU_IFDEF_RE)])) {

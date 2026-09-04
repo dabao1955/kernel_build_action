@@ -224,8 +224,12 @@ async function main(): Promise<void> {
       }
     }
 
-    // Remove pre-existing KernelSU leftovers before any patching
-    cleanExistingHooks(kernelDir);
+    // Remove pre-existing KernelSU leftovers before any patching, but only
+    // when KernelSU integration is requested: a kernel tree may intentionally
+    // ship its own KernelSU integration that must not be stripped.
+    if (inputs.ksu) {
+      cleanExistingHooks(kernelDir);
+    }
 
     // Save state for post-action to use correct kernel directory
     core.saveState('KERNEL_DIR', kernelDir);

@@ -76,7 +76,7 @@ describe('extractDefconfigFromBoot', () => {
 
     await expect(
       extractDefconfigFromBoot('/kernel', 'arm64', 'defconfig', 'https://example.com/boot.img')
-    ).rejects.toThrow(/CONFIG_IKCONFIG_PROC/);
+    ).rejects.toThrow(/built without CONFIG_IKCONFIG\./);
   });
 
   it('throws when extract-ikconfig fails', async () => {
