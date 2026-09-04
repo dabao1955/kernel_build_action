@@ -1,0 +1,131 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { stripBlockRange, cleanExistingHooks } from '../src/hooks';
+
+vi.mock('@actions/core', () => ({
+  startGroup: vi.fn(),
+  endGroup: vi.fn(),
+  info: vi.fn(),
+  warning: vi.fn(),
+}));
+
+let tmpDir: string;
+
+beforeEach(() => {
+  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hooks-test-'));
+});
+
+afterEach(() => {
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+describe('stripBlockRange', () => {
+  it('removes ifdef block including its endif', () => {
+    const lines = [
+      'static int foo(void)',
+      '{',
+      '#ifdef CONFIG_KSU',
+      '\tksu_handle_foo();',
+      '#endif',
+      '\treturn 0;',
+      '}',
+    ];
+    expect(stripBlockRange(lines, /^\s*#\s*ifdef\s+CONFIG_KSU\s*$/)).toEqual([
+      'static int foo(void)',
+      '{',
+      '\treturn 0;',
+      '}',
+    ]);
+  });
+
+  it('does not match CONFIG_KSU_SUSFS blocks (exact macro match)', () => {
+    const lines = ['#ifdef CONFIG_KSU_SUSFS', '\tsusfs_hook();', '#endif', 'keep();'];
+    expect(stripBlockRange(lines, /^\s*#\s*ifdef\s+CONFIG_KSU\s*$/)).toEqual(lines);
+  });
+
+  it('leaves unrelated ifdefs untouched', () => {
+    const lines = ['#ifdef CONFIG_FOO', '\tbar();', '#endif'];
+    expect(stripBlockRange(lines, /^\s*#\s*ifdef\s+CONFIG_KSU\s*$/)).toEqual(lines);
+  });
+});
+
+describe('cleanExistingHooks', () => {
+  it('removes KernelSU dirs and hooks', () => {
+    // KernelSU directory
+    fs.mkdirSync(path.join(tmpDir, 'drivers', 'kernelsu'), { recursive: true });
+    fs.writeFileSync(path.join(tmpDir, 'drivers', 'kernelsu', 'Kconfig'), 'config KSU\n');
+
+    // Hooked source file
+    const execC = path.join(tmpDir, 'fs', 'exec.c');
+    fs.mkdirSync(path.dirname(execC), { recursive: true });
+    fs.writeFileSync(
+      execC,
+      [
+        'int do_execve(struct filename *filename)',
+        '{',
+        '#ifdef CONFIG_KSU',
+        '\tksu_handle_execveat(0, &filename, 0, 0, 0);',
+        '#endif',
+        '\treturn do_execveat_common(filename);',
+        '}',
+        '',
+      ].join('\n')
+    );
+
+    cleanExistingHooks(tmpDir);
+
+    // Directory removed
+    expect(fs.existsSync(path.join(tmpDir, 'drivers', 'kernelsu'))).toBe(false);
+
+    // KSU hook stripped
+    const execContent = fs.readFileSync(execC, 'utf-8');
+    expect(execContent).not.toContain('CONFIG_KSU');
+    expect(execContent).toContain('do_execveat_common');
+  });
+
+  it('leaves SuSFS integration untouched', () => {
+    const namespaceC = path.join(tmpDir, 'fs', 'namespace.c');
+    fs.mkdirSync(path.dirname(namespaceC), { recursive: true });
+    const original = [
+      'void mount(void)',
+      '{',
+      '#ifdef CONFIG_KSU_SUSFS',
+      '\tsusfs_mount();',
+      '#endif',
+      '#ifndef CONFIG_KSU_SUSFS',
+      '\torig_mount();',
+      '#else',
+      '\tsusfs_other();',
+      '#endif',
+      '}',
+      '',
+    ].join('\n');
+    fs.writeFileSync(namespaceC, original);
+
+    const susfsC = path.join(tmpDir, 'fs', 'susfs.c');
+    fs.writeFileSync(susfsC, '/* susfs */\n');
+    const fsMakefile = path.join(tmpDir, 'fs', 'Makefile');
+    fs.writeFileSync(
+      fsMakefile,
+      'obj-y += read_write.o\nobj-$(CONFIG_KSU_SUSFS) += susfs.o\n'
+    );
+
+    cleanExistingHooks(tmpDir);
+
+    // Everything SuSFS-related is preserved as-is
+    expect(fs.readFileSync(namespaceC, 'utf-8')).toBe(original);
+    expect(fs.existsSync(susfsC)).toBe(true);
+    expect(fs.readFileSync(fsMakefile, 'utf-8')).toContain('CONFIG_KSU_SUSFS');
+  });
+
+  it('is a no-op on a clean kernel tree', () => {
+    fs.mkdirSync(path.join(tmpDir, 'fs'), { recursive: true });
+    fs.writeFileSync(path.join(tmpDir, 'fs', 'exec.c'), 'int main(void)\n{\n\treturn 0;\n}\n');
+
+    expect(() => cleanExistingHooks(tmpDir)).not.toThrow();
+    expect(fs.existsSync(path.join(tmpDir, 'KernelSU'))).toBe(false);
+    expect(fs.readFileSync(path.join(tmpDir, 'fs', 'exec.c'), 'utf-8')).toContain('return 0;');
+  });
+});

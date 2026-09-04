@@ -23,8 +23,8 @@ inputs:
     required: false
     default: '1'
   config:
-    description: 'Name of the kernel configuration file to use'
-    required: true
+    description: 'Name of the kernel configuration file to use. Optional when config-from-boot is enabled (extracted config is written to this name, defaults to defconfig)'
+    required: false
     default: defconfig
   arch:
     description: 'Target CPU architecture for cross-compilation'
@@ -129,6 +129,22 @@ inputs:
     description: 'Enable BaseBandGuard support'
     required: false
     default: 'false'
+  bbg-block-boot:
+    description: 'Protect the boot partition against direct writes (requires bbg enabled)'
+    required: false
+    default: 'false'
+  nomount:
+    description: 'Enable NoMount support (https://github.com/maxsteeel/nomount)'
+    required: false
+    default: 'false'
+  config-from-boot:
+    description: 'Extract the defconfig from a stock boot image (requires bootimg-url) instead of using an in-tree defconfig'
+    required: false
+    default: 'false'
+  merge-configs:
+    description: 'JSON array of config fragments merged over the defconfig. Entries are https URLs or paths relative to the kernel source directory'
+    required: false
+    default: '[]'
   disable-lto:
     description: 'Disable Link Time Optimization (LTO)'
     required: false

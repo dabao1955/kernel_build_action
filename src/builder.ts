@@ -13,6 +13,8 @@ export interface BuildConfig {
   toolchain: ToolchainPaths;
   extraMakeArgs: string;
   useCcache: boolean;
+  /** Resolved local config fragment paths merged over the defconfig. */
+  configFragments?: string[];
 }
 
 /**
@@ -111,10 +113,17 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
   const extraArgs = parseExtraMakeArgs(config.extraMakeArgs);
   const safeExtraArgs = filterMakeArgs(extraArgs);
 
+  // Config fragments: when present, the defconfig goal is handled in a
+  // separate preparation stage (expand -> merge -> olddefconfig) and must
+  // not be part of the main build invocation, otherwise make would
+  // re-expand the defconfig and wipe the merged config.
+  const fragments = config.configFragments ?? [];
+  const hasFragments = fragments.length > 0;
+
   // Build make arguments (matches bash script exactly)
   const makeArgs = [
     `-j${os.cpus().length}`,
-    config.config,
+    ...(hasFragments ? [] : [config.config]),
     `ARCH=${config.arch}`,
     'O=out',
     'all',
@@ -166,6 +175,45 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
   if (config.useCcache) {
     core.info(`  USE_CCACHE=1`);
   }
+
+  // Prepare merged config when fragments are requested
+  if (hasFragments) {
+    core.startGroup('Merging config fragments');
+
+    const mergeConfigScript = path.join(config.kernelDir, 'scripts', 'kconfig', 'merge_config.sh');
+    if (!fs.existsSync(mergeConfigScript)) {
+      throw new Error(
+        `merge-configs requires scripts/kconfig/merge_config.sh in the kernel source (not found: ${mergeConfigScript})`
+      );
+    }
+
+    const stageEnv = { ...process.env, ...envVars } as { [key: string]: string };
+    const makeVarPrefix = makeCmdArgs.filter((arg) => arg.includes('='));
+
+    // Stage 1: expand the defconfig into out/.config
+    core.info(`Expanding defconfig: ${config.config}`);
+    await exec.exec('make', [...makeVarPrefix, `ARCH=${config.arch}`, 'O=out', config.config], {
+      cwd: config.kernelDir,
+      env: stageEnv,
+    });
+
+    // Stage 2: merge fragments over the expanded config
+    core.info(`Merging ${fragments.length} config fragment(s)`);
+    await exec.exec('bash', [mergeConfigScript, '-O', 'out', '-m', 'out/.config', ...fragments], {
+      cwd: config.kernelDir,
+      env: stageEnv,
+    });
+
+    // Stage 3: refresh the config
+    core.info('Running olddefconfig');
+    await exec.exec('make', [...makeVarPrefix, `ARCH=${config.arch}`, 'O=out', 'olddefconfig'], {
+      cwd: config.kernelDir,
+      env: stageEnv,
+    });
+
+    core.endGroup();
+  }
+
   core.info(`Make command: make ${makeCmdArgs.join(' ')}`);
 
   // Test if clang can be found in PATH

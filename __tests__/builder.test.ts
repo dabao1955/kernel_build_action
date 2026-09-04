@@ -161,6 +161,89 @@ describe('ToolchainPaths in BuildConfig', () => {
   });
 });
 
+describe('buildKernel with config fragments', () => {
+  const fragmentConfig = (): BuildConfig => ({
+    kernelDir: '/kernel',
+    arch: 'arm64',
+    config: 'vendor_defconfig',
+    toolchain: {},
+    extraMakeArgs: '',
+    useCcache: false,
+    configFragments: ['/kernel/out/config-fragments/fragment_0.config'],
+  });
+
+  it('runs expand -> merge -> olddefconfig before the main build', async () => {
+    vi.clearAllMocks();
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const result = await buildKernel(fragmentConfig());
+
+    expect(result).toBe(true);
+
+    // defconfig expansion stage
+    expect(exec.exec).toHaveBeenCalledWith(
+      'make',
+      expect.arrayContaining(['ARCH=arm64', 'O=out', 'vendor_defconfig']),
+      expect.objectContaining({ cwd: '/kernel' })
+    );
+    // fragment merge stage
+    expect(exec.exec).toHaveBeenCalledWith(
+      'bash',
+      expect.arrayContaining([
+        '/kernel/scripts/kconfig/merge_config.sh',
+        '-O',
+        'out',
+        '-m',
+        'out/.config',
+        '/kernel/out/config-fragments/fragment_0.config',
+      ]),
+      expect.objectContaining({ cwd: '/kernel' })
+    );
+    // olddefconfig stage
+    expect(exec.exec).toHaveBeenCalledWith(
+      'make',
+      expect.arrayContaining(['ARCH=arm64', 'O=out', 'olddefconfig']),
+      expect.objectContaining({ cwd: '/kernel' })
+    );
+
+    // the main build must NOT re-expand the defconfig (that would wipe the
+    // merged config)
+    const makeCalls = vi.mocked(exec.exec).mock.calls.filter((call) => call[0] === 'make');
+    const mainCall = makeCalls.find((call) => call[1]?.some((arg) => arg.startsWith('-j')));
+    expect(mainCall?.[1]).toContain('all');
+    expect(mainCall?.[1]).not.toContain('vendor_defconfig');
+  });
+
+  it('throws when the kernel source has no merge_config.sh', async () => {
+    vi.clearAllMocks();
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+
+    await expect(buildKernel(fragmentConfig())).rejects.toThrow(/merge_config\.sh/);
+  });
+
+  it('keeps the single-shot make invocation when no fragments are given', async () => {
+    vi.clearAllMocks();
+    vi.mocked(fs.mkdirSync).mockImplementation(() => undefined);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    const cfg = fragmentConfig();
+    delete cfg.configFragments;
+
+    await buildKernel(cfg);
+
+    const makeCalls = vi.mocked(exec.exec).mock.calls.filter(
+      (call) => call[0] === 'make' && call[1]?.includes('all')
+    );
+    expect(makeCalls[0][1]).toContain('vendor_defconfig');
+    expect(
+      vi.mocked(exec.exec).mock.calls.some((call) => call[0] === 'bash')
+    ).toBe(false);
+  });
+});
+
 describe('buildKernel', () => {
   it('throws error for config starting with hyphen', async () => {
     const config: BuildConfig = {

@@ -5,6 +5,8 @@ import {
   setupReKernel,
   setupNetHunter,
   setupLXC,
+  setupNoMount,
+  detectKsuFork,
 } from '../src/patches';
 import * as fs from 'fs';
 import * as core from '@actions/core';
@@ -404,6 +406,183 @@ describe('setupBBG', () => {
     await setupBBG('/kernel', '/kernel/.config');
 
     expect(fs.appendFileSync).toHaveBeenCalledWith('/kernel/.config', 'CONFIG_BBG=y\n');
+  });
+});
+
+describe('detectKsuFork', () => {
+  it('detects known forks from github.com URLs', () => {
+    expect(detectKsuFork('https://github.com/SukiSU-Ultra/SukiSU-Ultra')?.id).toBe('sukisu');
+    expect(detectKsuFork('https://github.com/backslashxx/KernelSU')?.id).toBe('xxksu');
+    expect(detectKsuFork('https://github.com/rsuntk/KernelSU')?.id).toBe('rsuntk');
+    expect(detectKsuFork('https://github.com/KernelSU-Next/KernelSU-Next')?.id).toBe('next');
+    expect(detectKsuFork('https://github.com/ReSukiSU/ReSukiSU')?.id).toBe('resukisu');
+  });
+
+  it('handles .git suffix and raw.githubusercontent.com URLs', () => {
+    expect(detectKsuFork('https://github.com/ShirkNeko/SukiSU-Ultra.git')?.id).toBe('sukisu');
+    expect(
+      detectKsuFork('https://raw.githubusercontent.com/cyberc3dr/KernelSU/main/kernel/setup.sh')?.id
+    ).toBe('rsuntk-susfs');
+  });
+
+  it('returns undefined for unknown or invalid URLs', () => {
+    expect(detectKsuFork('https://github.com/someone/unknown-kernel')).toBeUndefined();
+    expect(detectKsuFork('not-a-url')).toBeUndefined();
+  });
+});
+
+describe('setupKernelSU fork strategies', () => {
+  beforeEach(() => {
+    // appendFileSync implementations leak across tests in this file
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+  });
+
+  it('uses fork defaults for SukiSU-Ultra when version is not pinned', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      { version: 'main', lkm: false, other: true, url: 'https://github.com/SukiSU-Ultra/SukiSU-Ultra' },
+      { version: 5, patchlevel: 4, sublevel: 100, isGki: false }
+    );
+
+    // setup.sh fetched from the fork's setup branch (main)
+    expect(exec.exec).toHaveBeenCalledWith(
+      'curl',
+      expect.arrayContaining([
+        '-sSLf',
+        'https://github.com/SukiSU-Ultra/SukiSU-Ultra/raw/main/kernel/setup.sh',
+        '-o',
+        '/kernel/ksu_setup.sh',
+      ])
+    );
+    // install ref falls back to the fork default (builtin)
+    expect(exec.exec).toHaveBeenCalledWith('bash', ['ksu_setup.sh', 'builtin'], {
+      cwd: '/kernel',
+    });
+    // fork tweak applied
+    expect(fs.appendFileSync).toHaveBeenCalledWith('/kernel/.config', 'CONFIG_KSU_SUSFS=n\n');
+  });
+
+  it('respects a pinned ksu-version over fork defaults', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      { version: 'v1.0.0', lkm: false, other: true, url: 'https://github.com/KernelSU-Next/KernelSU-Next.git' },
+      { version: 5, patchlevel: 15, sublevel: 100, isGki: true }
+    );
+
+    expect(exec.exec).toHaveBeenCalledWith(
+      'curl',
+      expect.arrayContaining([
+        '-sSLf',
+        'https://github.com/KernelSU-Next/KernelSU-Next/raw/v1.0.0/kernel/setup.sh',
+        '-o',
+        '/kernel/ksu_setup.sh',
+      ])
+    );
+    expect(exec.exec).toHaveBeenCalledWith('bash', ['ksu_setup.sh', 'v1.0.0'], {
+      cwd: '/kernel',
+    });
+  });
+
+  it('switches KernelSU-Next to legacy branch and applies workaround on <5.10 kernels', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      { version: 'main', lkm: false, other: true, url: 'https://github.com/KernelSU-Next/KernelSU-Next' },
+      { version: 4, patchlevel: 9, sublevel: 100, isGki: false }
+    );
+
+    expect(exec.exec).toHaveBeenCalledWith('bash', ['ksu_setup.sh', 'legacy'], {
+      cwd: '/kernel',
+    });
+    expect(fs.appendFileSync).toHaveBeenCalledWith('/kernel/.config', 'CONFIG_KSU_MANUAL_HOOK=y\n');
+    expect(fs.appendFileSync).toHaveBeenCalledWith(
+      '/kernel/.config',
+      'CONFIG_KSU_ALLOWLIST_WORKAROUND=y\n'
+    );
+  });
+
+  it('warns and falls back to generic integration for unknown fork URLs', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      { version: 'v0.9.3', lkm: false, other: true, url: 'https://github.com/someone/unknown-fork' },
+      { version: 5, patchlevel: 4, sublevel: 100, isGki: false }
+    );
+
+    expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('does not match a known KernelSU fork'));
+    expect(exec.exec).toHaveBeenCalledWith(
+      'curl',
+      expect.arrayContaining(['https://github.com/someone/unknown-fork/raw/v0.9.3/kernel/setup.sh'])
+    );
+    expect(fs.appendFileSync).not.toHaveBeenCalledWith('/kernel/.config', expect.stringContaining('MANUAL_HOOK'));
+  });
+});
+
+describe('setupBBG block-boot option', () => {
+  beforeEach(() => {
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+  });
+
+  it('appends CONFIG_BBG_BLOCK_BOOT when blockBoot is enabled', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await setupBBG('/kernel', '/kernel/.config', { blockBoot: true });
+
+    expect(fs.appendFileSync).toHaveBeenCalledWith('/kernel/.config', 'CONFIG_BBG_BLOCK_BOOT=y\n');
+  });
+
+  it('does not append CONFIG_BBG_BLOCK_BOOT by default', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await setupBBG('/kernel', '/kernel/.config');
+
+    expect(fs.appendFileSync).not.toHaveBeenCalledWith(
+      '/kernel/.config',
+      'CONFIG_BBG_BLOCK_BOOT=y\n'
+    );
+  });
+});
+
+describe('setupNoMount', () => {
+  beforeEach(() => {
+    vi.mocked(fs.appendFileSync).mockImplementation(() => undefined);
+  });
+
+  it('downloads and runs the upstream setup script and enables the config', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    await setupNoMount('/kernel', '/kernel/.config');
+
+    expect(exec.exec).toHaveBeenCalledWith(
+      'curl',
+      expect.arrayContaining([
+        '-sSLf',
+        'https://github.com/maxsteeel/nomount/raw/dev/kernel/setup.sh',
+        '-o',
+        '/kernel/nomount_setup.sh',
+      ])
+    );
+    expect(exec.exec).toHaveBeenCalledWith('bash', ['/kernel/nomount_setup.sh'], {
+      cwd: '/kernel',
+    });
+    expect(fs.appendFileSync).toHaveBeenCalledWith('/kernel/.config', 'CONFIG_NOMOUNT=y\n');
   });
 });
 

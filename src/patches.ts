@@ -6,6 +6,135 @@ import { getActionPath, fileExists } from './utils';
 import type { KernelVersion } from './kernel';
 
 /**
+ * Config tweak appended to the defconfig for a specific KernelSU fork.
+ */
+interface KsuConfigTweak {
+  option: string;
+  value: string;
+  /** Optional kernel-version condition. */
+  when?: (kernelVersion: KernelVersion) => boolean;
+}
+
+/**
+ * Integration strategy for a known third-party KernelSU fork,
+ * selected automatically from the ksu-url input.
+ */
+export interface KsuForkStrategy {
+  id: string;
+  label: string;
+  /** Branch that hosts kernel/setup.sh for raw download. */
+  setupBranch: string;
+  /** Ref passed to setup.sh when the user did not pin ksu-version. */
+  defaultInstallRef: string | ((kernelVersion: KernelVersion) => string);
+  /** defconfig tweaks applied after integration. */
+  configTweaks: KsuConfigTweak[];
+}
+
+function isKernelBelow(version: number, patchlevel: number, kv: KernelVersion): boolean {
+  return kv.version < version || (kv.version === version && kv.patchlevel < patchlevel);
+}
+
+/** Known forks, keyed by lowercase `owner/repo`. */
+const KSU_FORKS: Record<string, KsuForkStrategy> = {
+  'backslashxx/kernelsu': {
+    id: 'xxksu',
+    label: 'KernelSU (xxksu)',
+    setupBranch: 'master',
+    defaultInstallRef: 'master',
+    configTweaks: [{ option: 'CONFIG_KSU_KPROBES_KSUD', value: 'n' }],
+  },
+  'rsuntk/kernelsu': {
+    id: 'rsuntk',
+    label: 'KernelSU (rsuntk)',
+    setupBranch: 'main',
+    defaultInstallRef: 'main',
+    configTweaks: [{ option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' }],
+  },
+  'cyberc3dr/kernelsu': {
+    id: 'rsuntk-susfs',
+    label: 'KernelSU (rsuntk SuSFS fork)',
+    setupBranch: 'main',
+    defaultInstallRef: 'main',
+    configTweaks: [{ option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' }],
+  },
+  'sukisu-ultra/sukisu-ultra': {
+    id: 'sukisu',
+    label: 'SukiSU-Ultra',
+    setupBranch: 'main',
+    defaultInstallRef: 'builtin',
+    configTweaks: [{ option: 'CONFIG_KSU_SUSFS', value: 'n' }],
+  },
+  'shirkneko/sukisu-ultra': {
+    id: 'sukisu',
+    label: 'SukiSU-Ultra',
+    setupBranch: 'main',
+    defaultInstallRef: 'builtin',
+    configTweaks: [{ option: 'CONFIG_KSU_SUSFS', value: 'n' }],
+  },
+  'kernelsu-next/kernelsu-next': {
+    id: 'next',
+    label: 'KernelSU-Next',
+    setupBranch: 'main',
+    defaultInstallRef: (kv) => (isKernelBelow(5, 10, kv) ? 'legacy' : 'main'),
+    configTweaks: [
+      { option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' },
+      {
+        option: 'CONFIG_KSU_ALLOWLIST_WORKAROUND',
+        value: 'y',
+        when: (kv) => isKernelBelow(5, 10, kv),
+      },
+    ],
+  },
+  'resukisu/resukisu': {
+    id: 'resukisu',
+    label: 'ReSukiSU',
+    setupBranch: 'main',
+    defaultInstallRef: 'main',
+    configTweaks: [{ option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' }],
+  },
+};
+
+/**
+ * Detect a known KernelSU fork from a GitHub URL.
+ * Accepts `github.com/owner/repo(.git)` and
+ * `raw.githubusercontent.com/owner/repo/...` forms.
+ */
+export function detectKsuFork(url: string): KsuForkStrategy | undefined {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return undefined;
+  }
+
+  const segments = parsed.pathname
+    .replace(/\.git$/, '')
+    .split('/')
+    .filter((segment) => segment.length > 0);
+  if (segments.length < 2) {
+    return undefined;
+  }
+
+  const key = `${segments[0]}/${segments[1]}`.toLowerCase();
+  return KSU_FORKS[key];
+}
+
+/** Apply fork-specific defconfig tweaks. */
+function applyKsuForkTweaks(
+  fork: KsuForkStrategy,
+  configPath: string,
+  kernelVersion: KernelVersion
+): void {
+  for (const tweak of fork.configTweaks) {
+    if (tweak.when && !tweak.when(kernelVersion)) {
+      continue;
+    }
+    fs.appendFileSync(configPath, `${tweak.option}=${tweak.value}\n`);
+    core.info(`Applied ${fork.label} tweak: ${tweak.option}=${tweak.value}`);
+  }
+}
+
+/**
  * Setup KernelSU
  */
 export async function setupKernelSU(
@@ -39,10 +168,15 @@ export async function setupKernelSU(
   // Download setup script
   const setupScriptPath = path.join(kernelDir, 'ksu_setup.sh');
   let ksuUrl: string;
+  let forkStrategy: KsuForkStrategy | undefined;
+  let versionPinned = false;
 
-  if (options.other && options.url) {
+  // Normalize user URL (strip trailing slashes and .git suffix)
+  const normalizedUrl = options.url?.replace(/\/+$/, '').replace(/\.git$/, '');
+
+  if (options.other && normalizedUrl) {
     // Validate ksu-url uses HTTPS and comes from trusted GitHub domain
-    if (!options.url.startsWith('https://')) {
+    if (!normalizedUrl.startsWith('https://')) {
       throw new Error('ksu-url must use HTTPS');
     }
     const trustedDomains = [
@@ -50,11 +184,26 @@ export async function setupKernelSU(
       'raw.githubusercontent.com',
       'gist.githubusercontent.com',
     ];
-    const urlDomain = new URL(options.url).hostname;
+    const urlDomain = new URL(normalizedUrl).hostname;
     if (!trustedDomains.includes(urlDomain)) {
       throw new Error(`ksu-url must be from trusted GitHub domain: ${trustedDomains.join(', ')}`);
     }
-    ksuUrl = `${options.url}/raw/${options.version}/kernel/setup.sh`;
+
+    forkStrategy = detectKsuFork(normalizedUrl);
+    // 'main' is the ksu-version default, treat it as "not pinned"
+    versionPinned = options.version !== '' && options.version !== 'main';
+
+    if (forkStrategy) {
+      core.info(`Detected known KernelSU fork: ${forkStrategy.label}`);
+      const setupRef = versionPinned ? options.version : forkStrategy.setupBranch;
+      ksuUrl = `${normalizedUrl}/raw/${setupRef}/kernel/setup.sh`;
+    } else {
+      core.warning(
+        `ksu-url does not match a known KernelSU fork (${Object.keys(KSU_FORKS).join(', ')}); ` +
+          'falling back to generic integration without fork-specific tweaks'
+      );
+      ksuUrl = `${normalizedUrl}/raw/${options.version}/kernel/setup.sh`;
+    }
   } else {
     ksuUrl = `https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh`;
   }
@@ -64,7 +213,13 @@ export async function setupKernelSU(
 
   // Determine version
   let kver = options.version;
-  if (!kernelVersion.isGki && !options.other) {
+  if (options.other && forkStrategy && !versionPinned) {
+    kver =
+      typeof forkStrategy.defaultInstallRef === 'function'
+        ? forkStrategy.defaultInstallRef(kernelVersion)
+        : forkStrategy.defaultInstallRef;
+    core.info(`${forkStrategy.label}: using default ref '${kver}' (pin ksu-version to override)`);
+  } else if (!kernelVersion.isGki && !options.other) {
     core.warning(`Warning: KernelSU has dropped support for non-GKI kernels since 0.9.5.`);
     core.info('Forcing switch to v0.9.5');
     kver = 'v0.9.5';
@@ -114,13 +269,24 @@ export async function setupKernelSU(
     }
   }
 
+  // Apply fork-specific defconfig tweaks
+  if (forkStrategy) {
+    applyKsuForkTweaks(forkStrategy, configPath, kernelVersion);
+  }
+
   core.endGroup();
 }
 
 /**
  * Setup BBG (BaseBandGuard)
  */
-export async function setupBBG(kernelDir: string, configPath: string): Promise<void> {
+export async function setupBBG(
+  kernelDir: string,
+  configPath: string,
+  options?: {
+    blockBoot?: boolean;
+  }
+): Promise<void> {
   core.startGroup('Initializing BBG');
 
   // Download and run setup script
@@ -148,6 +314,34 @@ export async function setupBBG(kernelDir: string, configPath: string): Promise<v
 
   // Add to config
   fs.appendFileSync(configPath, 'CONFIG_BBG=y\n');
+
+  // Optionally protect the boot partition against direct writes
+  if (options?.blockBoot) {
+    fs.appendFileSync(configPath, 'CONFIG_BBG_BLOCK_BOOT=y\n');
+    core.info('Enabled CONFIG_BBG_BLOCK_BOOT');
+  }
+
+  core.endGroup();
+}
+
+/**
+ * Setup NoMount (https://github.com/maxsteeel/nomount)
+ */
+export async function setupNoMount(kernelDir: string, configPath: string): Promise<void> {
+  core.startGroup('Initializing NoMount');
+
+  // Download and run upstream setup script
+  const nomountSetupPath = path.join(kernelDir, 'nomount_setup.sh');
+  await exec.exec('curl', [
+    '-sSLf',
+    'https://github.com/maxsteeel/nomount/raw/dev/kernel/setup.sh',
+    '-o',
+    nomountSetupPath,
+  ]);
+  await exec.exec('bash', [nomountSetupPath], { cwd: kernelDir });
+
+  // Add to config
+  fs.appendFileSync(configPath, 'CONFIG_NOMOUNT=y\n');
 
   core.endGroup();
 }

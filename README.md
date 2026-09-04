@@ -111,13 +111,13 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | vendor-dir | false | Directory name for vendor kernel source | vendor |
 | kernel-branch | false | Branch name of kernel source code (default = main) | main |
 | vendor-branch | false | Branch name of vendor kernel source code (default = main) | main |
-| config | true | Specific kernel config file to compile (default = defconfig) | defconfig |
+| config | false | Specific kernel config file to compile (default = defconfig). Optional when `config-from-boot` is enabled — the extracted config is written to this name | defconfig |
 | arch | true | CPU architecture (default = arm64) | arm64 |
 | android-version | true | Android version for AOSP toolchain (Ignore if you want to use latest AOSP clang or use other clang) | 12 |
 | ksu | false | Integrate KernelSU on kernel build | true |
 | ksu-version | false | KernelSU version (default = v0.9.5) | v0.9.5 |
 | ksu-lkm | false | Build KernelSU as kernel module (may fail on non-GKI devices) | true |
-| ksu-other | false | Use third-party KernelSU fork | false |
+| ksu-other | false | Use third-party KernelSU fork. Well-known forks (SukiSU-Ultra, KernelSU-Next, ReSukiSU, rsuntk, xxksu) are auto-detected from `ksu-url` and get fork-specific defaults and config tweaks | false |
 | ksu-url | false | URL of third-party KernelSU fork (if you enable `ksu-other` flag) | https://github.com/username/KernelSU/ |
 | rekernel | false | Enable Re-Kernel support | true |
 | disable-lto | false | Disable [Link Time Optimization](https://llvm.org/docs/LinkTimeOptimization.html) support | false |
@@ -127,6 +127,10 @@ Or use the [preset workflow file](https://github.com/dabao1955/kernel_build_acti
 | nethunter-patch | false | Apply patch for Kali NetHunter support | false |
 | kvm | false | Enable [KVM (Kernel Virtual Machine)](https://linux-kvm.org/page/Main_Page) support | false |
 | bbg | false | Enable [BaseBandGuard](https://github.com/vc-teahouse/Baseband-guard) support | false |
+| bbg-block-boot | false | Protect the boot partition against direct writes (requires `bbg`) | false |
+| nomount | false | Enable [NoMount](https://github.com/maxsteeel/nomount) support | false |
+| config-from-boot | false | Extract the defconfig from a stock boot image via `extract-ikconfig` instead of using an in-tree defconfig (requires `bootimg-url`; the stock kernel must be built with `CONFIG_IKCONFIG`) | false |
+| merge-configs | false | JSON array of config fragments merged over the defconfig with `scripts/kconfig/merge_config.sh`. Entries are https URLs or paths relative to the kernel source directory | ["arch/arm64/configs/my.config"] |
 | ccache | false | Enable ccache (clang only) to speed up kernel compilation | false |
 | aosp-gcc | false | Use AOSP GCC toolchain to compile the kernel (Enable when using AOSP clang toolchain) | false |
 | other-gcc32-url | false | URL of custom GCC arm32 toolchain (Supports .tar.gz, .tar.xz, .tar.bz2, .gz, .xz, .bz2, .zip and .git formats) | https://github.com/username/gcc |

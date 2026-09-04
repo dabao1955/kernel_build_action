@@ -43,6 +43,7 @@
     "**/glob/**/brace-expansion": "5.0.9",
     "**/@eslint/config-array/**/brace-expansion": "5.0.9",
     "**/@typescript-eslint/**/brace-expansion": "5.0.9",
-    "**/eslint/**/brace-expansion": "5.0.9"
+    "**/eslint/**/brace-expansion": "5.0.9",
+    "**/eslint/**/@humanfs/node": "0.16.8"
   }
 }

@@ -31,7 +31,17 @@ import {
   type KernelConfig,
 } from './kernel';
 import { disableLto, enableKvm } from './config';
-import { setupKernelSU, setupBBG, setupReKernel, setupNetHunter, setupLXC } from './patches';
+import {
+  setupKernelSU,
+  setupBBG,
+  setupReKernel,
+  setupNetHunter,
+  setupLXC,
+  setupNoMount,
+} from './patches';
+import { cleanExistingHooks } from './hooks';
+import { extractDefconfigFromBoot } from './defconfig';
+import { resolveConfigFragments } from './fragments';
 import { buildKernel, isBuildSuccessful } from './builder';
 import { packageKernel } from './packager';
 import { uploadArtifacts } from './artifact';
@@ -56,7 +66,7 @@ async function main(): Promise<void> {
       kernelBranch: core.getInput('kernel-branch') || 'main',
       kernelDir: core.getInput('kernel-dir') || 'kernel',
       depth: core.getInput('depth') || '1',
-      config: core.getInput('config', { required: true }) || 'defconfig',
+      config: core.getInput('config') || 'defconfig',
       arch: core.getInput('arch', { required: true }) || 'arm64',
       androidVersion: core.getInput('android-version') || '',
       vendor: core.getBooleanInput('vendor'),
@@ -84,6 +94,10 @@ async function main(): Promise<void> {
       lxcPatch: core.getBooleanInput('lxc-patch'),
       kvm: core.getBooleanInput('kvm'),
       bbg: core.getBooleanInput('bbg'),
+      bbgBlockBoot: core.getBooleanInput('bbg-block-boot'),
+      nomount: core.getBooleanInput('nomount'),
+      configFromBoot: core.getBooleanInput('config-from-boot'),
+      mergeConfigs: core.getInput('merge-configs') || '[]',
       disableLto: core.getBooleanInput('disable-lto'),
       ccache: core.getBooleanInput('ccache'),
       anykernel3: core.getBooleanInput('anykernel3'),
@@ -210,6 +224,9 @@ async function main(): Promise<void> {
       }
     }
 
+    // Remove pre-existing KernelSU leftovers before any patching
+    cleanExistingHooks(kernelDir);
+
     // Save state for post-action to use correct kernel directory
     core.saveState('KERNEL_DIR', kernelDir);
     core.saveState('IS_LOCAL_KERNEL', isLocal.toString());
@@ -221,6 +238,11 @@ async function main(): Promise<void> {
 
     // Setup mkdtboimg
     await setupMkdtboimg(kernelDir, actionPath);
+
+    // Optionally recover the defconfig from a stock boot image
+    if (inputs.configFromBoot) {
+      await extractDefconfigFromBoot(kernelDir, inputs.arch, inputs.config, inputs.bootimgUrl);
+    }
 
     // Get config path
     const configPath = getConfigPath(kernelDir, inputs.arch, inputs.config);
@@ -244,7 +266,11 @@ async function main(): Promise<void> {
     }
 
     if (inputs.bbg) {
-      await setupBBG(kernelDir, configPath);
+      await setupBBG(kernelDir, configPath, { blockBoot: inputs.bbgBlockBoot });
+    }
+
+    if (inputs.nomount) {
+      await setupNoMount(kernelDir, configPath);
     }
 
     if (inputs.rekernel) {
@@ -267,6 +293,9 @@ async function main(): Promise<void> {
       await setupLXC(kernelDir, configPath, { patch: inputs.lxcPatch });
     }
 
+    // Resolve config fragments (download URLs, validate local paths)
+    const configFragments = await resolveConfigFragments(inputs.mergeConfigs, kernelDir);
+
     // Build kernel
     const buildSuccess = await buildKernel({
       kernelDir,
@@ -275,6 +304,7 @@ async function main(): Promise<void> {
       toolchain: toolchainConfig,
       extraMakeArgs: inputs.extraMakeArgs,
       useCcache: inputs.ccache,
+      configFragments,
     });
 
     if (!buildSuccess) {
