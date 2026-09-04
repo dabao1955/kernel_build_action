@@ -68,6 +68,13 @@ jobs:
           for pin in "${pins[@]}"; do
             key="${pin%%=*}"
             sha="${pin##*=}"
+            # The count check above misses a *replaced* fork key (same total,
+            # unknown key); guard the lookup so we fail with the intended
+            # map-update error instead of an unbound-variable abort.
+            if [[ -z "${TRACK[$key]:-}" ]]; then
+              echo "::error::No branch mapping for '${key}' in the TRACK map of this workflow."
+              exit 1
+            fi
             read -r display branch <<< "${TRACK[$key]}"
             head="$(gh api "repos/${display}/commits/${branch}" --jq .sha)"
             if [[ "$head" != "$sha" ]]; then

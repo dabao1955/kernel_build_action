@@ -98,6 +98,15 @@ describe('setupKernelSU', () => {
     }, kernelVersion)).rejects.toThrow('ksu-url must be from trusted GitHub domain');
   });
 
+  it('throws error when ksu-url does not point to a repository', async () => {
+    await expect(setupKernelSU('/kernel', '/kernel/.config', {
+      version: 'main',
+      lkm: false,
+      other: true,
+      url: 'https://github.com/owner',
+    }, kernelVersion)).rejects.toThrow('must point to a GitHub repository');
+  });
+
   it('accepts trusted GitHub domains', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(false);
     vi.mocked(exec.exec).mockResolvedValue(0);
@@ -510,6 +519,41 @@ describe('setupKernelSU fork strategies', () => {
       '/kernel/.config',
       'CONFIG_KSU_ALLOWLIST_WORKAROUND=y\n'
     );
+  });
+
+  it('builds the setup URL from the repository base for file URLs', async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    vi.mocked(exec.exec).mockResolvedValue(0);
+
+    // raw.githubusercontent.com file URL, github.com blob URL and a .git
+    // suffix with trailing slash must all reduce to the same repository base
+    const urlForms = [
+      'https://raw.githubusercontent.com/rsuntk/KernelSU/main/kernel/setup.sh',
+      'https://github.com/rsuntk/KernelSU/blob/main/kernel/setup.sh',
+      'https://github.com/rsuntk/KernelSU.git/',
+    ];
+    for (const url of urlForms) {
+      vi.clearAllMocks();
+      vi.mocked(fs.existsSync).mockReturnValue(false);
+      vi.mocked(exec.exec).mockResolvedValue(0);
+
+      await setupKernelSU(
+        '/kernel',
+        '/kernel/.config',
+        { version: 'main', lkm: false, other: true, url },
+        { version: 5, patchlevel: 15, sublevel: 100, isGki: true }
+      );
+
+      expect(exec.exec).toHaveBeenCalledWith(
+        'curl',
+        expect.arrayContaining([
+          '-sSLf',
+          `https://github.com/rsuntk/KernelSU/raw/648e5988cf421172769f80ce07f86331b548c053/kernel/setup.sh`,
+          '-o',
+          '/kernel/ksu_setup.sh',
+        ])
+      );
+    }
   });
 
   it('warns and falls back to generic integration for unknown fork URLs', async () => {

@@ -124,6 +124,48 @@ export function detectKsuFork(url: string): KsuForkStrategy | undefined {
   return KSU_FORKS[key];
 }
 
+/** GitHub domains accepted for the ksu-url input. */
+const TRUSTED_KSU_DOMAINS = [
+  'github.com',
+  'raw.githubusercontent.com',
+  'gist.githubusercontent.com',
+];
+
+/**
+ * Validate ksu-url and reduce it to a canonical
+ * `https://github.com/<owner>/<repo>` repository base.
+ *
+ * Accepts repository URLs (with or without a `.git` suffix, optionally
+ * followed by `/tree/...` or `/blob/...` paths) as well as
+ * `raw.githubusercontent.com` file URLs, so the setup-script URL is always
+ * built from the repository base instead of duplicating a file path.
+ */
+export function normalizeKsuUrl(url: string): string {
+  if (!url.startsWith('https://')) {
+    throw new Error('ksu-url must use HTTPS');
+  }
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error('ksu-url must be a valid URL');
+  }
+  if (!TRUSTED_KSU_DOMAINS.includes(parsed.hostname)) {
+    throw new Error(
+      `ksu-url must be from trusted GitHub domain: ${TRUSTED_KSU_DOMAINS.join(', ')}`
+    );
+  }
+  const segments = parsed.pathname
+    .replace(/\/+$/, '')
+    .replace(/\.git$/, '')
+    .split('/')
+    .filter((segment) => segment.length > 0);
+  if (segments.length < 2) {
+    throw new Error('ksu-url must point to a GitHub repository (owner/repo)');
+  }
+  return `https://github.com/${segments[0]}/${segments[1]}`;
+}
+
 /** Apply fork-specific defconfig tweaks. */
 function applyKsuForkTweaks(
   fork: KsuForkStrategy,
@@ -176,38 +218,24 @@ export async function setupKernelSU(
   let forkStrategy: KsuForkStrategy | undefined;
   let versionPinned = false;
 
-  // Normalize user URL (strip trailing slashes and .git suffix)
-  const normalizedUrl = options.url?.replace(/\/+$/, '').replace(/\.git$/, '');
+  if (options.other && options.url) {
+    // Validate ksu-url and reduce it to a canonical repository base URL.
+    const repoUrl = normalizeKsuUrl(options.url);
 
-  if (options.other && normalizedUrl) {
-    // Validate ksu-url uses HTTPS and comes from trusted GitHub domain
-    if (!normalizedUrl.startsWith('https://')) {
-      throw new Error('ksu-url must use HTTPS');
-    }
-    const trustedDomains = [
-      'github.com',
-      'raw.githubusercontent.com',
-      'gist.githubusercontent.com',
-    ];
-    const urlDomain = new URL(normalizedUrl).hostname;
-    if (!trustedDomains.includes(urlDomain)) {
-      throw new Error(`ksu-url must be from trusted GitHub domain: ${trustedDomains.join(', ')}`);
-    }
-
-    forkStrategy = detectKsuFork(normalizedUrl);
+    forkStrategy = detectKsuFork(repoUrl);
     // 'main' is the ksu-version default, treat it as "not pinned"
     versionPinned = options.version !== '' && options.version !== 'main';
 
     if (forkStrategy) {
       core.info(`Detected known KernelSU fork: ${forkStrategy.label}`);
       const setupRef = versionPinned ? options.version : forkStrategy.setupSha;
-      ksuUrl = `${normalizedUrl}/raw/${setupRef}/kernel/setup.sh`;
+      ksuUrl = `${repoUrl}/raw/${setupRef}/kernel/setup.sh`;
     } else {
       core.warning(
         `ksu-url does not match a known KernelSU fork (${Object.keys(KSU_FORKS).join(', ')}); ` +
           'falling back to generic integration without fork-specific tweaks'
       );
-      ksuUrl = `${normalizedUrl}/raw/${options.version}/kernel/setup.sh`;
+      ksuUrl = `${repoUrl}/raw/${options.version}/kernel/setup.sh`;
     }
   } else {
     ksuUrl = `https://raw.githubusercontent.com/tiann/KernelSU/${KSU_UPSTREAM_SHA}/kernel/setup.sh`;
