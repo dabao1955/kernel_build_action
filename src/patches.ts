@@ -48,7 +48,7 @@ const KSU_FORKS: Record<string, KsuForkStrategy> = {
   'backslashxx/kernelsu': {
     id: 'xxksu',
     label: 'KernelSU (xxksu)',
-    setupSha: '76fecfc35b1551ef68ca6e46d8a9873c35064d86',
+    setupSha: 'a13436ca7befd8ea62baeaec82b8e2d2d285a2bc',
     defaultInstallRef: 'master',
     configTweaks: [{ option: 'CONFIG_KSU_KPROBES_KSUD', value: 'n' }],
   },
@@ -76,7 +76,7 @@ const KSU_FORKS: Record<string, KsuForkStrategy> = {
   'kernelsu-next/kernelsu-next': {
     id: 'next',
     label: 'KernelSU-Next',
-    setupSha: '36aa55c521e509449bfe48bae0ab8c397174c1cb',
+    setupSha: '2482c56952ea36ee13809058c279a2dce075113f',
     defaultInstallRef: (kv) => (isKernelBelow(5, 10, kv) ? 'legacy' : 'main'),
     configTweaks: [
       { option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' },
@@ -90,14 +90,14 @@ const KSU_FORKS: Record<string, KsuForkStrategy> = {
   'resukisu/resukisu': {
     id: 'resukisu',
     label: 'ReSukiSU',
-    setupSha: '9d0ff6aea9e25fc7dd26f4643175a41f68375e5e',
+    setupSha: 'f1dd81dc96d7f3f6691e6ac8b50fba9ae8a2f17c',
     defaultInstallRef: 'main',
     configTweaks: [{ option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' }],
   },
 };
 
 /** Upstream KernelSU revision pinned for downloading kernel/setup.sh. */
-const KSU_UPSTREAM_SHA = '3c1240625655978f319a98398031100b80e9da7c';
+const KSU_UPSTREAM_SHA = 'dfadc083342d3d4871cbbb0f010af5da2c3e5630';
 
 /**
  * Detect a known KernelSU fork from a GitHub URL.
@@ -367,7 +367,7 @@ export async function setupNoMount(kernelDir: string, configPath: string): Promi
   const nomountSetupPath = path.join(kernelDir, 'nomount_setup.sh');
   await exec.exec('curl', [
     '-sSLf',
-    'https://github.com/maxsteeel/nomount/raw/2d3863b036d69fd587585ee0cdde2560d983beb8/kernel/setup.sh',
+    'https://github.com/maxsteeel/nomount/raw/9122a0bf5705e50d9a0ba12ef662413028f3a877/kernel/setup.sh',
     '-o',
     nomountSetupPath,
   ]);
