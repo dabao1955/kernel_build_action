@@ -23,9 +23,9 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.12",
     "@eslint/js": "^10.0.0",
-    "@types/node": "^26.4.1",
-    "@typescript-eslint/eslint-plugin": "^8.69.0",
-    "@typescript-eslint/parser": "^8.69.0",
+    "@types/node": "^26.5.0",
+    "@typescript-eslint/eslint-plugin": "^8.70.0",
+    "@typescript-eslint/parser": "^8.70.0",
     "@vitest/coverage-v8": "4.1.11",
     "esbuild": "^0.28.2",
     "eslint": "^10.10.0",
