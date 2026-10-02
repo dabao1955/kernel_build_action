@@ -22,20 +22,20 @@
     jwt-decode "^4.0.0"
     unzip-stream "^0.3.1"
 
-"@actions/cache@^6.2.0":
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/@actions/cache/-/cache-6.2.0.tgz#23dc34451640a43db99466f06c5391ab94e6c044"
-  integrity sha512-Nv0xWRmbxfDbAn/70flO/F6tj2Nv4XTYMAsQHiDFSojCDfso/Zni+fRKa14ToI9hnmOW/rQcY1WYb6wsM7Pgwg==
+"@actions/cache@^6.3.0":
+  version "6.3.0"
+  resolved "https://registry.yarnpkg.com/@actions/cache/-/cache-6.3.0.tgz#fb2dfc4fdc3724dd0d3db16bd0487146eef02614"
+  integrity sha512-SJKaVMqTgetQgJF0wifi5N2+2mffCLy/D4w/3sJtRanBBGECdi1/OD0wswyLVmqEmPbYB/rVJk41Qn/xEbFjAw==
   dependencies:
     "@actions/core" "^3.0.1"
     "@actions/exec" "^3.0.0"
-    "@actions/glob" "^0.6.1"
+    "@actions/glob" "^0.7.0"
     "@actions/http-client" "^4.0.1"
     "@actions/io" "^3.0.2"
-    "@azure/core-rest-pipeline" "^1.23.0"
-    "@azure/storage-blob" "^12.31.0"
+    "@azure/core-rest-pipeline" "~1.23.0"
+    "@azure/storage-blob" "~12.31.0"
     "@protobuf-ts/runtime-rpc" "^2.11.1"
-    semver "^7.7.4"
+    semver "^7.8.5"
 
 "@actions/core@^3.0.0", "@actions/core@^3.0.1":
   version "3.0.1"
@@ -65,7 +65,7 @@
     "@octokit/request-error" "^7.1.0"
     undici "^6.23.0"
 
-"@actions/glob@0.7.0", "@actions/glob@^0.6.1":
+"@actions/glob@0.7.0", "@actions/glob@^0.7.0":
   version "0.7.0"
   resolved "https://registry.npmmirror.com/@actions/glob/-/glob-0.7.0.tgz#f88c79eb1b0a185d1cbdc662c79537d568756937"
   integrity sha512-+7s3wM+cXapDLmLL1NVWHawqcJOZzXZy2df/VhNn8DnZtS/x83iTCKaUn9F0llur4h3CII0AilvKKH4CMPL8Gw==
@@ -158,7 +158,7 @@
   dependencies:
     tslib "^2.6.2"
 
-"@azure/core-rest-pipeline@^1.19.1", "@azure/core-rest-pipeline@^1.22.0", "@azure/core-rest-pipeline@^1.23.0":
+"@azure/core-rest-pipeline@^1.19.1", "@azure/core-rest-pipeline@^1.22.0", "@azure/core-rest-pipeline@~1.23.0":
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/@azure/core-rest-pipeline/-/core-rest-pipeline-1.23.0.tgz#35f16e1c180ca9545c260ac124b751be1da9c08c"
   integrity sha512-Evs1INHo+jUjwHi1T6SG6Ua/LHOQBCLuKEEE6efIpt4ZOoNonaT1kP32GoOcdNDbfqsD2445CPri3MubBy5DEQ==
@@ -203,7 +203,7 @@
     "@typespec/ts-http-runtime" "^0.3.0"
     tslib "^2.6.2"
 
-"@azure/storage-blob@^12.30.0", "@azure/storage-blob@^12.31.0":
+"@azure/storage-blob@^12.30.0", "@azure/storage-blob@~12.31.0":
   version "12.31.0"
   resolved "https://registry.npmmirror.com/@azure/storage-blob/-/storage-blob-12.31.0.tgz#97b09be2bf6ab59739b862edd8124798362ce720"
   integrity sha512-DBgNv10aCSxopt92DkTDD0o9xScXeBqPKGmR50FPZQaEcH4JLQ+GEOGEDv19V5BMkB7kxr+m4h6il/cCDPvmHg==
@@ -2193,10 +2193,10 @@ safe-buffer@~5.2.0:
   resolved "https://registry.npmmirror.com/safe-buffer/-/safe-buffer-5.2.1.tgz"
   integrity sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==
 
-semver@^7.5.3, semver@^7.7.3, semver@^7.7.4:
-  version "7.8.0"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.8.0.tgz#ed0661039fcbcda2ce71f01fa6adbefaa77040df"
-  integrity sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==
+semver@^7.5.3, semver@^7.7.3, semver@^7.8.5:
+  version "7.8.5"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.8.5.tgz#39b646037dd50c14fb451e7e4cac58ed8b863f69"
+  integrity sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==
 
 shebang-command@^2.0.0:
   version "2.0.0"
