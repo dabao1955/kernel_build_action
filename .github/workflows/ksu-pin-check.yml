@@ -1,10 +1,9 @@
-name: Check pinned setup revisions
+name: Bump pinned setup revisions
 
 # The KernelSU fork / NoMount setup scripts executed by this action are pinned
 # to immutable commit SHAs in src/patches.ts. This workflow compares each
-# pinned SHA against the head of the branch it tracks and opens (or updates) a
-# tracking issue whenever upstream has moved, so a bump can be reviewed
-# deliberately instead of the pin silently going stale.
+# pinned SHA against the head of the branch it tracks, updates src/patches.ts,
+# rebuilds dist/, and commits the bump to main as root@localhost.
 
 on:
   schedule:
@@ -12,20 +11,28 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  issues: write
+  contents: write
+
+concurrency:
+  group: bump-pinned-setup-revisions
+  cancel-in-progress: false
 
 jobs:
-  check:
+  bump:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: main
 
-      - name: Compare pinned SHAs with upstream branch heads
+      - name: Update pinned SHAs from upstream branch heads
+        id: bump
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+
+          echo "changed=false" >> "$GITHUB_OUTPUT"
 
           # lowercase fork key -> "Proper/Repo tracked-branch"
           declare -A TRACK=(
@@ -64,7 +71,10 @@ jobs:
             exit 1
           fi
 
-          outdated=()
+          : > /tmp/pin-updates.tsv
+          printf '%s\n\n' 'ci: chore(pins): Bump pinned setup-script revisions' > /tmp/pin-bump-message
+
+          changed=0
           for pin in "${pins[@]}"; do
             key="${pin%%=*}"
             sha="${pin##*=}"
@@ -79,37 +89,81 @@ jobs:
             head="$(gh api "repos/${display}/commits/${branch}" --jq .sha)"
             if [[ "$head" != "$sha" ]]; then
               echo "DRIFT: ${display}@${branch} pinned ${sha:0:12}, upstream ${head:0:12}"
-              outdated+=("| [\`${display}\`](https://github.com/${display}) | \`${branch}\` | \`${sha:0:12}\` | [\`${head:0:12}\`](https://github.com/${display}/commit/${head}) |")
+              printf '%s\t%s\t%s\n' "$key" "$sha" "$head" >> /tmp/pin-updates.tsv
+              echo "- ${display}@${branch}: ${sha:0:12} -> ${head:0:12}" >> /tmp/pin-bump-message
+              changed=1
             else
               echo "ok: ${display}@${branch} ${sha:0:12}"
             fi
           done
 
-          if [[ ${#outdated[@]} -eq 0 ]]; then
+          if [[ $changed -eq 0 ]]; then
             echo "All pinned setup-script revisions are current."
             exit 0
           fi
 
-          rows="$(printf '%s\n' "${outdated[@]}")"
-          body="$(cat <<EOF
-          Some pinned setup-script revisions in \`src/patches.ts\` fell behind their upstream branches.
+          while IFS=$'\t' read -r key old new; do
+            case "$key" in
+              tiann/kernelsu)
+                sed -i "s/KSU_UPSTREAM_SHA = '${old}'/KSU_UPSTREAM_SHA = '${new}'/" src/patches.ts
+                ;;
+              maxsteeel/nomount)
+                sed -i "s|maxsteeel/nomount/raw/${old}/kernel/setup.sh|maxsteeel/nomount/raw/${new}/kernel/setup.sh|" src/patches.ts
+                ;;
+              *)
+                awk -v key="$key" -v old="$old" -v new="$new" '
+                  BEGIN { in_entry = 0 }
+                  {
+                    if ($0 ~ "^ *\047" key "\047: \\{") {
+                      in_entry = 1
+                      print
+                      next
+                    }
+                    if (in_entry && $0 ~ /^ *\047[-a-zA-Z0-9_.]+\/[-a-zA-Z0-9_.]+\047: \{/) {
+                      in_entry = 0
+                    }
+                    if (in_entry && index($0, "setupSha: \047" old "\047")) {
+                      sub("setupSha: \047" old "\047", "setupSha: \047" new "\047")
+                      in_entry = 0
+                    }
+                    print
+                  }
+                ' src/patches.ts > src/patches.ts.tmp
+                mv src/patches.ts.tmp src/patches.ts
+                ;;
+            esac
+            if ! grep -Fq "$new" src/patches.ts; then
+              echo "::error::Failed to write new SHA for ${key}"
+              exit 1
+            fi
+          done < /tmp/pin-updates.tsv
 
-          | Repository | Branch | Pinned | Upstream HEAD |
-          |---|---|---|---|
-          ${rows}
+          echo "changed=true" >> "$GITHUB_OUTPUT"
 
-          To update: bump the matching \`setupSha\` / \`KSU_UPSTREAM_SHA\` / NoMount URL in \`src/patches.ts\`, run \`yarn build\`, and close this issue.
-          EOF
-          )"
+      - name: Setup Node.js
+        if: steps.bump.outputs.changed == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'yarn'
 
-          gh label create pinned-sha-drift --color D4C5F9 2>/dev/null || true
-          number="$(gh issue list --label pinned-sha-drift --state open --json number --jq '.[0].number // empty')"
-          if [[ -n "$number" ]]; then
-            echo "Updating existing tracking issue #${number}"
-            gh issue edit "$number" --body "$body"
-          else
-            gh issue create \
-              --title 'Pinned setup-script revisions need a bump' \
-              --body "$body" \
-              --label pinned-sha-drift
+      - name: Rebuild action
+        if: steps.bump.outputs.changed == 'true'
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Commit and push to main
+        if: steps.bump.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "root"
+          git config user.email "root@localhost"
+          git add src/patches.ts dist/
+          if git diff --cached --quiet; then
+            echo "Working tree already matches upstream pins after rebuild."
+            exit 0
           fi
+          git commit -F /tmp/pin-bump-message
+          git pull --rebase origin main
+          git push origin HEAD:main
