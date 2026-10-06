@@ -36,14 +36,15 @@
   "resolutions": {
     "**/@actions/glob": "0.7.0",
     "**/@actions/glob/**/minimatch": "10.2.6",
-    "**/@actions/glob/**/brace-expansion": "5.0.9",
+    "**/@actions/glob/**/brace-expansion": "5.0.12",
     "**/readdir-glob/**/minimatch": "9.0.7",
-    "**/readdir-glob/**/brace-expansion": "5.0.9",
+    "**/readdir-glob/**/brace-expansion": "5.0.12",
     "**/glob/**/minimatch": "9.0.7",
-    "**/glob/**/brace-expansion": "5.0.9",
-    "**/@eslint/config-array/**/brace-expansion": "5.0.9",
-    "**/@typescript-eslint/**/brace-expansion": "5.0.9",
-    "**/eslint/**/brace-expansion": "5.0.9",
-    "**/eslint/**/@humanfs/node": "0.16.8"
+    "**/glob/**/brace-expansion": "5.0.12",
+    "**/@eslint/config-array/**/brace-expansion": "5.0.12",
+    "**/@typescript-eslint/**/brace-expansion": "5.0.12",
+    "**/eslint/**/brace-expansion": "5.0.12",
+    "**/eslint/**/@humanfs/node": "0.16.8",
+    "**/brace-expansion": "5.0.12"
   }
 }
