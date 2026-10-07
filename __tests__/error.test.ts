@@ -48,6 +48,26 @@ describe('analyzeErrors', () => {
     expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Compiler Option Not Supported'));
   });
 
+  it('detects DWARF junk-at-end-of-line assembler error', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      'foo.S:12: Error: junk at end of line, first unrecognized character is `,`'
+    );
+    const infoMock = vi.mocked(core.info);
+
+    analyzeErrors('/build.log');
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Clang Version Anomaly'));
+  });
+
+  it('detects missing __stack_chk_guard symbol', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue('ld: undefined symbol: __stack_chk_guard');
+    const infoMock = vi.mocked(core.info);
+
+    analyzeErrors('/build.log');
+    expect(infoMock).toHaveBeenCalledWith(expect.stringContaining('Clang Version Anomaly'));
+  });
+
   it('detects make error', () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
     // Make error pattern - use undefined reference which is more reliably detected

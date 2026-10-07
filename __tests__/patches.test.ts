@@ -7,6 +7,8 @@ import {
   setupLXC,
   setupNoMount,
   detectKsuFork,
+  verifyKsuManualHooks,
+  collectRejectFiles,
 } from '../src/patches';
 import * as fs from 'fs';
 import * as core from '@actions/core';
@@ -707,4 +709,81 @@ describe('setupLXC', () => {
     );
   });
 
+});
+
+describe('collectRejectFiles', () => {
+  beforeEach(() => {
+    vi.mocked(fs.statSync).mockReturnValue({
+      isDirectory: () => false,
+      isFile: () => true,
+    } as fs.Stats);
+  });
+
+  it('collects .rej and .orig siblings that exist', () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      return path.endsWith('.rej') || path.endsWith('.orig');
+    });
+
+    const result = collectRejectFiles('/kernel', ['fs/exec.c']);
+
+    expect(result).toContain('/kernel/fs/exec.c.rej');
+    expect(result).toContain('/kernel/fs/exec.c.orig');
+  });
+
+  it('returns an empty list when no reject files exist', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    expect(collectRejectFiles('/kernel', ['fs/exec.c'])).toEqual([]);
+  });
+});
+
+describe('verifyKsuManualHooks', () => {
+  beforeEach(() => {
+    vi.mocked(fs.statSync).mockReturnValue({
+      isDirectory: () => false,
+      isFile: () => true,
+    } as fs.Stats);
+  });
+
+  it('does nothing when hook source files are absent', () => {
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+    expect(() => verifyKsuManualHooks('/kernel')).not.toThrow();
+  });
+
+  it('throws when hook files exist but no hook symbol was injected', () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      return path.endsWith('fs/exec.c') || path.endsWith('fs/open.c');
+    });
+    vi.mocked(fs.readFileSync).mockReturnValue('int do_execve(void) { return 0; }\n');
+
+    expect(() => verifyKsuManualHooks('/kernel')).toThrow(
+      /manual hook patches were not applied/
+    );
+  });
+
+  it('passes when at least one hook symbol is present', () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => String(p).endsWith('fs/exec.c'));
+    vi.mocked(fs.readFileSync).mockReturnValue('ksu_handle_execveat((int *)AT_FDCWD, &filename, 0);\n');
+
+    expect(() => verifyKsuManualHooks('/kernel')).not.toThrow();
+    expect(core.warning).not.toHaveBeenCalled();
+  });
+
+  it('warns about partially applied hooks', () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => {
+      const path = String(p);
+      return path.endsWith('fs/exec.c') || path.endsWith('fs/open.c');
+    });
+    vi.mocked(fs.readFileSync).mockImplementation((p) => {
+      const path = String(p);
+      if (path.endsWith('fs/exec.c')) {
+        return 'ksu_handle_execveat((int *)AT_FDCWD, &filename, 0);\n';
+      }
+      return 'int do_faccessat(void) { return 0; }\n';
+    });
+
+    expect(() => verifyKsuManualHooks('/kernel')).not.toThrow();
+    expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('fs/open.c'));
+  });
 });

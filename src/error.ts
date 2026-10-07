@@ -94,6 +94,18 @@ const ERROR_PATTERNS: ErrorPattern[] = [
     suggestion: 'Switch to a different Clang compiler version',
   },
   {
+    pattern: /junk at end of line, first unrecognized character is/i,
+    type: 'Clang Version Anomaly',
+    suggestion:
+      'Your Clang version is likely too new for the DWARF version the kernel expects. Lower the Clang version (e.g. from 20 to 12/10), or append -gdwarf-4 to KBUILD_CFLAGS in the Makefile.',
+  },
+  {
+    pattern: /undefined symbol: __stack_chk_guard/i,
+    type: 'Clang Version Anomaly',
+    suggestion:
+      'The stack canary symbol is missing at link time, usually caused by too new a Clang version. Lower the Clang version (e.g. from 20 to 12/10).',
+  },
+  {
     pattern: /incompatible pointer types passing 'atomic_long_t \*'/i,
     type: 'Source Code Pointer Type Error',
     suggestion:
@@ -315,7 +327,7 @@ export function analyzeErrors(logFile: string): number {
 
     // Check for error start (includes modpost, ld, and lto errors)
     if (
-      /\serror:|\sfatal error:|undefined reference to|WARNING: modpost:|ld:.*(error|unrecognized)|lto-wrapper:/i.test(
+      /\serror:|\sfatal error:|undefined reference to|undefined symbol:|WARNING: modpost:|ld:.*(error|unrecognized)|lto-wrapper:/i.test(
         line
       )
     ) {

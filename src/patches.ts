@@ -3,7 +3,75 @@ import * as exec from '@actions/exec';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { getActionPath, fileExists } from './utils';
+import { deStaticizeSelinuxForKsu } from './selinux';
 import type { KernelVersion } from './kernel';
+
+/**
+ * Source files that receive a KernelSU manual hook, together with the symbol
+ * the hook injects. Used to verify the Coccinelle patch actually landed.
+ */
+export const KSU_MANUAL_HOOK_MARKERS: { file: string; marker: string }[] = [
+  { file: 'fs/exec.c', marker: 'ksu_handle_execveat' },
+  { file: 'fs/open.c', marker: 'ksu_handle_faccessat' },
+  { file: 'fs/stat.c', marker: 'ksu_handle_stat' },
+  { file: 'drivers/input/input.c', marker: 'ksu_handle_input_handle_event' },
+];
+
+/**
+ * Collect GNU patch reject/backup siblings (`<file>.rej`, `<file>.orig`) for
+ * the given source files, so a failed patch leaves visible evidence instead of
+ * a silently half-patched tree.
+ */
+export function collectRejectFiles(kernelDir: string, files: string[]): string[] {
+  const rejects: string[] = [];
+  for (const file of files) {
+    for (const ext of ['.rej', '.orig']) {
+      const candidate = path.join(kernelDir, `${file}${ext}`);
+      if (fileExists(candidate)) {
+        rejects.push(candidate);
+      }
+    }
+  }
+  return rejects;
+}
+
+/**
+ * Verify that KernelSU manual-hook patches were actually applied on a
+ * non-GKI/no-kprobe build. Throws when hook source files exist but none carry
+ * an injected `ksu_handle_*` symbol, which would otherwise produce a kernel
+ * without KernelSU after a "successful" build.
+ */
+export function verifyKsuManualHooks(kernelDir: string): void {
+  const existing = KSU_MANUAL_HOOK_MARKERS.filter(({ file }) =>
+    fileExists(path.join(kernelDir, file))
+  );
+  if (existing.length === 0) {
+    // Tree layout not recognised, nothing to verify against.
+    return;
+  }
+
+  const applied = existing.filter(({ file, marker }) =>
+    fs.readFileSync(path.join(kernelDir, file), 'utf-8').includes(marker)
+  );
+  const missing = existing.filter((entry) => !applied.includes(entry));
+
+  if (missing.length > 0) {
+    core.warning(`KernelSU manual hooks missing in: ${missing.map((m) => m.file).join(', ')}`);
+  }
+
+  if (applied.length === 0) {
+    const rejects = collectRejectFiles(
+      kernelDir,
+      existing.map((entry) => entry.file)
+    );
+    const rejectHint =
+      rejects.length > 0 ? ` Rejected hunks were left behind: ${rejects.join(', ')}.` : '';
+    throw new Error(
+      'KernelSU manual hook patches were not applied (no ksu_handle_* symbols found). ' +
+        `Checked: ${existing.map((entry) => entry.file).join(', ')}.${rejectHint}`
+    );
+  }
+}
 
 /**
  * Config tweak appended to the defconfig for a specific KernelSU fork.
@@ -299,6 +367,14 @@ export async function setupKernelSU(
       } catch {
         core.warning('Failed to apply KernelSU patches');
       }
+
+      // KernelSU's static-export check imports SELinux internals that some
+      // kernels declare static; drop the qualifier before building.
+      deStaticizeSelinuxForKsu(kernelDir, configPath, kernelVersion);
+
+      // Make a failed manual-hook patch visible instead of silently shipping
+      // a kernel without KernelSU.
+      verifyKsuManualHooks(kernelDir);
     }
   }
 
