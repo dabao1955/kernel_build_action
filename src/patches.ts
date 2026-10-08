@@ -38,6 +38,25 @@ export function collectRejectFiles(kernelDir: string, files: string[]): string[]
   return rejects;
 }
 
+function stripCComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+}
+
+function hasActiveHookCall(content: string, marker: string): boolean {
+  const escaped = marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const callRe = new RegExp(`\\b${escaped}\\s*\\(`);
+  for (const line of stripCComments(content).split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || /^extern\b/.test(trimmed)) {
+      continue;
+    }
+    if (callRe.test(trimmed)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Verify that KernelSU manual-hook patches were actually applied on a
  * non-GKI/no-kprobe build. Throws when hook source files exist but none carry
@@ -55,7 +74,7 @@ export function verifyKsuManualHooks(kernelDir: string): void {
 
   const applied = existing.filter(({ file, markers }) => {
     const content = fs.readFileSync(path.join(kernelDir, file), 'utf-8');
-    return markers.some((marker) => content.includes(marker));
+    return markers.some((marker) => hasActiveHookCall(content, marker));
   });
   const missing = existing.filter((entry) => !applied.includes(entry));
 

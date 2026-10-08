@@ -922,4 +922,18 @@ describe('verifyKsuManualHooks', () => {
 
     expect(() => verifyKsuManualHooks('/kernel')).not.toThrow();
   });
+
+  it('ignores extern declarations and commented-out hook fragments', () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => String(p).endsWith('fs/exec.c'));
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      [
+        'extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv, void *envp, int *flags);',
+        '// ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);',
+        '/* ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags); */',
+        'int do_execve(void) { return 0; }',
+      ].join('\n')
+    );
+
+    expect(() => verifyKsuManualHooks('/kernel')).toThrow(/manual hook patches were not applied/);
+  });
 });

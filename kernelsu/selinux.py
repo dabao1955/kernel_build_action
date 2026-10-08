@@ -3,6 +3,8 @@
 Apply KernelSU SELinux destatic Coccinelle patches to kernel source files.
 """
 
+from __future__ import annotations
+
 import argparse
 import sys
 from pathlib import Path
@@ -43,7 +45,7 @@ def apply_spatch(cocci_file: Path, target_file: str) -> None:
     if not Path(target_file).exists():
         print(f"Skipping missing {target_file}")
         return
-    run_spatch(cocci_file, target_file)
+    run_spatch(cocci_file, target_file, strict=True)
 
 
 def main() -> None:

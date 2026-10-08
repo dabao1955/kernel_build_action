@@ -140,12 +140,13 @@ class TestApplySpatch:
         assert "missing.c" in mock_print.call_args[0][0]
 
     def test_apply_spatch_error_continues(self, mock_subprocess, mock_print, temp_dir):
-        """Test that spatch errors are silently ignored."""
+        """Test that a failed patch application produces an error."""
         target = temp_dir / "selinuxfs.c"
         target.write_text("static DEFINE_MUTEX(sel_mutex);\n")
         mock_subprocess.side_effect = CalledProcessError(1, "spatch")
 
-        selinux.apply_spatch(Path("selinux.cocci"), str(target))
+        with pytest.raises(CalledProcessError):
+            selinux.apply_spatch(Path("selinux.cocci"), str(target))
 
         mock_subprocess.assert_called_once()
 

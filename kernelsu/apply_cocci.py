@@ -3,6 +3,8 @@
 Apply KernelSU Coccinelle patches to kernel source files.
 """
 
+from __future__ import annotations
+
 import argparse
 import subprocess
 import sys
@@ -17,7 +19,7 @@ def extract_files_from_cocci(cocci_file: Path) -> list[str]:
     return list(dict.fromkeys(matches))
 
 
-def apply_spatch(cocci_file: Path, target_file: str) -> None:
+def apply_spatch(cocci_file: Path, target_file: str, strict: bool = False) -> None:
     """Apply spatch to a single file."""
     try:
         subprocess.run(
@@ -35,7 +37,8 @@ def apply_spatch(cocci_file: Path, target_file: str) -> None:
         )
         print(f"Applied patch to {target_file}")
     except subprocess.CalledProcessError:
-        pass
+        if strict:
+            raise
 
 
 def main() -> None:
