@@ -33,11 +33,16 @@ describe('setupKernelSU', () => {
   it('skips setup when KernelSU is already initialized', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
 
-    await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'v0.9.5',
-      lkm: false,
-      other: false,
-    }, kernelVersion);
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      {
+        version: 'v0.9.5',
+        lkm: false,
+        other: false,
+      },
+      kernelVersion
+    );
 
     expect(core.info).toHaveBeenCalledWith('KernelSU has been initialized, skipping.');
     expect(exec.exec).not.toHaveBeenCalledWith('curl', expect.any(Array));
@@ -48,18 +53,26 @@ describe('setupKernelSU', () => {
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
-    await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'v0.9.5',
-      lkm: false,
-      other: false,
-    }, kernelVersion);
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      {
+        version: 'v0.9.5',
+        lkm: false,
+        other: false,
+      },
+      kernelVersion
+    );
 
-    expect(exec.exec).toHaveBeenCalledWith('curl', expect.arrayContaining([
-      '-sSLf',
-      expect.stringContaining('setup.sh'),
-      '-o',
-      expect.stringContaining('ksu_setup.sh'),
-    ]));
+    expect(exec.exec).toHaveBeenCalledWith(
+      'curl',
+      expect.arrayContaining([
+        '-sSLf',
+        expect.stringContaining('setup.sh'),
+        '-o',
+        expect.stringContaining('ksu_setup.sh'),
+      ])
+    );
   });
 
   it('forces v0.9.5 for non-GKI kernels', async () => {
@@ -68,13 +81,20 @@ describe('setupKernelSU', () => {
 
     const nonGkiVersion = { version: 5, patchlevel: 4, sublevel: 0, isGki: false };
 
-    await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'main',
-      lkm: false,
-      other: false,
-    }, nonGkiVersion);
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      {
+        version: 'main',
+        lkm: false,
+        other: false,
+      },
+      nonGkiVersion
+    );
 
-    expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('KernelSU has dropped support'));
+    expect(core.warning).toHaveBeenCalledWith(
+      expect.stringContaining('KernelSU has dropped support')
+    );
     expect(exec.exec).toHaveBeenCalledWith(
       'bash',
       expect.arrayContaining(['ksu_setup.sh', 'v0.9.5']),
@@ -83,30 +103,51 @@ describe('setupKernelSU', () => {
   });
 
   it('throws error for non-HTTPS custom URL', async () => {
-    await expect(setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'main',
-      lkm: false,
-      other: true,
-      url: 'http://example.com/setup.sh',
-    }, kernelVersion)).rejects.toThrow('ksu-url must use HTTPS');
+    await expect(
+      setupKernelSU(
+        '/kernel',
+        '/kernel/.config',
+        {
+          version: 'main',
+          lkm: false,
+          other: true,
+          url: 'http://example.com/setup.sh',
+        },
+        kernelVersion
+      )
+    ).rejects.toThrow('ksu-url must use HTTPS');
   });
 
   it('throws error for untrusted domain', async () => {
-    await expect(setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'main',
-      lkm: false,
-      other: true,
-      url: 'https://untrusted.com/setup.sh',
-    }, kernelVersion)).rejects.toThrow('ksu-url must be from trusted GitHub domain');
+    await expect(
+      setupKernelSU(
+        '/kernel',
+        '/kernel/.config',
+        {
+          version: 'main',
+          lkm: false,
+          other: true,
+          url: 'https://untrusted.com/setup.sh',
+        },
+        kernelVersion
+      )
+    ).rejects.toThrow('ksu-url must be from trusted GitHub domain');
   });
 
   it('throws error when ksu-url does not point to a repository', async () => {
-    await expect(setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'main',
-      lkm: false,
-      other: true,
-      url: 'https://github.com/owner',
-    }, kernelVersion)).rejects.toThrow('must point to a GitHub repository');
+    await expect(
+      setupKernelSU(
+        '/kernel',
+        '/kernel/.config',
+        {
+          version: 'main',
+          lkm: false,
+          other: true,
+          url: 'https://github.com/owner',
+        },
+        kernelVersion
+      )
+    ).rejects.toThrow('must point to a GitHub repository');
   });
 
   it('accepts trusted GitHub domains', async () => {
@@ -124,12 +165,19 @@ describe('setupKernelSU', () => {
       vi.mocked(fs.existsSync).mockReturnValue(false);
       vi.mocked(exec.exec).mockResolvedValue(0);
 
-      await expect(setupKernelSU('/kernel', '/kernel/.config', {
-        version: 'main',
-        lkm: false,
-        other: true,
-        url,
-      }, kernelVersion)).resolves.not.toThrow();
+      await expect(
+        setupKernelSU(
+          '/kernel',
+          '/kernel/.config',
+          {
+            version: 'main',
+            lkm: false,
+            other: true,
+            url,
+          },
+          kernelVersion
+        )
+      ).resolves.not.toThrow();
     }
   });
 
@@ -142,11 +190,16 @@ describe('setupKernelSU', () => {
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
-    await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'v0.9.5',
-      lkm: true,
-      other: false,
-    }, kernelVersion);
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      {
+        version: 'v0.9.5',
+        lkm: true,
+        other: false,
+      },
+      kernelVersion
+    );
 
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       '/kernel/.config',
@@ -175,11 +228,16 @@ describe('setupKernelSU', () => {
     } as fs.Stats);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
-    await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'v0.9.5',
-      lkm: true,
-      other: false,
-    }, kernelVersion);
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      {
+        version: 'v0.9.5',
+        lkm: true,
+        other: false,
+      },
+      kernelVersion
+    );
 
     // Kconfig should be modified with default m instead of default y
     expect(fs.writeFileSync).toHaveBeenCalled();
@@ -195,11 +253,16 @@ describe('setupKernelSU', () => {
 
     const nonGkiVersion = { version: 5, patchlevel: 4, sublevel: 0, isGki: false };
 
-    await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'v0.9.5',
-      lkm: false,
-      other: false,
-    }, nonGkiVersion);
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      {
+        version: 'v0.9.5',
+        lkm: false,
+        other: false,
+      },
+      nonGkiVersion
+    );
 
     expect(exec.exec).toHaveBeenCalledWith('opam', ['init', '--disable-sandboxing', '--yes']);
     expect(exec.exec).toHaveBeenCalledWith(
@@ -210,26 +273,36 @@ describe('setupKernelSU', () => {
 
   it('warns when KernelSU patches fail to apply', async () => {
     vi.mocked(fs.existsSync).mockImplementation((p) => {
-      if (String(p).includes('.config')) return true;
+      const path = String(p);
+      if (path.includes('.config')) return true;
+      if (path.endsWith('fs/exec.c')) return true;
       return false;
     });
-    vi.mocked(fs.readFileSync).mockReturnValue('CONFIG_KPROBES=n');
-    // All exec calls succeed except apply_cocci.py which throws
+    vi.mocked(fs.readFileSync).mockImplementation((p) => {
+      if (String(p).includes('.config')) return 'CONFIG_KPROBES=n';
+      return 'int do_execve(void) { return 0; }\n';
+    });
     vi.mocked(exec.exec).mockImplementation(async (cmd, args) => {
-      // Check if this is the apply_cocci.py call
       if (cmd === 'bash' && args?.[1]?.includes('apply_cocci.py')) {
         throw new Error('Patch application failed');
       }
-      return 0; // All other commands succeed
+      return 0;
     });
 
     const nonGkiVersion = { version: 5, patchlevel: 4, sublevel: 0, isGki: false };
 
-    await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'v0.9.5',
-      lkm: false,
-      other: false,
-    }, nonGkiVersion);
+    await expect(
+      setupKernelSU(
+        '/kernel',
+        '/kernel/.config',
+        {
+          version: 'v0.9.5',
+          lkm: false,
+          other: false,
+        },
+        nonGkiVersion
+      )
+    ).rejects.toThrow(/manual hook patches were not applied/);
 
     expect(core.warning).toHaveBeenCalledWith('Failed to apply KernelSU patches');
   });
@@ -245,11 +318,16 @@ describe('setupKernelSU', () => {
     vi.mocked(fs.readFileSync).mockReturnValue('CONFIG_KPROBES=y');
     vi.mocked(exec.exec).mockResolvedValue(0);
 
-    const result = await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'v0.9.5',
-      lkm: true,  // LKM mode triggers sedReplace
-      other: false,
-    }, kernelVersion);
+    const result = await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      {
+        version: 'v0.9.5',
+        lkm: true, // LKM mode triggers sedReplace
+        other: false,
+      },
+      kernelVersion
+    );
 
     // Should complete without error even when config file doesn't exist
     expect(result).toBeUndefined();
@@ -266,16 +344,21 @@ describe('setupKernelSU', () => {
     });
     vi.mocked(fs.readFileSync).mockImplementation((p) => {
       const path = String(p);
-      if (path.includes('.config')) return 'CONFIG_KPROBES=n';  // No kprobes
+      if (path.includes('.config')) return 'CONFIG_KPROBES=n'; // No kprobes
       return '';
     });
     vi.mocked(exec.exec).mockResolvedValue(0);
 
-    const result = await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'v0.9.5',
-      lkm: true,  // LKM mode triggers sedReplaceInRange when no kprobes
-      other: false,
-    }, kernelVersion);
+    const result = await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      {
+        version: 'v0.9.5',
+        lkm: true, // LKM mode triggers sedReplaceInRange when no kprobes
+        other: false,
+      },
+      kernelVersion
+    );
 
     // Should complete without error even when Kconfig file doesn't exist
     expect(result).toBeUndefined();
@@ -300,11 +383,16 @@ describe('setupKernelSU', () => {
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
-    await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'v0.9.5',
-      lkm: true,  // LKM mode triggers sedReplace when hasKprobes is true
-      other: false,
-    }, kernelVersion);
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      {
+        version: 'v0.9.5',
+        lkm: true, // LKM mode triggers sedReplace when hasKprobes is true
+        other: false,
+      },
+      kernelVersion
+    );
 
     // Verify writeFileSync was called (sedReplace executed)
     expect(fs.writeFileSync).toHaveBeenCalled();
@@ -327,7 +415,7 @@ describe('setupKernelSU', () => {
     } as fs.Stats);
     vi.mocked(fs.readFileSync).mockImplementation((p) => {
       const path = String(p);
-      if (path.includes('.config')) return 'CONFIG_KPROBES=n';  // No kprobes
+      if (path.includes('.config')) return 'CONFIG_KPROBES=n'; // No kprobes
       if (path.includes('Kconfig')) {
         return 'config KSU\n\tbool "KernelSU"\n\tdefault y\n\thelp\n\t  KernelSU module';
       }
@@ -336,11 +424,16 @@ describe('setupKernelSU', () => {
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
-    await setupKernelSU('/kernel', '/kernel/.config', {
-      version: 'v0.9.5',
-      lkm: true,  // LKM mode triggers sedReplaceInRange when no kprobes
-      other: false,
-    }, kernelVersion);
+    await setupKernelSU(
+      '/kernel',
+      '/kernel/.config',
+      {
+        version: 'v0.9.5',
+        lkm: true, // LKM mode triggers sedReplaceInRange when no kprobes
+        other: false,
+      },
+      kernelVersion
+    );
 
     // Verify writeFileSync was called (sedReplaceInRange executed)
     expect(fs.writeFileSync).toHaveBeenCalled();
@@ -350,18 +443,23 @@ describe('setupKernelSU', () => {
 describe('setupBBG', () => {
   it('downloads and runs BBG setup script', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(false);
-    vi.mocked(fs.readFileSync).mockReturnValue('config LSM\n\tdefault yama,loadpin,integrity,selinux,smack,tomoyo,apparmor');
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      'config LSM\n\tdefault yama,loadpin,integrity,selinux,smack,tomoyo,apparmor'
+    );
     vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
     vi.mocked(exec.exec).mockResolvedValue(0);
 
     await setupBBG('/kernel', '/kernel/.config');
 
-    expect(exec.exec).toHaveBeenCalledWith('curl', expect.arrayContaining([
-      '-sSLf',
-      expect.stringContaining('Baseband-guard'),
-      '-o',
-      expect.stringContaining('bbg_setup.sh'),
-    ]));
+    expect(exec.exec).toHaveBeenCalledWith(
+      'curl',
+      expect.arrayContaining([
+        '-sSLf',
+        expect.stringContaining('Baseband-guard'),
+        '-o',
+        expect.stringContaining('bbg_setup.sh'),
+      ])
+    );
     expect(exec.exec).toHaveBeenCalledWith(
       'bash',
       expect.arrayContaining([expect.stringContaining('bbg_setup.sh')]),
@@ -455,7 +553,12 @@ describe('setupKernelSU fork strategies', () => {
     await setupKernelSU(
       '/kernel',
       '/kernel/.config',
-      { version: 'main', lkm: false, other: true, url: 'https://github.com/SukiSU-Ultra/SukiSU-Ultra' },
+      {
+        version: 'main',
+        lkm: false,
+        other: true,
+        url: 'https://github.com/SukiSU-Ultra/SukiSU-Ultra',
+      },
       { version: 5, patchlevel: 4, sublevel: 100, isGki: false }
     );
 
@@ -484,7 +587,12 @@ describe('setupKernelSU fork strategies', () => {
     await setupKernelSU(
       '/kernel',
       '/kernel/.config',
-      { version: 'v1.0.0', lkm: false, other: true, url: 'https://github.com/KernelSU-Next/KernelSU-Next.git' },
+      {
+        version: 'v1.0.0',
+        lkm: false,
+        other: true,
+        url: 'https://github.com/KernelSU-Next/KernelSU-Next.git',
+      },
       { version: 5, patchlevel: 15, sublevel: 100, isGki: true }
     );
 
@@ -509,7 +617,12 @@ describe('setupKernelSU fork strategies', () => {
     await setupKernelSU(
       '/kernel',
       '/kernel/.config',
-      { version: 'main', lkm: false, other: true, url: 'https://github.com/KernelSU-Next/KernelSU-Next' },
+      {
+        version: 'main',
+        lkm: false,
+        other: true,
+        url: 'https://github.com/KernelSU-Next/KernelSU-Next',
+      },
       { version: 4, patchlevel: 9, sublevel: 100, isGki: false }
     );
 
@@ -565,16 +678,26 @@ describe('setupKernelSU fork strategies', () => {
     await setupKernelSU(
       '/kernel',
       '/kernel/.config',
-      { version: 'v0.9.3', lkm: false, other: true, url: 'https://github.com/someone/unknown-fork' },
+      {
+        version: 'v0.9.3',
+        lkm: false,
+        other: true,
+        url: 'https://github.com/someone/unknown-fork',
+      },
       { version: 5, patchlevel: 4, sublevel: 100, isGki: false }
     );
 
-    expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('does not match a known KernelSU fork'));
+    expect(core.warning).toHaveBeenCalledWith(
+      expect.stringContaining('does not match a known KernelSU fork')
+    );
     expect(exec.exec).toHaveBeenCalledWith(
       'curl',
       expect.arrayContaining(['https://github.com/someone/unknown-fork/raw/v0.9.3/kernel/setup.sh'])
     );
-    expect(fs.appendFileSync).not.toHaveBeenCalledWith('/kernel/.config', expect.stringContaining('MANUAL_HOOK'));
+    expect(fs.appendFileSync).not.toHaveBeenCalledWith(
+      '/kernel/.config',
+      expect.stringContaining('MANUAL_HOOK')
+    );
   });
 });
 
@@ -708,7 +831,6 @@ describe('setupLXC', () => {
       expect.objectContaining({ cwd: '/kernel' })
     );
   });
-
 });
 
 describe('collectRejectFiles', () => {
@@ -757,14 +879,14 @@ describe('verifyKsuManualHooks', () => {
     });
     vi.mocked(fs.readFileSync).mockReturnValue('int do_execve(void) { return 0; }\n');
 
-    expect(() => verifyKsuManualHooks('/kernel')).toThrow(
-      /manual hook patches were not applied/
-    );
+    expect(() => verifyKsuManualHooks('/kernel')).toThrow(/manual hook patches were not applied/);
   });
 
   it('passes when at least one hook symbol is present', () => {
     vi.mocked(fs.existsSync).mockImplementation((p) => String(p).endsWith('fs/exec.c'));
-    vi.mocked(fs.readFileSync).mockReturnValue('ksu_handle_execveat((int *)AT_FDCWD, &filename, 0);\n');
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      'ksu_handle_execveat((int *)AT_FDCWD, &filename, 0);\n'
+    );
 
     expect(() => verifyKsuManualHooks('/kernel')).not.toThrow();
     expect(core.warning).not.toHaveBeenCalled();
@@ -785,5 +907,19 @@ describe('verifyKsuManualHooks', () => {
 
     expect(() => verifyKsuManualHooks('/kernel')).not.toThrow();
     expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('fs/open.c'));
+  });
+
+  it('accepts vfs_read and sys_read as equivalent read-hook markers', () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => String(p).endsWith('fs/read_write.c'));
+    vi.mocked(fs.readFileSync).mockReturnValue('ksu_handle_sys_read(fd, &buf, &count);\n');
+
+    expect(() => verifyKsuManualHooks('/kernel')).not.toThrow();
+  });
+
+  it('accepts ksu_handle_devpts in either devpts or pty source', () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => String(p).endsWith('fs/devpts/inode.c'));
+    vi.mocked(fs.readFileSync).mockReturnValue('ksu_handle_devpts(dentry->d_inode);\n');
+
+    expect(() => verifyKsuManualHooks('/kernel')).not.toThrow();
   });
 });

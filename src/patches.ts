@@ -10,11 +10,14 @@ import type { KernelVersion } from './kernel';
  * Source files that receive a KernelSU manual hook, together with the symbol
  * the hook injects. Used to verify the Coccinelle patch actually landed.
  */
-export const KSU_MANUAL_HOOK_MARKERS: { file: string; marker: string }[] = [
-  { file: 'fs/exec.c', marker: 'ksu_handle_execveat' },
-  { file: 'fs/open.c', marker: 'ksu_handle_faccessat' },
-  { file: 'fs/stat.c', marker: 'ksu_handle_stat' },
-  { file: 'drivers/input/input.c', marker: 'ksu_handle_input_handle_event' },
+export const KSU_MANUAL_HOOK_MARKERS: { file: string; markers: string[] }[] = [
+  { file: 'fs/exec.c', markers: ['ksu_handle_execveat'] },
+  { file: 'fs/open.c', markers: ['ksu_handle_faccessat'] },
+  { file: 'fs/stat.c', markers: ['ksu_handle_stat'] },
+  { file: 'drivers/input/input.c', markers: ['ksu_handle_input_handle_event'] },
+  { file: 'fs/read_write.c', markers: ['ksu_handle_vfs_read', 'ksu_handle_sys_read'] },
+  { file: 'fs/devpts/inode.c', markers: ['ksu_handle_devpts'] },
+  { file: 'drivers/tty/pty.c', markers: ['ksu_handle_devpts'] },
 ];
 
 /**
@@ -50,9 +53,10 @@ export function verifyKsuManualHooks(kernelDir: string): void {
     return;
   }
 
-  const applied = existing.filter(({ file, marker }) =>
-    fs.readFileSync(path.join(kernelDir, file), 'utf-8').includes(marker)
-  );
+  const applied = existing.filter(({ file, markers }) => {
+    const content = fs.readFileSync(path.join(kernelDir, file), 'utf-8');
+    return markers.some((marker) => content.includes(marker));
+  });
   const missing = existing.filter((entry) => !applied.includes(entry));
 
   if (missing.length > 0) {
@@ -369,8 +373,8 @@ export async function setupKernelSU(
       }
 
       // KernelSU's static-export check imports SELinux internals that some
-      // kernels declare static; drop the qualifier before building.
-      deStaticizeSelinuxForKsu(kernelDir, configPath, kernelVersion);
+      // kernels declare static; drop the qualifier with Coccinelle.
+      await deStaticizeSelinuxForKsu(kernelDir, configPath, kernelVersion);
 
       // Make a failed manual-hook patch visible instead of silently shipping
       // a kernel without KernelSU.
