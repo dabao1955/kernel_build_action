@@ -42,12 +42,30 @@ function stripCComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 }
 
+function isHookDeclaration(line: string, escaped: string): boolean {
+  const match = line.match(new RegExp(`^(.*?)\\b${escaped}\\s*\\(`));
+  if (!match) {
+    return false;
+  }
+  const before = match[1].trim();
+  if (!before) {
+    return false;
+  }
+  if (
+    /\b(?:return|if|else|for|while|switch|sizeof|typeof|case)\b/.test(before) ||
+    /=/.test(before)
+  ) {
+    return false;
+  }
+  return true;
+}
+
 function hasActiveHookCall(content: string, marker: string): boolean {
   const escaped = marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const callRe = new RegExp(`\\b${escaped}\\s*\\(`);
   for (const line of stripCComments(content).split('\n')) {
     const trimmed = line.trim();
-    if (!trimmed || /^extern\b/.test(trimmed)) {
+    if (!trimmed || trimmed.startsWith('#') || isHookDeclaration(trimmed, escaped)) {
       continue;
     }
     if (callRe.test(trimmed)) {

@@ -936,4 +936,30 @@ describe('verifyKsuManualHooks', () => {
 
     expect(() => verifyKsuManualHooks('/kernel')).toThrow(/manual hook patches were not applied/);
   });
+
+  it('ignores non-extern prototypes', () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => String(p).endsWith('fs/exec.c'));
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      [
+        'int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv, void *envp, int *flags);',
+        'static int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv, void *envp, int *flags);',
+        'int do_execve(void) { return 0; }',
+      ].join('\n')
+    );
+
+    expect(() => verifyKsuManualHooks('/kernel')).toThrow(/manual hook patches were not applied/);
+  });
+
+  it('ignores preprocessor-only mentions', () => {
+    vi.mocked(fs.existsSync).mockImplementation((p) => String(p).endsWith('fs/exec.c'));
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      [
+        '#define ksu_handle_execveat(fd, filename, argv, envp, flags) do { } while (0)',
+        '#ifdef ksu_handle_execveat',
+        'int do_execve(void) { return 0; }',
+      ].join('\n')
+    );
+
+    expect(() => verifyKsuManualHooks('/kernel')).toThrow(/manual hook patches were not applied/);
+  });
 });
