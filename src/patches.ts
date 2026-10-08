@@ -51,13 +51,10 @@ function isHookDeclaration(line: string, escaped: string): boolean {
   if (!before) {
     return false;
   }
-  if (
-    /\b(?:return|if|else|for|while|switch|sizeof|typeof|case)\b/.test(before) ||
-    /=/.test(before)
-  ) {
+  if (/\b(?:return|if|else|for|while|switch|sizeof|typeof|case)\b/.test(before)) {
     return false;
   }
-  return true;
+  return /^(?=.*[A-Za-z_])[\w\s*]+$/.test(before);
 }
 
 function hasActiveHookCall(content: string, marker: string): boolean {
