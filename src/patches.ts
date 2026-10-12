@@ -154,7 +154,7 @@ const KSU_FORKS: Record<string, KsuForkStrategy> = {
   'backslashxx/kernelsu': {
     id: 'xxksu',
     label: 'KernelSU (xxksu)',
-    setupSha: 'e42a8edb0fc9a0c103124b3423761046f77367ce',
+    setupSha: '9010ab9b3a5eb036117a31f262184fcb88827fb7',
     defaultInstallRef: 'master',
     configTweaks: [{ option: 'CONFIG_KSU_KPROBES_KSUD', value: 'n' }],
   },
@@ -168,21 +168,21 @@ const KSU_FORKS: Record<string, KsuForkStrategy> = {
   'sukisu-ultra/sukisu-ultra': {
     id: 'sukisu',
     label: 'SukiSU-Ultra',
-    setupSha: '42d7fda3d787b7df90fc440a50bb9c8216a3fdef',
+    setupSha: '223897c72cc5c23b6fea84d6542aa8ef24459998',
     defaultInstallRef: 'builtin',
     configTweaks: [],
   },
   'shirkneko/sukisu-ultra': {
     id: 'sukisu',
     label: 'SukiSU-Ultra',
-    setupSha: '42d7fda3d787b7df90fc440a50bb9c8216a3fdef',
+    setupSha: '223897c72cc5c23b6fea84d6542aa8ef24459998',
     defaultInstallRef: 'builtin',
     configTweaks: [],
   },
   'kernelsu-next/kernelsu-next': {
     id: 'next',
     label: 'KernelSU-Next',
-    setupSha: '27f891bfcb2c7d4d399dd2151298f3dec1ae199c',
+    setupSha: '0a77550cce8118d64528a2e7313e4b855914a452',
     defaultInstallRef: (kv) => (isKernelBelow(5, 10, kv) ? 'legacy' : 'main'),
     configTweaks: [
       { option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' },
@@ -196,14 +196,14 @@ const KSU_FORKS: Record<string, KsuForkStrategy> = {
   'resukisu/resukisu': {
     id: 'resukisu',
     label: 'ReSukiSU',
-    setupSha: 'e5423590bec3e24daffa4e9555c9592071319c68',
+    setupSha: 'f6cb7e70c10ebde149f3121ae68b945514fd0801',
     defaultInstallRef: 'main',
     configTweaks: [{ option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' }],
   },
 };
 
 /** Upstream KernelSU revision pinned for downloading kernel/setup.sh. */
-const KSU_UPSTREAM_SHA = '08b2e9e451325ebe506c273cfb0fde17d18f592f';
+const KSU_UPSTREAM_SHA = '0c0fdb960178fa12d80d6cbcfdcb6ad8be6a865d';
 
 /**
  * Detect a known KernelSU fork from a GitHub URL.
@@ -481,7 +481,7 @@ export async function setupNoMount(kernelDir: string, configPath: string): Promi
   const nomountSetupPath = path.join(kernelDir, 'nomount_setup.sh');
   await exec.exec('curl', [
     '-sSLf',
-    'https://github.com/maxsteeel/nomount/raw/cc1fb4ecc2b328b1d1c284974240eb5746bc9433/kernel/setup.sh',
+    'https://github.com/maxsteeel/nomount/raw/baf22db687a91f442b28959db5cbd063b7e4a1ed/kernel/setup.sh',
     '-o',
     nomountSetupPath,
   ]);
