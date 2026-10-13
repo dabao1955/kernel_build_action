@@ -2,22 +2,22 @@
 # yarn lockfile v1
 
 
-"@actions/artifact@^6.2.1":
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/@actions/artifact/-/artifact-6.2.1.tgz#3f813d42d08d8d105fa46010f6ce2bb35e292b66"
-  integrity sha512-sJGH0mhEbEjBCw7o6SaLhUU66u27aFW8HTfkIb5Tk2/Wy0caUDc+oYQEgnuFN7a0HCpAbQyK0U6U7XUJDgDWrw==
+"@actions/artifact@^6.3.1":
+  version "6.3.1"
+  resolved "https://registry.yarnpkg.com/@actions/artifact/-/artifact-6.3.1.tgz#ab0236d6096a7eb6ad288e9adf84b7bdec734f3e"
+  integrity sha512-DBXgdB9T4yj2KSe0tFg+MTi9T5se+16bdrFQh+3Y6Nq1lZ3gYQk1BjHoTof+7Zf36bEAlfVMf+8ifRKeyGJugQ==
   dependencies:
-    "@actions/core" "^3.0.0"
-    "@actions/github" "^9.0.0"
-    "@actions/http-client" "^4.0.0"
-    "@azure/storage-blob" "^12.30.0"
+    "@actions/core" "^3.0.1"
+    "@actions/github" "^9.1.1"
+    "@actions/http-client" "^4.0.1"
+    "@azure/storage-blob" "^12.31.0"
     "@octokit/core" "^7.0.6"
     "@octokit/plugin-request-log" "^6.0.0"
-    "@octokit/plugin-retry" "^8.0.0"
-    "@octokit/request" "^10.0.7"
+    "@octokit/plugin-retry" "^8.1.0"
+    "@octokit/request" "^10.0.8"
     "@octokit/request-error" "^7.1.0"
-    "@protobuf-ts/plugin" "^2.2.3-alpha.1"
-    "@protobuf-ts/runtime" "^2.9.4"
+    "@protobuf-ts/runtime" "^2.11.1"
+    "@protobuf-ts/runtime-rpc" "^2.11.1"
     archiver "^7.0.1"
     jwt-decode "^4.0.0"
     unzip-stream "^0.3.1"
@@ -52,7 +52,7 @@
   dependencies:
     "@actions/io" "^3.0.2"
 
-"@actions/github@^9.0.0", "@actions/github@^9.1.1":
+"@actions/github@^9.1.1":
   version "9.1.1"
   resolved "https://registry.yarnpkg.com/@actions/github/-/github-9.1.1.tgz#b93be4c36a46cc67cc94d6dfd33c1e33b9c59a6f"
   integrity sha512-tL5JbYOBZHc0ngEnCsaDcryUizIUIlQyIMwy1Wkx93H5HzbBJ7TbiPx2PnFjBwZW0Vh05JmfFZhecE6gglYegA==
@@ -141,6 +141,13 @@
   dependencies:
     "@azure/abort-controller" "^2.1.2"
 
+"@azure/core-http-compat@^2.4.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@azure/core-http-compat/-/core-http-compat-2.5.0.tgz#d780661a59f8a432fecb2b7c6fa2d5822dca1dea"
+  integrity sha512-BoSmXPx2er1Ai+wKlDvj29jIQespCNBwEmKyZVHO2kEFsWbGjAjwMCGzug3DJM5/QYIV3vej0S1zcU5bq9fa8w==
+  dependencies:
+    "@azure/abort-controller" "^2.1.2"
+
 "@azure/core-lro@^2.2.0":
   version "2.7.2"
   resolved "https://registry.npmmirror.com/@azure/core-lro/-/core-lro-2.7.2.tgz"
@@ -162,6 +169,19 @@
   version "1.23.0"
   resolved "https://registry.yarnpkg.com/@azure/core-rest-pipeline/-/core-rest-pipeline-1.23.0.tgz#35f16e1c180ca9545c260ac124b751be1da9c08c"
   integrity sha512-Evs1INHo+jUjwHi1T6SG6Ua/LHOQBCLuKEEE6efIpt4ZOoNonaT1kP32GoOcdNDbfqsD2445CPri3MubBy5DEQ==
+  dependencies:
+    "@azure/abort-controller" "^2.1.2"
+    "@azure/core-auth" "^1.10.0"
+    "@azure/core-tracing" "^1.3.0"
+    "@azure/core-util" "^1.13.0"
+    "@azure/logger" "^1.3.0"
+    "@typespec/ts-http-runtime" "^0.3.4"
+    tslib "^2.6.2"
+
+"@azure/core-rest-pipeline@^1.24.0":
+  version "1.25.0"
+  resolved "https://registry.yarnpkg.com/@azure/core-rest-pipeline/-/core-rest-pipeline-1.25.0.tgz#92ea4912edbb1f7395f4829a300631174aa82f08"
+  integrity sha512-bMs8ekJLjX8wPV+9IPBges1SLPyuDtE9g5gLDWOpxzKcoOFQnpLGkbcT1tdw3FaAmDS1gnPmMmJ6y/T5B96kIA==
   dependencies:
     "@azure/abort-controller" "^2.1.2"
     "@azure/core-auth" "^1.10.0"
@@ -203,7 +223,28 @@
     "@typespec/ts-http-runtime" "^0.3.0"
     tslib "^2.6.2"
 
-"@azure/storage-blob@^12.30.0", "@azure/storage-blob@~12.31.0":
+"@azure/storage-blob@^12.31.0":
+  version "12.34.0"
+  resolved "https://registry.yarnpkg.com/@azure/storage-blob/-/storage-blob-12.34.0.tgz#1f013b448932abdb431845536b57158ef74b793d"
+  integrity sha512-cXDTCAMwDx8Ng9yUe82kOOd2kPnZ8AQqe4FkLMcpaQ3Mvr3/PXVdvRhyP0FtY5/U5Oh6JGk3EcEibaFOymRLFw==
+  dependencies:
+    "@azure/abort-controller" "^2.1.2"
+    "@azure/core-auth" "^1.9.0"
+    "@azure/core-client" "^1.9.3"
+    "@azure/core-http-compat" "^2.2.0"
+    "@azure/core-lro" "^2.2.0"
+    "@azure/core-paging" "^1.6.2"
+    "@azure/core-rest-pipeline" "^1.19.1"
+    "@azure/core-tracing" "^1.2.0"
+    "@azure/core-util" "^1.11.0"
+    "@azure/core-xml" "^1.4.5"
+    "@azure/logger" "^1.1.4"
+    "@azure/storage-common" "^12.5.0"
+    apache-arrow "^21.1.0"
+    events "^3.0.0"
+    tslib "^2.8.1"
+
+"@azure/storage-blob@~12.31.0":
   version "12.31.0"
   resolved "https://registry.npmmirror.com/@azure/storage-blob/-/storage-blob-12.31.0.tgz#97b09be2bf6ab59739b862edd8124798362ce720"
   integrity sha512-DBgNv10aCSxopt92DkTDD0o9xScXeBqPKGmR50FPZQaEcH4JLQ+GEOGEDv19V5BMkB7kxr+m4h6il/cCDPvmHg==
@@ -232,6 +273,21 @@
     "@azure/core-auth" "^1.9.0"
     "@azure/core-http-compat" "^2.2.0"
     "@azure/core-rest-pipeline" "^1.19.1"
+    "@azure/core-tracing" "^1.2.0"
+    "@azure/core-util" "^1.11.0"
+    "@azure/logger" "^1.1.4"
+    events "^3.3.0"
+    tslib "^2.8.1"
+
+"@azure/storage-common@^12.5.0":
+  version "12.5.0"
+  resolved "https://registry.yarnpkg.com/@azure/storage-common/-/storage-common-12.5.0.tgz#9db1d698f26ef4b56a54a600046a765ea1bba316"
+  integrity sha512-bttzuhQiCIwrkzjPDA+AtAR7dg19L/CC6ztcqJ5LfvWpXuys9mHp0UQ0udYnoUvv9SCT9KTR5kqFvFr0e6k0lQ==
+  dependencies:
+    "@azure/abort-controller" "^2.1.2"
+    "@azure/core-auth" "^1.9.0"
+    "@azure/core-http-compat" "^2.4.0"
+    "@azure/core-rest-pipeline" "^1.24.0"
     "@azure/core-tracing" "^1.2.0"
     "@azure/core-util" "^1.11.0"
     "@azure/logger" "^1.1.4"
@@ -339,20 +395,6 @@
   version "2.5.15"
   resolved "https://registry.yarnpkg.com/@biomejs/cli-win32-x64/-/cli-win32-x64-2.5.15.tgz#f652af401e7177466d0f20b1ba7f3998ee317401"
   integrity sha512-yAzh4UqEImV6Hcy0zjUqNfJAsUhoD64FBQCdTG8Md/Z2wQeVP/ZmJ3XRYAs1g8J9fjTFyl2fCtc5FB5til47+g==
-
-"@bufbuild/protobuf@2.11.0", "@bufbuild/protobuf@^2.4.0":
-  version "2.11.0"
-  resolved "https://registry.npmmirror.com/@bufbuild/protobuf/-/protobuf-2.11.0.tgz"
-  integrity sha512-sBXGT13cpmPR5BMgHE6UEEfEaShh5Ror6rfN3yEK5si7QVrtZg8LEPQb0VVhiLRUslD2yLnXtnRzG035J/mZXQ==
-
-"@bufbuild/protoplugin@^2.4.0":
-  version "2.11.0"
-  resolved "https://registry.npmmirror.com/@bufbuild/protoplugin/-/protoplugin-2.11.0.tgz"
-  integrity sha512-lyZVNFUHArIOt4W0+dwYBe5GBwbKzbOy8ObaloEqsw9Mmiwv2O48TwddDoHN4itylC+BaEGqFdI1W8WQt2vWJQ==
-  dependencies:
-    "@bufbuild/protobuf" "2.11.0"
-    "@typescript/vfs" "^1.6.2"
-    typescript "5.4.5"
 
 "@cacheable/memory@^2.2.0":
   version "2.2.0"
@@ -681,12 +723,12 @@
     before-after-hook "^4.0.0"
     universal-user-agent "^7.0.0"
 
-"@octokit/endpoint@^11.0.3":
-  version "11.0.3"
-  resolved "https://registry.npmjs.org/@octokit/endpoint/-/endpoint-11.0.3.tgz"
-  integrity sha512-FWFlNxghg4HrXkD3ifYbS/IdL/mDHjh9QcsNyhQjN8dplUoZbejsdpmuqdA76nxj2xoWPs7p8uX2SNr9rYu0Ag==
+"@octokit/endpoint@^11.0.5":
+  version "11.0.5"
+  resolved "https://registry.yarnpkg.com/@octokit/endpoint/-/endpoint-11.0.5.tgz#d7ec88843bfeeea692fee97b52e7c2cdc0393db4"
+  integrity sha512-iXa654H3yFafF/ieHkukfbgWo2rmXD2ceD0ZOtrPhw1bc3FDch1d9N/TNs0FQ1/cIbwb7kspUX8jzIs8nzb9DQ==
   dependencies:
-    "@octokit/types" "^16.0.0"
+    "@octokit/types" "^18.0.0"
     universal-user-agent "^7.0.2"
 
 "@octokit/graphql@^9.0.3":
@@ -702,6 +744,16 @@
   version "27.0.0"
   resolved "https://registry.npmjs.org/@octokit/openapi-types/-/openapi-types-27.0.0.tgz"
   integrity sha512-whrdktVs1h6gtR+09+QsNk2+FO+49j6ga1c55YZudfEG+oKJVvJLQi3zkOm5JjiUXAagWK2tI2kTGKJ2Ys7MGA==
+
+"@octokit/openapi-types@^28.0.0":
+  version "28.0.0"
+  resolved "https://registry.yarnpkg.com/@octokit/openapi-types/-/openapi-types-28.0.0.tgz#a8e47691c1602f47764e7f15d165d6f66736b005"
+  integrity sha512-0rFyLuyHvIj6uuZWuDslxkowFYdPXoNIkeAv4b27dzm2Tf4vGWXnPsMcxs7d65kLdMERgP3wc1AEPlqMz8e1cQ==
+
+"@octokit/openapi-types@^29.0.1":
+  version "29.0.1"
+  resolved "https://registry.yarnpkg.com/@octokit/openapi-types/-/openapi-types-29.0.1.tgz#05895cc8ae328058e7af75b608c4c97f0bc1bc00"
+  integrity sha512-9qWOMFNxxLokERcms42rU0PTLqQmVs7g5E41TI4mCOxmpFayD1rfC7XxOL55cG9MBZLFlC31BrR37myMKardwg==
 
 "@octokit/plugin-paginate-rest@^14.0.0":
   version "14.0.0"
@@ -722,32 +774,32 @@
   dependencies:
     "@octokit/types" "^16.0.0"
 
-"@octokit/plugin-retry@^8.0.0":
-  version "8.1.0"
-  resolved "https://registry.npmmirror.com/@octokit/plugin-retry/-/plugin-retry-8.1.0.tgz#e25c2fb5e0a09cfe674ef9df75d7ca4fafa16c11"
-  integrity sha512-O1FZgXeiGb2sowEr/hYTr6YunGdSAFWnr2fyW39Ah85H8O33ELASQxcvOFF5LE6Tjekcyu2ms4qAzJVhSaJxTw==
+"@octokit/plugin-retry@^8.1.0":
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/@octokit/plugin-retry/-/plugin-retry-8.1.1.tgz#eba8c670c3128a5474e8d1f62bd1b15fff09c583"
+  integrity sha512-VCVvZ/R1+u3WuiBWpNavZ0mY4aaJNAsENrpBP9aLSR2QyOpQgd7DhM5j4AW7z4MQpnJYgwBPf0XqPQoNBRdQwg==
   dependencies:
-    "@octokit/request-error" "^7.0.2"
-    "@octokit/types" "^16.0.0"
+    "@octokit/request-error" "^7.1.1"
+    "@octokit/types" "^17.0.0"
     bottleneck "^2.15.3"
 
-"@octokit/request-error@^7.0.2", "@octokit/request-error@^7.1.0":
-  version "7.1.0"
-  resolved "https://registry.npmjs.org/@octokit/request-error/-/request-error-7.1.0.tgz"
-  integrity sha512-KMQIfq5sOPpkQYajXHwnhjCC0slzCNScLHs9JafXc4RAJI+9f+jNDlBNaIMTvazOPLgb4BnlhGJOTbnN0wIjPw==
+"@octokit/request-error@^7.0.2", "@octokit/request-error@^7.1.0", "@octokit/request-error@^7.1.1", "@octokit/request-error@^7.1.2":
+  version "7.1.2"
+  resolved "https://registry.yarnpkg.com/@octokit/request-error/-/request-error-7.1.2.tgz#0477f3ec1034869205f8bd80560f2bc55b659973"
+  integrity sha512-XZRuT3xZ84D3gYErI1DZvhJ33dCWVV6uzBtWkaBB4TvA/L6eOeTZodxLFVB44bBEEo3vEx7y00UfX1tBLrtLRg==
   dependencies:
-    "@octokit/types" "^16.0.0"
+    "@octokit/types" "^18.0.0"
 
-"@octokit/request@^10.0.6", "@octokit/request@^10.0.7":
-  version "10.0.8"
-  resolved "https://registry.yarnpkg.com/@octokit/request/-/request-10.0.8.tgz#6609a5a38ad6f8ee203d9eb8ac9361d906a4414e"
-  integrity sha512-SJZNwY9pur9Agf7l87ywFi14W+Hd9Jg6Ifivsd33+/bGUQIjNujdFiXII2/qSlN2ybqUHfp5xpekMEjIBTjlSw==
+"@octokit/request@^10.0.6", "@octokit/request@^10.0.7", "@octokit/request@^10.0.8":
+  version "10.0.16"
+  resolved "https://registry.yarnpkg.com/@octokit/request/-/request-10.0.16.tgz#b548f8f848ffe4ccf5082142fac096fe7b8222b2"
+  integrity sha512-A0zWGjHzISIb+9ccG8s0dq7LKO5zVpJLRICjgUb+sJxEWqn8RUHB1rD3AE51+PECvXHIxqZ1VVvs4fHTSD9nUQ==
   dependencies:
-    "@octokit/endpoint" "^11.0.3"
-    "@octokit/request-error" "^7.0.2"
-    "@octokit/types" "^16.0.0"
-    fast-content-type-parse "^3.0.0"
-    json-with-bigint "^3.5.3"
+    "@octokit/endpoint" "^11.0.5"
+    "@octokit/request-error" "^7.1.2"
+    "@octokit/types" "^18.0.0"
+    content-type "^3.0.0"
+    json-with-bigint "^3.5.12"
     universal-user-agent "^7.0.2"
 
 "@octokit/types@^16.0.0":
@@ -756,6 +808,20 @@
   integrity sha512-sKq+9r1Mm4efXW1FCk7hFSeJo4QKreL/tTbR0rz/qx/r1Oa2VV83LTA/H/MuCOX7uCIJmQVRKBcbmWoySjAnSg==
   dependencies:
     "@octokit/openapi-types" "^27.0.0"
+
+"@octokit/types@^17.0.0":
+  version "17.0.0"
+  resolved "https://registry.yarnpkg.com/@octokit/types/-/types-17.0.0.tgz#c0fa4090b8d957dd9b65a511f71f87ee14037694"
+  integrity sha512-ByP1v7YL5SMveFPP7+sj0/ZuWCOOg/Chs4NafOMpq6WNIM/hdGY0S7C0TCGDBWu1aGmOxmUIhMx3cO+IdwYZ1Q==
+  dependencies:
+    "@octokit/openapi-types" "^28.0.0"
+
+"@octokit/types@^18.0.0":
+  version "18.0.0"
+  resolved "https://registry.yarnpkg.com/@octokit/types/-/types-18.0.0.tgz#763eeebafb488d8ea8a8322eafb2d9b1885d2844"
+  integrity sha512-l6bAF43PNxkJp6g+W4PjoUSSkxHomXw2nOum5CTftJz1NlV3vu93NImgOYtLf6CbBUb5j+fiuzW0PPQ5JTSvZA==
+  dependencies:
+    "@octokit/openapi-types" "^29.0.1"
 
 "@oxc-project/types@=0.133.0":
   version "0.133.0"
@@ -767,23 +833,6 @@
   resolved "https://registry.npmmirror.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@protobuf-ts/plugin@^2.2.3-alpha.1":
-  version "2.11.1"
-  resolved "https://registry.npmmirror.com/@protobuf-ts/plugin/-/plugin-2.11.1.tgz"
-  integrity sha512-HyuprDcw0bEEJqkOWe1rnXUP0gwYLij8YhPuZyZk6cJbIgc/Q0IFgoHQxOXNIXAcXM4Sbehh6kjVnCzasElw1A==
-  dependencies:
-    "@bufbuild/protobuf" "^2.4.0"
-    "@bufbuild/protoplugin" "^2.4.0"
-    "@protobuf-ts/protoc" "^2.11.1"
-    "@protobuf-ts/runtime" "^2.11.1"
-    "@protobuf-ts/runtime-rpc" "^2.11.1"
-    typescript "^3.9"
-
-"@protobuf-ts/protoc@^2.11.1":
-  version "2.11.1"
-  resolved "https://registry.npmmirror.com/@protobuf-ts/protoc/-/protoc-2.11.1.tgz"
-  integrity sha512-mUZJaV0daGO6HUX90o/atzQ6A7bbN2RSuHtdwo8SSF2Qoe3zHwa4IHyCN1evftTeHfLmdz+45qo47sL+5P8nyg==
-
 "@protobuf-ts/runtime-rpc@^2.11.1":
   version "2.11.1"
   resolved "https://registry.npmmirror.com/@protobuf-ts/runtime-rpc/-/runtime-rpc-2.11.1.tgz"
@@ -791,7 +840,7 @@
   dependencies:
     "@protobuf-ts/runtime" "^2.11.1"
 
-"@protobuf-ts/runtime@^2.11.1", "@protobuf-ts/runtime@^2.9.4":
+"@protobuf-ts/runtime@^2.11.1":
   version "2.11.1"
   resolved "https://registry.npmmirror.com/@protobuf-ts/runtime/-/runtime-2.11.1.tgz"
   integrity sha512-KuDaT1IfHkugM2pyz+FwiY80ejWrkH1pAtOBOZFuR6SXEFTsnb/jiQWQ1rCIrcKx2BtyxnxW6BWwsVSA/Ie+WQ==
@@ -920,6 +969,13 @@
   resolved "https://registry.npmmirror.com/@types/json-schema/-/json-schema-7.0.15.tgz"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
 
+"@types/node@^25.2.0":
+  version "25.9.9"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-25.9.9.tgz#19f1b689ab7558ed910664b6078113b8abbef1d0"
+  integrity sha512-b4e2xxj/yMeT2hNlD6x7zNFiQK2Dlmkb9CQ6v3/1G2RezKN4YS2lcEv8lzGm1mhs4f2lM4yNAMI/zUDBZBBt7w==
+  dependencies:
+    undici-types ">=7.24.0 <7.24.7"
+
 "@types/node@^26.6.5":
   version "26.6.5"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-26.6.5.tgz#cb35209e7767c503551b5fa42a48231c7441d979"
@@ -1022,13 +1078,6 @@
   dependencies:
     "@typescript-eslint/types" "8.71.1"
     eslint-visitor-keys "^5.0.0"
-
-"@typescript/vfs@^1.6.2":
-  version "1.6.3"
-  resolved "https://registry.npmmirror.com/@typescript/vfs/-/vfs-1.6.3.tgz"
-  integrity sha512-8Qs6/Tj2B8Uyo4lYJkopdCtrsfpF/ZlbTXK13Nq6JKN+Ih8FF9Oxg97gEp+zIS96wmkMdWUIETl35Yt9BITeiw==
-  dependencies:
-    debug "^4.1.1"
 
 "@typespec/ts-http-runtime@^0.3.0":
   version "0.3.3"
@@ -1177,6 +1226,16 @@ ansi-styles@^6.1.0:
   version "6.2.3"
   resolved "https://registry.npmmirror.com/ansi-styles/-/ansi-styles-6.2.3.tgz"
   integrity sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==
+
+apache-arrow@^21.1.0:
+  version "21.2.0"
+  resolved "https://registry.yarnpkg.com/apache-arrow/-/apache-arrow-21.2.0.tgz#3adc16eb816202687782065836cda6092ff7db51"
+  integrity sha512-Hxe6Agq26gQOM954qpzYSllJBPJl+e16U5CkfuMUhLrNba+5nKkttIVlflaovN6oaTratqMGAO8H5u/aNhmHWQ==
+  dependencies:
+    "@types/node" "^25.2.0"
+    flatbuffers "^25.1.24"
+    json-with-bigint "^3.5.3"
+    tslib "^2.6.2"
 
 archiver-utils@^5.0.0, archiver-utils@^5.0.2:
   version "5.0.2"
@@ -1332,6 +1391,11 @@ compress-commons@^6.0.2:
     normalize-path "^3.0.0"
     readable-stream "^4.0.0"
 
+content-type@^3.0.0:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/content-type/-/content-type-3.1.1.tgz#7c80289f1a03ae3fc1f8399c388d22ae44d1394f"
+  integrity sha512-GW4qUsfFo59d0HbUibDlWv5wPz+vAAcaTWbKIuKCf0JkC7wWkSyf8f13IpXn5JkeMlB2P8iTSSIjwXljorg2vA==
+
 convert-source-map@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmmirror.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
@@ -1364,7 +1428,7 @@ cross-spawn@^7.0.6:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-debug@4, debug@^4.1.1, debug@^4.3.1, debug@^4.3.2, debug@^4.3.4, debug@^4.4.3:
+debug@4, debug@^4.3.1, debug@^4.3.2, debug@^4.3.4, debug@^4.4.3:
   version "4.4.3"
   resolved "https://registry.npmmirror.com/debug/-/debug-4.4.3.tgz"
   integrity sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==
@@ -1556,11 +1620,6 @@ expect-type@^1.3.0:
   resolved "https://registry.npmmirror.com/expect-type/-/expect-type-1.3.0.tgz#0d58ed361877a31bbc4dd6cf71bbfef7faf6bd68"
   integrity sha512-knvyeauYhqjOYvQ66MznSMs83wmHrCycNEN6Ao+2AeYEfxUIkuiVxdEa1qlGEPK+We3n0THiDciYSsCcgW/DoA==
 
-fast-content-type-parse@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.npmjs.org/fast-content-type-parse/-/fast-content-type-parse-3.0.0.tgz"
-  integrity sha512-ZvLdcY8P+N8mGQJahJV5G4U88CSvT1rP8ApL6uETe88MBXrBHAkZlSEySdUlyztF7ccb+Znos3TFqaepHxdhBg==
-
 fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
   resolved "https://registry.npmmirror.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz"
@@ -1627,6 +1686,11 @@ flat-cache@^6.1.23:
     cacheable "^2.5.0"
     flatted "^3.4.2"
     hookified "^1.15.0"
+
+flatbuffers@^25.1.24:
+  version "25.9.23"
+  resolved "https://registry.yarnpkg.com/flatbuffers/-/flatbuffers-25.9.23.tgz#346811557fe9312ab5647535e793c761e9c81eb1"
+  integrity sha512-MI1qs7Lo4Syw0EOzUl0xjs2lsoeqFku44KpngfIduHBYvzm8h2+7K8YMQh1JtVVVrUvhLpNwqVi4DERegUJhPQ==
 
 flatted@^3.4.2:
   version "3.4.4"
@@ -1815,6 +1879,11 @@ json-stable-stringify-without-jsonify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmmirror.com/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz"
   integrity sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==
+
+json-with-bigint@^3.5.12:
+  version "3.5.12"
+  resolved "https://registry.yarnpkg.com/json-with-bigint/-/json-with-bigint-3.5.12.tgz#9f6bf722a9847ed72fa9b217b2b66181227c454c"
+  integrity sha512-uwbF/wSSuOgC7qqlq27Xp5B6a2MHVug3t0idZdTqu0JnlFvgJuH7ju+KAk/J06C7GfhoYy2gnb9wz2INqcne7w==
 
 json-with-bigint@^3.5.3:
   version "3.5.3"
@@ -2384,20 +2453,15 @@ type-check@^0.4.0, type-check@~0.4.0:
   dependencies:
     prelude-ls "^1.2.1"
 
-typescript@5.4.5:
-  version "5.4.5"
-  resolved "https://registry.npmmirror.com/typescript/-/typescript-5.4.5.tgz"
-  integrity sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==
-
-typescript@^3.9:
-  version "3.9.10"
-  resolved "https://registry.npmmirror.com/typescript/-/typescript-3.9.10.tgz"
-  integrity sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==
-
 typescript@^6.0.3:
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-6.0.3.tgz#90251dc007916e972786cb94d74d15b185577d21"
   integrity sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==
+
+"undici-types@>=7.24.0 <7.24.7":
+  version "7.24.6"
+  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-7.24.6.tgz#61275b485d7fd4e9d269c7cf04ec2873c9cc0f91"
+  integrity sha512-WRNW+sJgj5OBN4/0JpHFqtqzhpbnV0GuB+OozA9gCL7a993SmU+1JBZCzLNxYsbMfIeDL+lTsphD5jN5N+n0zg==
 
 undici-types@~8.9.0:
   version "8.9.0"
