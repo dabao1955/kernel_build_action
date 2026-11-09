@@ -154,7 +154,7 @@ const KSU_FORKS: Record<string, KsuForkStrategy> = {
   'backslashxx/kernelsu': {
     id: 'xxksu',
     label: 'KernelSU (xxksu)',
-    setupSha: 'cbc0b49908066e9c7f778737f65a216f50b203ba',
+    setupSha: 'a52e3267fdea126a2564ec265ea2b0cd3c74bffe',
     defaultInstallRef: 'master',
     configTweaks: [{ option: 'CONFIG_KSU_KPROBES_KSUD', value: 'n' }],
   },
@@ -168,21 +168,21 @@ const KSU_FORKS: Record<string, KsuForkStrategy> = {
   'sukisu-ultra/sukisu-ultra': {
     id: 'sukisu',
     label: 'SukiSU-Ultra',
-    setupSha: 'ef6464ff7e942f6d756a369116599a3e73866a8a',
+    setupSha: 'd7d042816b82b200c25b3a93dcc158ba0307cabf',
     defaultInstallRef: 'builtin',
     configTweaks: [],
   },
   'shirkneko/sukisu-ultra': {
     id: 'sukisu',
     label: 'SukiSU-Ultra',
-    setupSha: 'ef6464ff7e942f6d756a369116599a3e73866a8a',
+    setupSha: 'd7d042816b82b200c25b3a93dcc158ba0307cabf',
     defaultInstallRef: 'builtin',
     configTweaks: [],
   },
   'kernelsu-next/kernelsu-next': {
     id: 'next',
     label: 'KernelSU-Next',
-    setupSha: 'a6c81fa4a8b7341d0bc5c3e4507531459df871ae',
+    setupSha: '59c3efbd37580a124f8280f5761a8c317fc331e7',
     defaultInstallRef: (kv) => (isKernelBelow(5, 10, kv) ? 'legacy' : 'main'),
     configTweaks: [
       { option: 'CONFIG_KSU_MANUAL_HOOK', value: 'y' },
@@ -203,7 +203,7 @@ const KSU_FORKS: Record<string, KsuForkStrategy> = {
 };
 
 /** Upstream KernelSU revision pinned for downloading kernel/setup.sh. */
-const KSU_UPSTREAM_SHA = '28db74f6f4692e97006ce9ebd8b19b9cc614b5b7';
+const KSU_UPSTREAM_SHA = 'c680b548f3fe5c19f51e90ce97d6f0ef89594421';
 
 /**
  * Detect a known KernelSU fork from a GitHub URL.
@@ -481,7 +481,7 @@ export async function setupNoMount(kernelDir: string, configPath: string): Promi
   const nomountSetupPath = path.join(kernelDir, 'nomount_setup.sh');
   await exec.exec('curl', [
     '-sSLf',
-    'https://github.com/maxsteeel/nomount/raw/04af0552bb29c7cee1b78c3eea69d7ed98b80bf2/kernel/setup.sh',
+    'https://github.com/maxsteeel/nomount/raw/b323d9418c73224b7985f363c6c2d332944f37df/kernel/setup.sh',
     '-o',
     nomountSetupPath,
   ]);
