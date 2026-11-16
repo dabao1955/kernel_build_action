@@ -21,15 +21,15 @@
     "@actions/tool-cache": "^4.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.6",
+    "@biomejs/biome": "^2.6.7",
     "@eslint/js": "^10.0.0",
     "@types/node": "^26.6.6",
-    "@typescript-eslint/eslint-plugin": "^8.72.1",
-    "@typescript-eslint/parser": "^8.72.1",
+    "@typescript-eslint/eslint-plugin": "^8.72.2",
+    "@typescript-eslint/parser": "^8.72.2",
     "@vitest/coverage-v8": "4.1.11",
     "esbuild": "^0.28.2",
     "eslint": "^10.14.0",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.1",
     "typescript": "^6.0.3",
     "vitest": "4.1.11"
   },
