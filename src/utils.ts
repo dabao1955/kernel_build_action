@@ -87,8 +87,19 @@ export async function installDependencies(): Promise<void> {
       'parallel',
       'jq',
       'opam',
-      'libpcre3-dev',
     ]);
+
+    // pcre dev headers are required by coccinelle's OCaml dependencies.
+    // Debian/Ubuntu dropped libpcre3-dev in favour of libpcre2-dev on newer
+    // releases, so try the legacy package first and fall back to pcre2.
+    const pcre3 = await sudoExec(
+      'apt-get',
+      ['install', '--no-install-recommends', '-y', 'libpcre3-dev'],
+      { ignoreReturnCode: true }
+    );
+    if (pcre3 !== 0) {
+      await sudoExec('apt-get', ['install', '--no-install-recommends', '-y', 'libpcre2-dev']);
+    }
   } else if (pkgMgr === 'pacman') {
     await sudoExec('pacman', ['-Syyu', '--noconfirm']);
     await sudoExec('pacman', [

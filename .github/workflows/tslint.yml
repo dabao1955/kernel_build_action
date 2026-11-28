@@ -6,10 +6,10 @@ on:
       - '.github/workflows/tslint.yml'
       - 'src/**/*.ts'
       - '__tests__/**/*.ts'
-      - 'yarn.lock'
+      - 'pnpm-lock.yaml'
       - 'package.json'
       - 'eslint.config.js'
-      - '.prettierrc'
+      - 'biome.json'
 
 jobs:
   typescript-lint:
@@ -18,14 +18,16 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version: '24'
-          cache: 'yarn'
+          cache: 'pnpm'
       - name: Install dependencies
-        run: yarn install --force
+        run: pnpm install --frozen-lockfile
       - name: Run ESLint
-        run: yarn lint
+        run: pnpm lint
       - name: Check formatting
-        run: yarn format:check
+        run: pnpm format:check

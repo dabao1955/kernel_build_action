@@ -7,17 +7,17 @@
 
 ## Commands
 
-- Install JS deps with `yarn install`. CI uses Yarn, not npm/pnpm.
-- Rebuild the action with `yarn build` after changing `src/**/*.ts`. This regenerates the committed `dist/` entrypoints used by `action.yml`.
-- TypeScript checks: `yarn lint`, `yarn format:check`, `yarn test`, `yarn biome`.
+- Install JS deps with `pnpm install`. CI uses pnpm, not npm/yarn.
+- Rebuild the action with `pnpm build` after changing `src/**/*.ts`. This regenerates the committed `dist/` entrypoints used by `action.yml`.
+- TypeScript checks: `pnpm lint`, `pnpm format:check`, `pnpm test`, `pnpm biome`.
 - Python checks: `python3 -m pytest`, `mypy --explicit-package-bases kernelsu/ lxc/ nethunter/ rekernel/ config.py`, `pylint kernelsu/ lxc/ nethunter/ rekernel/ config.py`.
-- Focused TS test: `yarn vitest run __tests__/builder.test.ts`.
+- Focused TS test: `pnpm vitest run __tests__/builder.test.ts`.
 - Focused Python test: `python3 -m pytest __pytest__/rekernel/test_patch.py`.
 - Re:Kernel module build check: `make -j4 V=1` in `rekernel/`.
 
 ## Verification Order
 
-- For `src/` changes: run `yarn build` first, then the smallest relevant subset of `yarn lint`, `yarn format:check`, `yarn test`, and `yarn biome`.
+- For `src/` changes: run `pnpm build` first, then the smallest relevant subset of `pnpm lint`, `pnpm format:check`, `pnpm test`, and `pnpm biome`.
 - For Python helper changes: run the smallest relevant `python3 -m pytest` target first, then `mypy` and `pylint` for the touched Python paths.
 - For changes that affect both TS action flow and Python patch helpers, run both stacks.
 

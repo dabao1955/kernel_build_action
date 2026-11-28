@@ -36,7 +36,7 @@ jobs:
       - name: Setup (JS)
         if: matrix.lint == 'js'
         run: |
-          yarn global add yaml-lint
+          npm install -g yaml-lint
 
       - name: Check yaml(Python)
         if: matrix.lint == 'python'

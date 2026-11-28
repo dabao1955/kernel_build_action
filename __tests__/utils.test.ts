@@ -584,6 +584,34 @@ describe('installDependencies', () => {
     expect(exec.exec).toHaveBeenCalledWith('sudo', ['apt-get', 'update'], undefined);
   });
 
+  it('falls back to libpcre2-dev when libpcre3-dev is unavailable', async () => {
+    Object.defineProperty(process, 'getuid', {
+      value: () => 0,
+      writable: true,
+      configurable: true,
+    });
+    vi.mocked(fs.existsSync).mockImplementation((p) =>
+      p === '/usr/bin/apt' || p === '/bin/apt'
+    );
+    vi.mocked(exec.exec).mockImplementation(async (_cmd, args) => {
+      const argv = args ?? [];
+      return argv.includes('libpcre3-dev') ? 100 : 0;
+    });
+
+    await installDependencies();
+
+    expect(exec.exec).toHaveBeenCalledWith(
+      'apt-get',
+      ['install', '--no-install-recommends', '-y', 'libpcre3-dev'],
+      { ignoreReturnCode: true }
+    );
+    expect(exec.exec).toHaveBeenCalledWith(
+      'apt-get',
+      ['install', '--no-install-recommends', '-y', 'libpcre2-dev'],
+      undefined
+    );
+  });
+
   it('installs dependencies with pacman', async () => {
     Object.defineProperty(process, 'getuid', {
       value: () => 0,

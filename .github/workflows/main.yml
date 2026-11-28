@@ -7,7 +7,7 @@ on:
       - 'action.yml'
       - 'src/**/*.ts'
       - 'package.json'
-      - 'yarn.lock'
+      - 'pnpm-lock.yaml'
 
   pull_request:
     paths:
@@ -15,7 +15,7 @@ on:
       - 'action.yml'
       - 'src/**/*.ts'
       - 'package.json'
-      - 'yarn.lock'
+      - 'pnpm-lock.yaml'
 
   workflow_dispatch:
 

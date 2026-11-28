@@ -35,28 +35,28 @@ All TypeScript source files must pass linting, formatting, and testing before su
 
 - **ESLint**: Static analysis for code errors and style violations
   ```bash
-  yarn lint
+  pnpm lint
   ```
-- **Prettier**: Code formatter for consistent style
+- **Biome**: Code formatter for consistent style
   ```bash
-  yarn format
+  pnpm format
   # Check formatting without modifying files
-  yarn format:check
+  pnpm format:check
   ```
 - **Vitest**: Run tests with coverage
   ```bash
-  yarn test --run
+  pnpm test --run
   # Run with coverage report
-  yarn test --coverage
+  pnpm test --coverage
   ```
 - **Build**: Ensure TypeScript compiles without errors
   ```bash
-  yarn build
+  pnpm build
   ```
 
 Configuration files:
 - `eslint.config.js`: ESLint flat configuration (v9+)
-- `.prettierrc`: Prettier formatting rules
+- `biome.json`: Biome linting and formatting rules
 - `tsconfig.json`: TypeScript compiler options
 - `vitest.config.ts`: Test framework configuration
 
@@ -105,5 +105,5 @@ Run the appropriate checks based on file types modified:
 
 - **YAML files**: `yamllint <file.yml>`
 - **Python scripts**: `pylint <script.py>` and `mypy <script.py>`
-- **TypeScript files**: `yarn lint`, `yarn format:check`, `yarn test --run`, and `yarn build`
-- **All changes**: Ensure `yarn build` succeeds and dist files are updated
+- **TypeScript files**: `pnpm lint`, `pnpm format:check`, `pnpm test --run`, and `pnpm build`
+- **All changes**: Ensure `pnpm build` succeeds and dist files are updated

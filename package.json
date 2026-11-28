@@ -3,11 +3,12 @@
   "version": "1.10.4",
   "description": "Android Kernel Build Action",
   "main": "dist/index.js",
+  "packageManager": "pnpm@12.23.0",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --minify --platform=node --target=node24 --outfile=dist/index.js && esbuild src/post.ts --bundle  --minify --platform=node --target=node24 --outfile=dist/post/index.js --format=cjs",
     "lint": "eslint src/**/*.ts",
-    "format": "prettier --write src/**/*.ts",
-    "format:check": "prettier --check src/**/*.ts",
+    "format": "biome format --write src/",
+    "format:check": "biome format src/",
     "test": "vitest --coverage",
     "biome": "biome lint src/",
     "biome:fix": "biome lint --write src/"
@@ -29,7 +30,6 @@
     "@vitest/coverage-v8": "4.1.11",
     "esbuild": "^0.28.2",
     "eslint": "^10.15.0",
-    "prettier": "^3.10.1",
     "typescript": "^6.0.3",
     "vitest": "4.1.11"
   },
