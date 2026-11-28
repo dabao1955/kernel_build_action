@@ -1,2 +1,9 @@
 allowBuilds:
   esbuild: true
+overrides:
+  glob: 14.0.6
+  minimatch: 11.0.9
+  brace-expansion: 5.0.12
+  eslint>@humanfs/node: 0.16.8
+patchedDependencies:
+  '@actions/glob@0.7.0': patches/@actions__glob@0.7.0.patch
