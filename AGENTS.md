@@ -27,7 +27,9 @@
 - The action is designed for GitHub Actions Linux runners only. `src/utils.ts` hard-fails unless `GITHUB_ACTIONS=true`, platform is Linux, and `apt` or `pacman` is available.
 - Local kernel sources are only recognized when `kernel-url` is `.` or a relative path ending with `/`; otherwise the action treats it as a remote clone target.
 - `extra-make-args` is parsed as a JSON array string, not a shell fragment.
-- Biome is lint-only here. `biome.json` disables Biome formatting and import organization; formatting checks come from Prettier.
+- Biome handles both linting and formatting here. `biome.json` enables the formatter (2-space indent, 100 columns, single quotes, ES5 trailing commas) and leaves import organization off; Prettier is no longer used.
+- Dependency overrides live in `pnpm-workspace.yaml` under `overrides`. pnpm 12 ignores the Yarn-era `resolutions` field and no longer reads `pnpm.*` from `package.json`, so pins added there silently do nothing.
+- `@actions/glob@0.7.0` is patched by `patches/@actions__glob@0.7.0.patch` because `partialMatch` called `Minimatch#matchOne`, which minimatch 11 removed. Drop the patch only once `@actions/glob` ships a release that supports the current minimatch override.
 
 ## Architecture Notes
 
